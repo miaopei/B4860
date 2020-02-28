@@ -13,23 +13,17 @@ all:
 	cp -f $(WORK_ROOT)/lib/libssl.so.1.0.0 $(WORK_ROOT)/lib/libssl.so
 	
 	cd $(WORK_ROOT)/src/simple_uv && make clean && make
-	#cd $(WORK_ROOT)/src/uvtest && make clean && make
-	#cd $(WORK_ROOT)/src/testclient && make clean && make
 	cd $(WORK_ROOT)/src/bbu && make clean && make
 	cd $(WORK_ROOT)/src/hub && make clean && make
 	
 uv:
 	cd $(WORK_ROOT)/src/simple_uv && make clean && make
-	#cd $(WORK_ROOT)/src/uvtest && make clean && make
-	#cd $(WORK_ROOT)/src/testclient && make clean && make
 	cd $(WORK_ROOT)/src/bbu && make clean && make
 	cd $(WORK_ROOT)/src/hub && make clean && make
 	
 
 clean:
 	cd $(WORK_ROOT)/src/simple_uv && make clean
-	#cd $(WORK_ROOT)/src/uvtest && make clean
-	#cd $(WORK_ROOT)/src/testclient && make clean
 	cd $(WORK_ROOT)/src/bbu && make clean
 	cd $(WORK_ROOT)/src/hub && make clean
 	cd $(WORK_ROOT)/bin && [ -d "log" ] && rm -rf log
