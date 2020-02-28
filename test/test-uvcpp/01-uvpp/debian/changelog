@@ -1,0 +1,63 @@
+libuvpp (1.7.5ubuntu2) utopic; urgency=medium
+
+  * Version bump for Jenkins repair
+
+ -- shilkin <autobuilder@corp.sputnik.ru>  Mon, 02 Nov 2015 18:11:34 +0300
+
+libuvpp (1.7.5ubuntu1) utopic; urgency=medium
+
+  * Dependency project libuv was updated to v1.7.5
+
+ -- Autobuilder <autobuilder@corp.sputnik.ru>  Mon, 02 Nov 2015 16:20:10 +0300
+
+libuvpp (1.7.5ubuntu0) utopic; urgency=medium
+
+  * Dependency project libuv was updated to v1.7.5
+
+ -- Autobuilder <autobuilder@corp.sputnik.ru>  Tue, 20 Oct 2015 19:04:46 +0300
+
+libuvpp (1.6.1ubuntu5) utopic; urgency=medium
+
+  * Version bump for Jenkins test
+
+ -- Vitaly Isaev <autobuilder@corp.sputnik.ru>  Tue, 29 Sep 2015 11:29:17 +0300
+
+libuvpp (1.6.1ubuntu4) utopic; urgency=medium
+
+  * Dependency project libuv was updated to v1.7.0-32-ga39acd6
+
+ -- Autobuilder <autobuilder@corp.sputnik.ru>  Tue, 18 Aug 2015 18:28:30 +0300
+
+libuvpp (1.6.1ubuntu3) utopic; urgency=medium
+
+  * Add description in debian/control
+
+ -- shilkin <autobuilder@corp.sputnik.ru>  Tue, 28 Jul 2015 18:31:49 +0300
+
+libuvpp (1.6.1ubuntu2) utopic; urgency=medium
+
+  * Version bump
+
+ -- Vitaly Isaev <autobuilder@corp.sputnik.ru>  Fri, 03 Jul 2015 16:17:02 +0300
+
+libuvpp (1.6.1ubuntu0) utopic; urgency=medium
+
+  [ Vitaly Isaev ]
+  * Переход на CPack
+  * Явное указание версии libuv
+  * Update CMakeLists.txt
+  * Package name and deps change
+
+  [ shilkin ]
+  * resolver added: uv_getaddrinfo_t handler
+  * add subdirectory in root CMakeLists.txt
+  * added DNS resolver: uv_getaddrinfo_t handler
+  * temporary exclude test application from build
+  * Resolver callback changed: added address family info
+  * Fix mistyping in error message
+  * Check res == 0, free addrinfo resource
+  * Добавлен функционал резолвинга 
+
+  [ Autobuilder ]
+
+ -- Autobuilder <autobuilder@corp.sputnik.ru>  Fri, 03 Jul 2015 15:59:42 +0300

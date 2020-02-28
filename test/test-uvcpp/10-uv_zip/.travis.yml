@@ -1,0 +1,19 @@
+sudo: false
+
+language: cpp
+
+compiler:
+  - clang
+
+env:
+  - BUILDTYPE=Release
+  - BUILDTYPE=Debug
+
+install:
+- ./configure
+
+before_script:
+- make
+
+script:
+- make test
