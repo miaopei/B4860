@@ -1,2 +1,0 @@
-2020-02-28 10:43:38.367 LOG_ALARM -----------------  log4z thread started!   ---------------------------- log4z.cpp:1787
-2020-02-28 10:43:38.367 LOG_ALARM logger id=0 key=Main name=Main path=./log/ level=1 display=false log4z.cpp:1797

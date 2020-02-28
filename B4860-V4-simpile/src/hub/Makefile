@@ -1,11 +1,11 @@
 ##################################################################### #
 #1、定义您自己的宏，比方您自己模块根目录
-TEST_DIR=$(WORK_ROOT)/src/bbu
+TEST_DIR=$(WORK_ROOT)/src/hub
 UV_DIR=$(WORK_ROOT)/src/libuv/include
 SIMPLE_UV_DIR=$(WORK_ROOT)/src/simple_uv
 
 #2、定义您自己的可执行文件名称
-PROGRAM_NAME=$(WORK_ROOT)/bin/bbu
+PROGRAM_NAME=$(WORK_ROOT)/bin/hub
 ##################################################################### #
 #3、指定您必须生成的工程文件
 
@@ -27,12 +27,10 @@ USER_LINK_INC = -L$(WORK_ROOT)/lib
 #USER_LINK_LIBS = -lACE -laxis2 -lsagsoapstub -lplatform -lz
 USER_LINK_LIBS = -luv -lsimple_uv
 
-#####################################################################
-#添加自定义的宏
 USER_CC_FLAG =  $(PIC) -std=c++11
+#####################################################################
 #
 #8、包含统一文件，用来定义编译环境，不要更改
 include $(WORK_ROOT)/mk_inc/rules.mak
-
 
 

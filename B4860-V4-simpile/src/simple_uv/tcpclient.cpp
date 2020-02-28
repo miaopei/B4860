@@ -1,4 +1,5 @@
 ﻿// #include "stdafx.h"
+#include <iostream>
 #include "tcpclient.h"
 #include "UVThread.h"
 // #include "log4z.h"
@@ -75,7 +76,6 @@ void CTCPClient::ReConnectCB(NET_EVENT_TYPE eventtype)
 	}
 }
 
-
 bool CTCPClient::Connect(const char* ip, int port)
 {
     closeinl();
@@ -89,23 +89,25 @@ bool CTCPClient::Connect(const char* ip, int port)
     int iret = uv_ip4_addr(m_strServerIP->c_str(), m_nServerPort, &bind_addr);
     if (iret) {
         *m_strErrMsg = GetUVError(iret);
-        // // LOGI(errmsg_);
-        return false;
-    }
-    iret = uv_tcp_connect(&m_connetcReq, &m_handleClient->tcphandle, (const sockaddr*)&bind_addr, AfterConnect);
-    if (iret) {
-        *m_strErrMsg = GetUVError(iret);
-        // // LOGI(errmsg_);
+        // LOGI(errmsg_);
         return false;
     }
 
-    // LOGI("client(" << this << ")start connect to server(" << ip << ":" << port << ")");
+    iret = uv_tcp_connect(&m_connetcReq, &m_handleClient->tcphandle, (const sockaddr*)&bind_addr, AfterConnect);
+    if (iret) {
+        *m_strErrMsg = GetUVError(iret);
+        // LOGI(errmsg_);
+        return false;
+    }
+
+    //LOGI("client(" << this << ")start connect to server(" << ip << ":" << port << ")");
     iret = uv_thread_create(&m_threadConnect, ConnectThread, this);//thread to wait for succeed connect.
     if (iret) {
         *m_strErrMsg = GetUVError(iret);
-        // // LOGI(errmsg_);
+        // LOGI(errmsg_);
         return false;
     }
+    std::cout << "3:m_nConnectStatus=" << m_nConnectStatus << std::endl;
     int wait_count = 0;
     while (m_nConnectStatus == CONNECT_DIS) {
         ThreadSleep(100);
@@ -114,6 +116,8 @@ bool CTCPClient::Connect(const char* ip, int port)
             break;
         }
     }
+    std::cout << "4:m_nConnectStatus=" << m_nConnectStatus << std::endl;
+    return true;
     if (CONNECT_FINISH != m_nConnectStatus) {
         *m_strErrMsg = "connect time out";
         return false;
@@ -176,12 +180,14 @@ void CTCPClient::ConnectThread(void* arg)
 
 void CTCPClient::AfterConnect(uv_connect_t* handle, int status)
 {
+    std::cout << "CTCPClient::AfterConnect:status= " << status << std::endl;
+
     TcpClientCtx* theclass = (TcpClientCtx*)handle->handle->data;
     CTCPClient* parent = (CTCPClient*)theclass->parent_server;
     if (status) {
         parent->m_nConnectStatus = CONNECT_ERROR;
         *(parent->m_strErrMsg) = GetUVError(status);
-        // // LOGI("client(" << parent << ") connect error:" << parent->errmsg_);
+        // LOGI("client(" << parent << ") connect error:" << parent->errmsg_);
         fprintf(stdout, "connect error:%s\n", parent->m_strErrMsg->c_str());
         if (parent->m_bIsReconnecting) {//reconnect failure, restart timer to trigger reconnect.
             uv_timer_stop(&parent->m_timerReconnet);
@@ -194,7 +200,7 @@ void CTCPClient::AfterConnect(uv_connect_t* handle, int status)
     int iret = uv_read_start(handle->handle, AllocBufferForRecv, AfterRecv);
     if (iret) {
         *(parent->m_strErrMsg) = GetUVError(status);
-        // // LOGI("client(" << parent << ") uv_read_start error:" << parent->errmsg_);
+        // LOGI("client(" << parent << ") uv_read_start error:" << parent->errmsg_);
         fprintf(stdout, "uv_read_start error:%s\n", parent->m_strErrMsg->c_str());
         parent->m_nConnectStatus = CONNECT_ERROR;
     } else {
