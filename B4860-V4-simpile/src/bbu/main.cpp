@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 	if(!server.Start("0.0.0.0", 30000)) {
 		fprintf(stdout,"Start Server error:%s\n",server.GetLastErrMsg());
 	}
-	//server.SetKeepAlive(1,60);//enable Keepalive, 60s
+	server.SetKeepAlive(1,60);//enable Keepalive, 60s
 	//fprintf(stdout,"server return on main.\n");
 
 	ServerCenter serverCenter;

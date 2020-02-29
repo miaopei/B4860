@@ -34,5 +34,3 @@ USER_CC_FLAG =  $(PIC) -std=c++11
 #8、包含统一文件，用来定义编译环境，不要更改
 include $(WORK_ROOT)/mk_inc/rules.mak
 
-
-

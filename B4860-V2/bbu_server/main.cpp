@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     Server server(loop);
 
     // 心跳超时
-    // server.setTimeout(40);
+    server.setTimeout(40);
     server.bindAndListen(addr);
 
 #if 0
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     });
 #endif
 
-#if 1
+#if 0
     // server 发消息到 client
     server.setMessageCallback(
         [](uv::TcpConnectionPtr conn, const char* data, ssize_t size)

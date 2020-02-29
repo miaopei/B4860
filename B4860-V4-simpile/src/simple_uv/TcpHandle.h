@@ -70,7 +70,7 @@ protected:
 	uv_async_t m_asyncHandle;
 	uv_async_t m_asyncHandleForRecvMsg;
 	uv_tcp_t m_tcpHandle;
-	uv_loop_t m_loop;
+	uv_loop_t* m_loop;
 	std::string *m_strErrMsg;
 	uv_mutex_t m_mutexClients;  //clients map mutex
 

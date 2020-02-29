@@ -25,13 +25,13 @@ before:
 	test -d $(TARDIR) || mkdir -p $(TARDIR)
 
 $(TAG): $(OBJ1) $(OBJ2)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(INC) $(LIB) $^ -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(INC) $^ -o $@ $(LIB) 
 
 $(OBJDIR)/%.o: $(SRC)%.cpp
-	$(CC) -c $(CFLAGS) $(INC) $(LIB) $< -o $@
+	$(CC) -c $(CFLAGS) $(INC) $< -o $@ $(LIB) 
 
 $(OBJDIR)/%.o: %.cpp
-	$(CC) -c $(CFLAGS) $(INC) $(LIB) $< -o $@
+	$(CC) -c $(CFLAGS) $(INC) $< -o $@ $(LIB) 
 
 .PHONY:clean
 clean:

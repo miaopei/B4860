@@ -1,4 +1,4 @@
-prefix=/home/miaopei/workdir/4860-IR/B4860/B4860-V4-simpile/src/openssl
+prefix=/home/miaow/workdir/B4860/B4860-V4-simpile/src/openssl
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include

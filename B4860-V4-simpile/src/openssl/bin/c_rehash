@@ -6,8 +6,8 @@
 
 my $openssl;
 
-my $dir = "/home/miaopei/workdir/4860-IR/B4860/B4860-V4-simpile/src/openssl/ssl";
-my $prefix = "/home/miaopei/workdir/4860-IR/B4860/B4860-V4-simpile/src/openssl";
+my $dir = "/home/miaow/workdir/B4860/B4860-V4-simpile/src/openssl/ssl";
+my $prefix = "/home/miaow/workdir/B4860/B4860-V4-simpile/src/openssl";
 
 if(defined $ENV{OPENSSL}) {
 	$openssl = $ENV{OPENSSL};

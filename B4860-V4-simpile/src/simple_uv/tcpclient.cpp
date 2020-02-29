@@ -42,7 +42,7 @@ bool CTCPClient::init()
 		m_handleClient->packet_->SetPacketCB(GetPacket, m_handleClient);
 		m_handleClient->packet_->Start(m_cPacketHead, m_cPacketTail);
 
-		int iret = uv_timer_init(&m_loop, &m_timerReconnet);
+		int iret = uv_timer_init(m_loop, &m_timerReconnet);
 		if (iret) {
 			*m_strErrMsg = GetUVError(iret);
 			// // LOGI(errmsg_);
@@ -62,7 +62,7 @@ void CTCPClient::closeinl()
         return;
     }
     StopReconnect();
-    uv_walk(&m_loop, CloseWalkCB, this);
+    uv_walk(m_loop, CloseWalkCB, this);
     // LOGI("client(" << this << ")close");
 }
 
@@ -99,6 +99,7 @@ bool CTCPClient::Connect(const char* ip, int port)
         // LOGI(errmsg_);
         return false;
     }
+    std::cout << "miaow:0:Connect:uv_tcp_connect:" << std::endl;
 
     //LOGI("client(" << this << ")start connect to server(" << ip << ":" << port << ")");
     iret = uv_thread_create(&m_threadConnect, ConnectThread, this);//thread to wait for succeed connect.
@@ -107,7 +108,7 @@ bool CTCPClient::Connect(const char* ip, int port)
         // LOGI(errmsg_);
         return false;
     }
-    std::cout << "3:m_nConnectStatus=" << m_nConnectStatus << std::endl;
+    std::cout << "miaow:1:Connect:uv_thread_create:" << std::endl;
     int wait_count = 0;
     while (m_nConnectStatus == CONNECT_DIS) {
         ThreadSleep(100);
@@ -116,8 +117,7 @@ bool CTCPClient::Connect(const char* ip, int port)
             break;
         }
     }
-    std::cout << "4:m_nConnectStatus=" << m_nConnectStatus << std::endl;
-    return true;
+    std::cout << "miaow:5:m_nConnectStatus=" << m_nConnectStatus << std::endl;
     if (CONNECT_FINISH != m_nConnectStatus) {
         *m_strErrMsg = "connect time out";
         return false;
@@ -174,8 +174,14 @@ bool CTCPClient::Connect6(const char* ip, int port)
 
 void CTCPClient::ConnectThread(void* arg)
 {
+    std::cout << "miaow:2:ConnectThread:" << std::endl;
     CTCPClient* pclient = (CTCPClient*)arg;
-    pclient->run();
+    if(pclient->run(UV_RUN_DEFAULT))
+    {
+        std::cout << "miaow:4:ConnectThread: run success" << std::endl;
+    } else {
+        std::cout << "miaow:4:ConnectThread: run failure" << std::endl;
+    }
 }
 
 void CTCPClient::AfterConnect(uv_connect_t* handle, int status)
@@ -426,7 +432,7 @@ void CTCPClient::ReconnectTimer(uv_timer_t* handle)
 		int iret = 0; 
 		if (theclass->m_bTcpHandleClosed)
 		{
-			iret = uv_tcp_init(&theclass->m_loop, &theclass->m_handleClient->tcphandle);
+			iret = uv_tcp_init(theclass->m_loop, &theclass->m_handleClient->tcphandle);
 			theclass->m_bTcpHandleClosed = false;
 		}
 

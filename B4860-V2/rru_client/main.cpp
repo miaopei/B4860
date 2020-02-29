@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
     });
 #endif
 
-#if 0
+#if 1
     client.setMessageCallback(
         [&client](const char* data, ssize_t size)
     {
@@ -134,14 +134,15 @@ int main(int argc, char* argv[])
             return;
         
         msg = "RRU Client send msg: " + msg;
-        uv::Packet packet;
-        packet.pack(msg.c_str(), msg.length());
+        //uv::Packet packet;
+        //packet.pack(msg.c_str(), msg.length());
 
-        client.write(packet.Buffer().c_str(), packet.PacketSize());
+        //client.write(packet.Buffer().c_str(), packet.PacketSize());
+        client.write(msg.c_str(), msg.length());
     });
 #endif    
 
-#if 1
+#if 0
     // client 发消息到server处理
     client.setConnectStatusCallback(
         [&client](uv::TcpClient::ConnectStatus status)

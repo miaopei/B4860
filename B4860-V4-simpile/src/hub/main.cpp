@@ -16,9 +16,9 @@ void OnInstanceExit()
 
 int main(int argc, char** argv)
 {
-    ::atexit(OnInstanceExit);
+    //::atexit(OnInstanceExit);
 
-    CLogMng::GetInstance();
+    //CLogMng::GetInstance();
 
     if (argc != 3) {
         fprintf(stdout, "usage: %s server_ip_address clientcount\neg.%s 192.168.1.1 50\n", argv[0], argv[0]);

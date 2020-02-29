@@ -51,7 +51,7 @@ void CTCPServer::closeinl()
 		auto data = it->second;
 		data->Close();
 	}
-	uv_walk(&m_loop, CloseWalkCB, this);//close all handle in loop
+	uv_walk(m_loop, CloseWalkCB, this);//close all handle in loop
 	//    // LOGI("close server");
 }
 /*
@@ -235,7 +235,7 @@ void CTCPServer::AcceptConnection(uv_stream_t* server, int status)
 		tcpsock->m_listAvaiTcpHandle.pop_front();
 		tmptcp->parent_acceptclient = NULL;
 	}
-	int iret = uv_tcp_init(&tcpsock->m_loop, &tmptcp->tcphandle);
+	int iret = uv_tcp_init(tcpsock->m_loop, &tmptcp->tcphandle);
 	if (iret) {
 		tcpsock->m_listAvaiTcpHandle.push_back(tmptcp);//Recycle
 		*(tcpsock->m_strErrMsg) = GetUVError(iret);
@@ -262,7 +262,7 @@ void CTCPServer::AcceptConnection(uv_stream_t* server, int status)
 		// LOGE(tcpsock->errmsg_);
 		return;
 	}
-	AcceptClient* cdata = new AcceptClient(tmptcp, clientid, tcpsock->m_cPacketHead, tcpsock->m_cPacketTail, &tcpsock->m_loop); //delete on SubClientClosed
+	AcceptClient* cdata = new AcceptClient(tmptcp, clientid, tcpsock->m_cPacketHead, tcpsock->m_cPacketTail, tcpsock->m_loop); //delete on SubClientClosed
 	cdata->SetClosedCB(CTCPServer::SubClientClosed, tcpsock);
 	uv_mutex_lock(&tcpsock->m_mutexClients);
 	tcpsock->m_mapClientsList->insert(std::make_pair(clientid, cdata)); //add accept client

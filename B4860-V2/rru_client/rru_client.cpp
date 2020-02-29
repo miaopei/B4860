@@ -41,7 +41,7 @@ void Client::reConnect()
 
 void Client::sendTestMessage()
 {
-    char data[1024] = "test message";
+    char data[1024] = "RRU Client connected!";
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         write(data, (int)sizeof(data));

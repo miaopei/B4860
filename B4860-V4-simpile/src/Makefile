@@ -22,8 +22,9 @@ uv:
 	cd $(WORK_ROOT)/src/hub && make clean && make
 	
 
+.PHONY: clean
 clean:
-	cd $(WORK_ROOT)/src/simple_uv && make clean
-	cd $(WORK_ROOT)/src/bbu && make clean
-	cd $(WORK_ROOT)/src/hub && make clean
-	cd $(WORK_ROOT)/bin && [ -d "log" ] && rm -rf log
+	@cd $(WORK_ROOT)/src/simple_uv && make clean
+	@cd $(WORK_ROOT)/src/bbu && make clean
+	@cd $(WORK_ROOT)/src/hub && make clean
+	@cd $(WORK_ROOT)/bin && [ -d "log" ] && rm -rf log

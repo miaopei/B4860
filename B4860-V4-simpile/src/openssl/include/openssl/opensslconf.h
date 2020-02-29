@@ -85,8 +85,8 @@
 
 #if !(defined(VMS) || defined(__VMS)) /* VMS uses logical names instead */
 #if defined(HEADER_CRYPTLIB_H) && !defined(OPENSSLDIR)
-#define ENGINESDIR "/home/miaopei/workdir/4860-IR/B4860/B4860-V4-simpile/src/openssl/lib/engines"
-#define OPENSSLDIR "/home/miaopei/workdir/4860-IR/B4860/B4860-V4-simpile/src/openssl/ssl"
+#define ENGINESDIR "/home/miaow/workdir/B4860/B4860-V4-simpile/src/openssl/lib/engines"
+#define OPENSSLDIR "/home/miaow/workdir/B4860/B4860-V4-simpile/src/openssl/ssl"
 #endif
 #endif
 

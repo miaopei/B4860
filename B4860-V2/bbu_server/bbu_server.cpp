@@ -26,7 +26,7 @@ void Server::newMessage(shared_ptr<TcpConnection> connection, const char* buf, s
 #if 1
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
-        string msg = "666";
+        string msg = "666888";
         connection->write(msg.c_str(), msg.length(), nullptr);
         //connection->write(buf, size, nullptr);
     } else {
@@ -46,3 +46,7 @@ void Server::newMessage(shared_ptr<TcpConnection> connection, const char* buf, s
 #endif
 }
 
+void Server::SendMsg(const char* buf, ssize_t size)
+{
+    
+}

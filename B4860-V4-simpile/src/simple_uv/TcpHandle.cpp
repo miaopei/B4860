@@ -6,7 +6,7 @@
 #include "UVMsgFraming.h"
 #include "UVThreadMng.h"
 #include "LogMng.h"
-
+#include <iostream>
 
 CTCPHandle::CTCPHandle()
 	: m_bIsClosed(true)
@@ -17,7 +17,8 @@ CTCPHandle::CTCPHandle()
 	m_nTcpHandle = 1;
 	CLogMng::GetInstance();
 	m_strErrMsg = new std::string;
-	int iret = uv_loop_init(&m_loop);
+	m_loop = uv_default_loop();
+	int iret = uv_loop_init(m_loop);
 	if (iret) {
 		*m_strErrMsg = GetUVError(iret);
 		fprintf(stdout, "init loop error: %s\n", m_strErrMsg->c_str());
@@ -33,7 +34,7 @@ CTCPHandle::CTCPHandle()
 CTCPHandle::~CTCPHandle(void)
 {
 	uv_mutex_destroy(&m_mutexClients);
-	uv_loop_close(&m_loop);
+	uv_loop_close(m_loop);
 }
 
 void  CTCPHandle::Close()
@@ -70,7 +71,8 @@ bool CTCPHandle::init()
 	if (!m_bIsClosed) {
 		return true;
 	}
-	int iret = uv_async_init(&m_loop, &m_asyncHandle, AsyncCloseCB);
+	m_loop = uv_default_loop();
+	int iret = uv_async_init(m_loop, &m_asyncHandle, AsyncCloseCB);
 	if (iret) {
 		*m_strErrMsg = GetUVError(iret);
 		//        // LOGE(errmsg_);
@@ -78,12 +80,12 @@ bool CTCPHandle::init()
 	}
 	m_asyncHandle.data = this;
 
-	uv_async_init(&m_loop, &m_asyncHandleForRecvMsg, AsyncRecvMsg);
+	uv_async_init(m_loop, &m_asyncHandleForRecvMsg, AsyncRecvMsg);
 	m_asyncHandleForRecvMsg.data = this;
 
 	CUVThreadMng::GetInstance()->RegistHandle(&m_asyncHandleForRecvMsg, this);
 
-	iret = uv_tcp_init(&m_loop, &m_tcpHandle);
+	iret = uv_tcp_init(m_loop, &m_tcpHandle);
 	if (iret) {
 		*m_strErrMsg = GetUVError(iret);
 		//        // LOGE(errmsg_);
@@ -123,13 +125,16 @@ void CTCPHandle::closeinl()
 
 bool CTCPHandle::run(int status /*= UV_RUN_DEFAULT*/)
 {
-	int iret = uv_run(&m_loop, (uv_run_mode)status);
+	std::cout << "miaow:3:CTCPHandle::run:status=" << status << std::endl;
+
+	int iret = uv_run(m_loop, (uv_run_mode)status);
 	if (iret) {
 		*m_strErrMsg = GetUVError(iret);
-		
+		std::cout << "miaow:3:CTCPHandle::run: test1" << std::endl;
 		this->OnExit();
 		return false;
 	}
+	std::cout << "miaow:3:CTCPHandle::run: test2" << std::endl;
 	this->OnExit();
 	return true;
 }
