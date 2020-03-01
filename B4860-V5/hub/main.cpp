@@ -57,63 +57,7 @@ int main(int argc, char* argv[])
 
 #endif
 
-#if 0
-    // client 接收 server 消息
-    client.setMessageCallback(
-        [&client](const char* data, ssize_t size)
-    {
-        std::cout << std::string(data, size) << std::endl;
-
-        std::string str = std::string(data, size);
-        int pos = str.find(':');
-        str = str.substr(pos+1);
-        str = ClearHeadTailSpace(str);
-
-        std::cout << "sbustr: " << str;
-        std::cout << " sizeof: " << str.length() << '\n' << std::endl;
-
-        string msg = "HUB recv msg: ";
-        msg += str;
-        client.write(msg.c_str(), msg.length());
-        //client.write(str.c_str(), str.length());
-    });
-#endif
-
-#if 0
-    // client 发消息到server处理
-    client.setConnectStatusCallback(
-        [&client](uv::TcpClient::ConnectStatus status)
-    {
-        if(status == uv::TcpClient::ConnectStatus::OnConnectSuccess)
-        {
-            while(1)
-            {
-                int c, i = 0;
-                string msg;
-
-                std::cout << "HUB Client msg: ";
-                do {
-                    c = getchar();
-                    if(c == '\n')
-                        break;
-                    msg += c;
-                    i++;
-                } while(1);
-
-                msg = "HUB Client send msg: " + msg;
-                uv::Packet packet;
-                packet.pack(msg.c_str(), msg.length());
-
-                client.write(packet.Buffer().c_str(), packet.PacketSize());
-                //client.onMessage(conn, packet.Buffer().c_str(), packet.PacketSize());
-            }
-        } else {
-            std::cout << "Error: HUB Client connect to server fail" << std::endl;
-        }
-    });
-#endif
-
-#if 0
+#if 1
     client.setMessageCallback(
         [&client](const char* data, ssize_t size)
     {
@@ -141,47 +85,6 @@ int main(int argc, char* argv[])
         client.write(msg.c_str(), msg.length());
     });
 #endif    
-
-#if 0
-    // client 发消息到server处理
-    client.setConnectStatusCallback(
-        [&client](uv::TcpClient::ConnectStatus status)
-    {
-        if(status == uv::TcpClient::ConnectStatus::OnConnectSuccess)
-        {
-            string msg;
-            msg = "HUB Client Connet  msg: 123abc";
-
-            uv::Packet packet;
-            packet.pack(msg.c_str(), msg.length());
-            client.write(packet.Buffer().c_str(), packet.PacketSize());
-        } else {
-            std::cout << "Error: HUB Client connect to server fail" << std::endl;
-        }
-    });
-
-#endif
-
-#if 0
-    client.setMessageCallback(
-        [&client](const char* data, ssize_t size)
-    {
-        std::cout << std::string(data, size) << std::endl;
-        if(std::string(data, size) == "666")
-        {
-            std::cout << "very six" << std::endl;
-            return;
-        } else {
-            string msg;
-            msg = "HUB Client send msg: HUB Client Send Msg";
-            //msg = "HUB Client Send Msg";
-
-            uv::Packet packet;
-            packet.pack(msg.c_str(), msg.length());
-            client.write(packet.Buffer().c_str(), packet.PacketSize());
-        }
-    });
-#endif 
 
     client.connectToServer(addr);
     loop->run();

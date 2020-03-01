@@ -37,112 +37,22 @@ int main(int argc, char *argv[])
     Server server(loop);
 
     // 心跳超时
-    // server.setTimeout(40);
+    //server.setTimeout(40);
     server.bindAndListen(addr);
 
-#if 0
-    // client 发消息到server处理
-    server.setMessageCallback(
-        [](uv::TcpConnectionPtr conn, const char* data, ssize_t size)
-    {
-        std::cout << std::string(data, size) << std::endl;
-
-        std::string str = std::string(data, size);
-        int pos = str.find(':');
-        str = str.substr(pos+1);
-        str = ClearHeadTailSpace(str);
-
-        std::cout << "sbustr: " << str;
-        std::cout << " sizeof: " << str.length() << '\n' << std::endl;
-
-        conn->write(str.c_str(), str.length(), nullptr);
-        //conn->write(data, size, nullptr);
-        //string msg = "BBU Server Send Message...";
-        //conn->write(msg.c_str(), msg.length(), nullptr);
-    });
-#endif
-
-#if 0
+#if 1
     // server 发消息到 client
     server.setMessageCallback(
-        [](uv::TcpConnectionPtr conn, const char* data, ssize_t size)
+        [&server](uv::TcpConnectionPtr conn, const char* data, ssize_t size)
     {
-        //while(1)
-        {
-            std::cout << std::string(data, size) << '\n' << std::endl;
-#if 0
-            int c, i = 0;
-            string msg;
+        std::cout << std::string(data, size) << '\n' << std::endl;
+        string sendmsg = "BBU Server send msg all client.";
+        server.SendMsg(sendmsg.c_str(), sendmsg.length());
 
-            std::cout << "BBU send msg: ";
-            do {
-                c = getchar();
-                if(c == '\n')
-                    break;
-                msg += c;
-                i++;
-            } while(1);
-#endif
-            string msg = "123abc";
-            msg = "BBU Server send msg: " + msg;
-            uv::Packet packet;
-            packet.pack(msg.c_str(), msg.length());
 
-            conn->writeInLoop(packet.Buffer().c_str(), packet.PacketSize(), nullptr);
-        }
     });
 #endif
-
-#if 0
-    // server 发消息到 client
-    server.setMessageCallback(
-        [](uv::TcpConnectionPtr conn, const char* data, ssize_t size)
-    {
-        std::cout << std::string(data, size) << std::endl;
-
-        std::string str = std::string(data, size);
-        int pos = str.find(':');
-        str = str.substr(pos+1);
-        str = ClearHeadTailSpace(str);
-        std::cout << "sbustr: " << str;
-        std::cout << " sizeof: " << str.length() << '\n' << std::endl;
-
-        if(str == "HUB Client Send Msg")
-        {
-            std::cout << "BBU Recve HUB Msg" << std::endl;
-            return;
-        } else {
-            string msg = "123abc456";
-            msg = "BBU Server send msg: " + msg;
-            uv::Packet packet;
-            packet.pack(msg.c_str(), msg.length());
-
-            conn->writeInLoop(packet.Buffer().c_str(), packet.PacketSize(), nullptr);
-        }
-     });
-#endif
-
-#if 0
-    vector<uv::TcpConnectionPtr> it; 
-    server.getAllConnection(it);
-
-    for(auto conn = it.begin(); conn != it.end(); conn++)
-    {
-        string msg = "BBU server send test msg";
-        conn->write(msg.c_str(), msg.length(), nullptr);
-        //std::cout << "conn: " << *conn << std::endl; 
-    }
-#endif
-
-#if 0 
-    uv::Timer timer(loop, 1000, 1000,
-        [&server](uv::Timer*)
-    {
-        std::cout << "timer callback test..." << std::endl;
-    });
-    timer.start();
-#endif
-
+    
     loop->run();
 
     return 0;

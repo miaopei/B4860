@@ -29,8 +29,6 @@ void Server::newMessage(shared_ptr<TcpConnection> connection, const char* buf, s
         string msg = "666";
         connection->write(msg.c_str(), msg.length(), nullptr);
 
-        msg = "BBU Server send msg to all client: " + msg;
-        SendMsg(msg.c_str(), msg.length());
         //connection->write(buf, size, nullptr);
     } else {
         Packet packet;

@@ -13,7 +13,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include "rru_client.h"
+#include "hub_client.h"
 
 using namespace uv;
 using namespace std;
@@ -45,13 +45,13 @@ int main(int argc, char* argv[])
     {
         if(status == uv::TcpClient::ConnectStatus::OnConnectSuccess)
         {
-            string msg = "RRU Client connect...";
+            string msg = "HUB Client connect...";
             uv::Packet packet;
             packet.pack(msg.c_str(), msg.length());
 
             client.write(packet.Buffer().c_str(), packet.PacketSize());
         } else {
-            std::cout << "Error: RRU Client connect to server fail" << std::endl;
+            std::cout << "Error: HUB Client connect to server fail" << std::endl;
         }
     });
 
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
         std::cout << "sbustr: " << str;
         std::cout << " sizeof: " << str.length() << '\n' << std::endl;
 
-        string msg = "RRU recv msg: ";
+        string msg = "HUB recv msg: ";
         msg += str;
         client.write(msg.c_str(), msg.length());
         //client.write(str.c_str(), str.length());
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
                 int c, i = 0;
                 string msg;
 
-                std::cout << "RRU Client msg: ";
+                std::cout << "HUB Client msg: ";
                 do {
                     c = getchar();
                     if(c == '\n')
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
                     i++;
                 } while(1);
 
-                msg = "RRU Client send msg: " + msg;
+                msg = "HUB Client send msg: " + msg;
                 uv::Packet packet;
                 packet.pack(msg.c_str(), msg.length());
 
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
                 //client.onMessage(conn, packet.Buffer().c_str(), packet.PacketSize());
             }
         } else {
-            std::cout << "Error: RRU Client connect to server fail" << std::endl;
+            std::cout << "Error: HUB Client connect to server fail" << std::endl;
         }
     });
 #endif
@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
         int c, i = 0;
         string msg;
 
-        std::cout << "RRU Client msg: ";
+        std::cout << "HUB-2 Client msg: ";
         do {
             c = getchar();
             if(c == '\n')
@@ -133,15 +133,16 @@ int main(int argc, char* argv[])
         if(msg.empty())
             return;
         
-        msg = "RRU Client send msg: " + msg;
-        uv::Packet packet;
-        packet.pack(msg.c_str(), msg.length());
+        msg = "HUB-2 Client send msg: " + msg;
+        //uv::Packet packet;
+        //packet.pack(msg.c_str(), msg.length());
 
-        client.write(packet.Buffer().c_str(), packet.PacketSize());
+        //client.write(packet.Buffer().c_str(), packet.PacketSize());
+        client.write(msg.c_str(), msg.length());
     });
 #endif    
 
-#if 1
+#if 0
     // client 发消息到server处理
     client.setConnectStatusCallback(
         [&client](uv::TcpClient::ConnectStatus status)
@@ -149,16 +150,38 @@ int main(int argc, char* argv[])
         if(status == uv::TcpClient::ConnectStatus::OnConnectSuccess)
         {
             string msg;
-            msg = "RRU Client send msg: qwe456";
+            msg = "HUB Client Connet  msg: 123abc";
 
             uv::Packet packet;
             packet.pack(msg.c_str(), msg.length());
             client.write(packet.Buffer().c_str(), packet.PacketSize());
         } else {
-            std::cout << "Error: RRU Client connect to server fail" << std::endl;
+            std::cout << "Error: HUB Client connect to server fail" << std::endl;
         }
     });
+
 #endif
+
+#if 0
+    client.setMessageCallback(
+        [&client](const char* data, ssize_t size)
+    {
+        std::cout << std::string(data, size) << std::endl;
+        if(std::string(data, size) == "666")
+        {
+            std::cout << "very six" << std::endl;
+            return;
+        } else {
+            string msg;
+            msg = "HUB Client send msg: HUB Client Send Msg";
+            //msg = "HUB Client Send Msg";
+
+            uv::Packet packet;
+            packet.pack(msg.c_str(), msg.length());
+            client.write(packet.Buffer().c_str(), packet.PacketSize());
+        }
+    });
+#endif 
 
     client.connectToServer(addr);
     loop->run();

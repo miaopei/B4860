@@ -1,39 +1,34 @@
-TARGET = hub_client
-WORKDIR = ./
+PWD=`pwd`
+
+WORK_ROOT = $(PWD)
+
+BUILD_DIR = $(WORK_ROOT)/../build
+INCLUDE_DIR = $(BUILD_DIR)/include/bbu
+LIB_DIR = $(BUILD_DIR)/lib
+BIN_DIR = $(BUILD_DIR)/bin
+
+TARGET = hub
 
 CC = g++
-CFLAGS = -Wall -std=c++11
-INC = -I../src/
-LIB = -luv
-LDFLAGS = -pthread 
+CFLAGS = -Wall -std=c++11 
+USER_LINK_INC = -I$(INCLUDE_DIR)
+USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -Wl,-rpath,$(LIB_DIR)
 
-OBJDIR = $(WORKDIR)/$(TARGET)/obj
-TARDIR = $(WORKDIR)/$(TARGET)/bin
+SOURCE = $(wildcard *.cpp)
+OBJECTS = $(SOURCE:.cpp=.o)
 
-TAG = $(TARDIR)/$(TARGET)
+all: $(TARGET)
+	@echo "[build hub ...]"		
+	@mv $(TARGET) $(BIN_DIR)
 
-SRC1 = $(wildcard ../src/*.cpp)
-SRC2 = $(wildcard ./*.cpp)
-OBJ1 = $(patsubst %.cpp, $(OBJDIR)/%.o, $(notdir $(SRC1)))
-OBJ2 = $(patsubst %.cpp, $(OBJDIR)/%.o, $(notdir $(SRC2)))
-SRC = ../src/
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) $(USER_LINK_INC) $^ -o $@ $(USER_LINK_LIB) 
 
-all: before $(TAG)
-		
-before:
-	test -d $(OBJDIR) || mkdir -p $(OBJDIR)
-	test -d $(TARDIR) || mkdir -p $(TARDIR)
-
-$(TAG): $(OBJ1) $(OBJ2)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(INC) $^ -o $@ $(LIB) 
-
-$(OBJDIR)/%.o: $(SRC)%.cpp
-	$(CC) -c $(CFLAGS) $(INC) $< -o $@ $(LIB) 
-
-$(OBJDIR)/%.o: %.cpp
-	$(CC) -c $(CFLAGS) $(INC) $< -o $@ $(LIB) 
+%.o: %.cpp
+	$(CC) -c $(CFLAGS) $(USER_LINK_INC) $< -o $@ $(USER_LINK_LIB) 
 
 .PHONY:clean
 clean:
-	rm -rf $(TARGET)
+	@echo "[Cleanning hub ...]"
+	@rm -rf $(OBJECTS)
 

@@ -1,13 +1,14 @@
 /*************************************************************************
-	> File Name: rru_client.cpp
+	> File Name: hub_client.cpp
 	> Author: miaopei
 	> Mail: miaopei@baicells.com 
 	> Created Time: 2020年02月12日 星期三 11时16分50秒
  ************************************************************************/
 
 #include <iostream>
+#include <string.h>
 
-#include "rru_client.h"
+#include "hub_client.h"
 
 using namespace uv;
 using namespace std;
@@ -41,7 +42,7 @@ void Client::reConnect()
 
 void Client::sendTestMessage()
 {
-    char data[1024] = "test message";
+    char data[1024] = "HUB-3 Client connected!";
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         write(data, (int)sizeof(data));
@@ -64,7 +65,7 @@ void Client::onConnect(ConnectStatus status)
 
 void Client::newMessage(const char* buf, ssize_t size)
 {
-    std::cout << "RRU newMessage: " << std::string(buf, size) << std::endl;
+    std::cout << "HUB-3 newMessage: " << std::string(buf, size) << std::endl;
 
 #if 0
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
