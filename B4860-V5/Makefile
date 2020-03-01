@@ -15,6 +15,7 @@ LD_LIBRARY_PATH = $(LIB_DIR)
 all: before bbu
 	@echo "[build done ...]"
 	@make -C $(WORK_ROOT)/hub
+	@make -C $(WORK_ROOT)/hub-2
 
 before:
 	@test -d $(BUILD_DIR) || mkdir -p $(BUILD_DIR)

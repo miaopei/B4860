@@ -143,6 +143,51 @@ int main(int argc, char* argv[])
 #endif    
 
 #if 0
+    client.setMessageCallback(
+        [&client](const char* data, ssize_t size)
+    {
+        std::cout << std::string(data, size) << std::endl;
+        int c, i = 0;
+        string msg;
+        if(std::string(data, size) == "666")
+        {
+            return;
+        }
+ 
+        msg = "HUB-2 Client send msg: 111";
+        //uv::Packet packet;
+        //packet.pack(msg.c_str(), msg.length());
+
+        //client.write(packet.Buffer().c_str(), packet.PacketSize());
+        client.write(msg.c_str(), msg.length());
+    
+    });
+#endif    
+
+#if 0
+    client.setMessageCallback(
+        [&client](const char* data, ssize_t size)
+    {
+        std::cout << std::string(data, size) << std::endl;
+        int c, i = 0;
+        string msg;
+
+        if(std::string(data, size) == "666")
+        {
+            return;
+        }
+        
+        msg = "HUB-2 Client send msg: 222";
+        //uv::Packet packet;
+        //packet.pack(msg.c_str(), msg.length());
+
+        //client.write(packet.Buffer().c_str(), packet.PacketSize());
+        client.write(msg.c_str(), msg.length());
+        return;
+    });
+#endif  
+
+#if 0
     // client 发消息到server处理
     client.setConnectStatusCallback(
         [&client](uv::TcpClient::ConnectStatus status)
@@ -182,8 +227,44 @@ int main(int argc, char* argv[])
         }
     });
 #endif 
-
     client.connectToServer(addr);
+
+#if 0
+    string msg = "This is hub-2 write";
+    client.writeInLoop(msg.c_str(), msg.length(),
+        [](uv::WriteInfo& info)
+    {
+        if(0 != info.status)
+        {
+            std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
+        }
+        delete[] info.buf;
+    });
+#endif
+
+#if  1
+    //跨线程发送数据
+    std::thread thread([&client]()
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        char* data = new char[4] {'t','e','s','t'};
+       
+        //线程安全;
+        client.writeInLoop(data,sizeof(data),
+            [](uv::WriteInfo& info)
+        {
+            //数据需要在发生完成回调中释放
+            //write message error.
+            if (0 != info.status)
+            {
+                //打印错误信息
+                std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
+            }
+            delete[] info.buf;
+        });
+    });
+#endif
+
     loop->run();
 
     return 0;

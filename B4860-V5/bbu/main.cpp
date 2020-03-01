@@ -40,16 +40,16 @@ int main(int argc, char *argv[])
     //server.setTimeout(40);
     server.bindAndListen(addr);
 
-#if 1
+#if 0
     // server 发消息到 client
     server.setMessageCallback(
         [&server](uv::TcpConnectionPtr conn, const char* data, ssize_t size)
     {
         std::cout << std::string(data, size) << '\n' << std::endl;
-        string sendmsg = "BBU Server send msg all client.";
-        server.SendMsg(sendmsg.c_str(), sendmsg.length());
-
-
+        //string sendmsg = "BBU Server send msg all client.";
+        string sendmsg = "666";
+        //server.SendMsg(sendmsg.c_str(), sendmsg.length());
+        conn->write(sendmsg.c_str(), sendmsg.length(), nullptr);
     });
 #endif
     
