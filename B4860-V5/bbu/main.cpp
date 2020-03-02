@@ -56,6 +56,11 @@ int main(int argc, char *argv[])
     string sendmsg = "666";
     server.SendMsg(sendmsg.c_str(), sendmsg.length());
 
+    uv::Packet packet;
+    packet.pack(sendmsg.c_str(), sendmsg.length());
+    std::cout << "data=" << packet.getData() << std::endl;
+    std::cout << "size=" << packet.DataSize() << std::endl;
+
 #if 0
     //跨线程发送数据
     std::thread thread([&server]()

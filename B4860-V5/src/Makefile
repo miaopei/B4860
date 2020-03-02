@@ -23,8 +23,6 @@ OBJECTS = $(SOURCE:.cpp=.o)
 
 all: $(TARGET).so
 	@echo "[build libbbu ...]"
-	@rm $(LIB_DIR)/$(TARGET).so
-	@rm -rf $(BBU_INCLUDE_DIR)
 	@mv $(TARGET).so $(LIB_DIR)
 	@test -d $(BBU_INCLUDE_DIR) || mkdir -p $(BBU_INCLUDE_DIR)
 	@cp -rf include/* $(BBU_INCLUDE_DIR)

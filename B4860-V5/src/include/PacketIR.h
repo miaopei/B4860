@@ -8,30 +8,30 @@ Last modified: 2018-7-18
 Description: https://github.com/wlgq2/uv-cpp
 */
 
-#ifndef  UV_PACKET_H
-#define  UV_PACKET_H
+#ifndef  UV_PACKETIR_H
+#define  UV_PACKETIR_H
 
 #include <string>
 #include "PacketBuffer.h"
-//Packet:
-//------------------------------------------------
-//  head  |  size   | data   |  end   |
-// 1 byte | 2 bytes | N bytes| 1 byte |
-//------------------------------------------------
-//
+
+//PacketIR:
+//----------------------------------------------------------------------------
+//  head  |  msgID  |  type  |  RRUID   |  length  |  data  |  end   |
+// 1 Byte | 4 Byte  | 1 Byte |  8 Byte  |  2 Byte  | N Byte | 1 Byte |
+//----------------------------------------------------------------------------
 
 namespace uv
 {
 
-class Packet
+class PacketIR
 {
 public:
-    Packet();
-    ~Packet();
+    PacketIR();
+    ~PacketIR();
 
-    static int readFromBuffer(PacketBuffer*, Packet&);
+    static int readFromBuffer(PacketBuffer*, PacketIR&);
 
-    void pack(const char* data, uint16_t size);
+    void pack(const char* msgID, const char* type, const char* RRUID, const char* data, uint16_t size);
 
     const char* getData();
     const uint16_t DataSize();
@@ -64,11 +64,11 @@ private:
 };
 
 template<typename NumType>
-inline void Packet::UnpackNum(const uint8_t* data, NumType& num)
+inline void PacketIR::UnpackNum(const uint8_t* data, NumType& num)
 {
     num = 0;
     auto size = static_cast<int>(sizeof(NumType));
-    if (Packet::DataMode::BigEndian == Packet::Mode)
+    if (PacketIR::DataMode::BigEndian == PacketIR::Mode)
     {
         for (int i = 0; i < size; i++)
         {
@@ -88,10 +88,10 @@ inline void Packet::UnpackNum(const uint8_t* data, NumType& num)
 }
 
 template<typename NumType>
-inline void Packet::PackNum(char* data, NumType num)
+inline void PacketIR::PackNum(char* data, NumType num)
 {
     int size = static_cast<int>(sizeof(NumType));
-    if (Packet::DataMode::BigEndian == Packet::Mode)
+    if (PacketIR::DataMode::BigEndian == PacketIR::Mode)
     {
         for (int i = size-1; i >= 0; i--)
         {

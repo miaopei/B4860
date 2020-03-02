@@ -8,28 +8,28 @@ Last modified: 2019-10-24
 Description: https://github.com/wlgq2/uv-cpp
 */
 
-#include  "include/Packet.h"
+#include  "include/PacketIR.h"
 
 using namespace uv;
 
 
-uint8_t Packet::HeadByte = 0x7e;
-uint8_t Packet::EndByte = 0xe7;
-Packet::DataMode Packet::Mode = Packet::DataMode::LittleEndian;
+uint8_t PacketIR::HeadByte = 0x7e;
+uint8_t PacketIR::EndByte = 0xe7;
+PacketIR::DataMode PacketIR::Mode = PacketIR::DataMode::LittleEndian;
 
-Packet::Packet()
+PacketIR::PacketIR()
     :buffer_(""),
     dataSize_(0)
 {
 
 }
 
-uv::Packet::~Packet()
+uv::PacketIR::~PacketIR()
 {
 
 }
 
-int uv::Packet::readFromBuffer(PacketBuffer* packetbuf, Packet& out)
+int uv::PacketIR::readFromBuffer(PacketBuffer* packetbuf, PacketIR& out)
 {
     std::string data("");
     while (true)
@@ -69,46 +69,40 @@ int uv::Packet::readFromBuffer(PacketBuffer* packetbuf, Packet& out)
     return 0;
 }
 
-void uv::Packet::pack(const char* data, uint16_t size)
+void uv::PacketIR::pack(const char* msgID, const char* type, const char* RRUID, const char* data, uint16_t size)
 {
     dataSize_ = size;
-    buffer_.resize(size+ PacketMinSize());
-
-    buffer_[0] = HeadByte;
-    PackNum(&buffer_[1],size);
-
-    std::copy(data, data + size, &buffer_[sizeof(HeadByte) + sizeof(dataSize_)]);
-    buffer_.back() = EndByte;
+    
 }
 
-const char* uv::Packet::getData()
+const char* uv::PacketIR::getData()
 {
     return buffer_.c_str()+sizeof(HeadByte)+sizeof(dataSize_);
 }
 
-const uint16_t uv::Packet::DataSize()
+const uint16_t uv::PacketIR::DataSize()
 {
     return dataSize_;
 }
 
-const std::string& uv::Packet::Buffer()
+const std::string& uv::PacketIR::Buffer()
 {
     return buffer_;
 }
 
-const uint32_t uv::Packet::PacketSize()
+const uint32_t uv::PacketIR::PacketSize()
 {
     return (uint32_t)buffer_.size();
 }
 
-void uv::Packet::swap(std::string& str)
+void uv::PacketIR::swap(std::string& str)
 {
     buffer_.swap(str);
     dataSize_ = (uint16_t)(buffer_.size() - PacketMinSize());
 }
 
 
-uint32_t uv::Packet::PacketMinSize()
+uint32_t uv::PacketIR::PacketMinSize()
 {
-    return 4;
+    return 17;
 }
