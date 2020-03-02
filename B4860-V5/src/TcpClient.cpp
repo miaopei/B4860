@@ -9,6 +9,7 @@
 */
 
 #include <string>
+#include <iostream>
 
 #include "include/TcpClient.h"
 #include "include/LogWriter.h"
@@ -181,7 +182,6 @@ PacketBufferPtr uv::TcpClient::getCurrentBuf()
         return connection_->getPacketBuffer();
     return nullptr;
 }
-
 
 void TcpClient::update()
 {

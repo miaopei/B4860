@@ -39,6 +39,7 @@ int main(int argc, char* argv[])
     SocketAddr addr("127.0.0.1", 30000, SocketAddr::Ipv4);
     Client client(loop);
 
+    client.connectToServer(addr);
 #if 0
     client.setConnectStatusCallback(
         [&client](uv::TcpClient::ConnectStatus status)
@@ -172,18 +173,22 @@ int main(int argc, char* argv[])
         int c, i = 0;
         string msg;
 
-        if(std::string(data, size) == "666")
-        {
-            return;
-        }
-        
         msg = "HUB-2 Client send msg: 222";
         //uv::Packet packet;
         //packet.pack(msg.c_str(), msg.length());
 
         //client.write(packet.Buffer().c_str(), packet.PacketSize());
-        client.write(msg.c_str(), msg.length());
-        return;
+        client.write(msg.c_str(), msg.length(),
+            [](uv::WriteInfo& info){
+            //数据需要在发生完成回调中释放
+            //write message error.
+            if (0 != info.status)
+            {
+                //打印错误信息
+                std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
+            }
+            delete[] info.buf;
+        });
     });
 #endif  
 
@@ -227,12 +232,11 @@ int main(int argc, char* argv[])
         }
     });
 #endif 
-    client.connectToServer(addr);
 
 #if 0
     string msg = "This is hub-2 write";
     client.writeInLoop(msg.c_str(), msg.length(),
-        [](uv::WriteInfo& info)
+        [&client](uv::WriteInfo& info)
     {
         if(0 != info.status)
         {
@@ -242,11 +246,11 @@ int main(int argc, char* argv[])
     });
 #endif
 
-#if  1
+#if 0
     //跨线程发送数据
     std::thread thread([&client]()
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         char* data = new char[4] {'t','e','s','t'};
        
         //线程安全;
@@ -264,6 +268,32 @@ int main(int argc, char* argv[])
         });
     });
 #endif
+
+#if 0
+    //跨线程发送数据
+    std::thread thread1([&client]()
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        char* data = new char[6] {'t','e','s','t','-','2'};
+
+        //线程安全;
+        client.writeInLoop(data,sizeof(data),
+            [](uv::WriteInfo& info)
+        {
+            //数据需要在发生完成回调中释放
+            //write message error.
+            if (0 != info.status)
+            {
+                //打印错误信息
+                std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
+            }
+            delete[] info.buf;
+        });
+        return;
+    });
+#endif
+
+    //client.newMessage();
 
     loop->run();
 

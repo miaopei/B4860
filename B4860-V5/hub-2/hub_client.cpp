@@ -67,7 +67,7 @@ void Client::newMessage(const char* buf, ssize_t size)
 {
     std::cout << "HUB-2 newMessage: " << std::string(buf, size) << std::endl;
 
-#if 0
+#if 1
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         write(buf, (unsigned int)size);

@@ -12,6 +12,7 @@
 #include <condition_variable>
 #include <cstdio>
 #include <cstring>
+#include <vector>
 
 #include "hub_client.h"
 
@@ -39,6 +40,8 @@ int main(int argc, char* argv[])
     SocketAddr addr("127.0.0.1", 30000, SocketAddr::Ipv4);
     Client client(loop);
 
+    client.connectToServer(addr);
+
 #if 0
     client.setConnectStatusCallback(
         [&client](uv::TcpClient::ConnectStatus status)
@@ -57,7 +60,7 @@ int main(int argc, char* argv[])
 
 #endif
 
-#if 1
+#if 0
     client.setMessageCallback(
         [&client](const char* data, ssize_t size)
     {
@@ -86,7 +89,53 @@ int main(int argc, char* argv[])
     });
 #endif    
 
-    client.connectToServer(addr);
+#if 1
+    client.setMessageCallback(
+        [&client](const char* data, ssize_t size)
+    {
+        std::cout << std::string(data, size) << std::endl;
+
+        string msg = "time delay";
+        client.SendMesg(msg.c_str(), msg.length());
+        //client.write(msg.c_str(), msg.length());
+    });
+#endif    
+
+#if 0
+    //跨线程发送数据
+    std::thread thread([&client]()
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        char* data = new char[4] {'t','e','s','t'};
+       
+        //线程安全;
+        client.writeInLoop(data,sizeof(data),
+            [](uv::WriteInfo& info)
+        {
+            //数据需要在发生完成回调中释放
+            //write message error.
+            if (0 != info.status)
+            {
+                //打印错误信息
+                std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
+            }
+            delete[] info.buf;
+        });
+    });
+#endif
+
+#if 0
+    loop->runInThisLoop(
+        [&client]()
+    {
+        std::cout << "run funciton in loop thread one." << endl;
+        //string msg = "time delay";
+        char* msg = new char[4] {'1', '2', '3', '4'};
+        client.SendMesg(msg, sizeof(msg));
+        //client.writeInLoop(msg, sizeof(msg), nullptr);
+    });
+#endif
+
     loop->run();
 
     return 0;

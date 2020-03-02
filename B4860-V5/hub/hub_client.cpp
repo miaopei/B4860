@@ -18,7 +18,7 @@ Client::Client(uv::EventLoop* loop)
     sockAddr(nullptr)
 {
     setConnectStatusCallback(std::bind(&Client::onConnect, this, std::placeholders::_1));
-    setMessageCallback(std::bind(&Client::newMessage, this, std::placeholders::_1, std::placeholders::_2));
+    setMessageCallback(std::bind(&Client::RecvMesg, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 void Client::connectToServer(uv::SocketAddr& addr)
@@ -42,7 +42,7 @@ void Client::reConnect()
 
 void Client::sendTestMessage()
 {
-    char data[1024] = "HUB Client connected!";
+    char data[1024] = "msgID=1001&type=0&RRUID=00100100";
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         write(data, (int)sizeof(data));
@@ -84,5 +84,33 @@ void Client::newMessage(const char* buf, ssize_t size)
         }
     }
 #endif
+}
+
+void Client::RecvMesg(const char* buf, ssize_t size)
+{
+    std::cout << "HUB Recv Msg: " << std::string(buf, size) << std::endl;
+    //string msg = "ttt";
+    //write(msg.c_str(), msg.length());
+}
+
+void Client::SendMesg(const char* buf, ssize_t size)
+{
+    std::cout << "Client::SendMesg" << std::endl;
+    if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
+    {
+        writeInLoop(buf, (unsigned int)size, nullptr);
+    } else {
+        auto packetbuf = getCurrentBuf();
+        if(nullptr != packetbuf)
+        {
+            packetbuf->append(buf, static_cast<int>(size));
+            uv::Packet packet;
+            while(0 == packetbuf->readPacket(packet))
+            {
+                write(packet.Buffer().c_str(), (unsigned)packet.PacketSize(), nullptr);
+            }
+        }
+    }
+
 }
 
