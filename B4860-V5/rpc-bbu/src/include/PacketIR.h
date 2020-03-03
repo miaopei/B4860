@@ -17,12 +17,12 @@ Description: https://github.com/wlgq2/uv-cpp
 //PacketIR:
 //-----------------------------------------------------------------------------------------
 //  head  |  type  |  msgID  |  state   |  RRUID   |   PORT   |  length  |  data  |  end   |
-// 1 Byte | 1 Byte | 2 Byte  |  1 Byte  |  1 Byte  |  1 Byte  |  2 Byte  | N Byte | 1 Byte |
+// 1 Byte | 1 Byte | 4 Byte  |  1 Byte  |  1 Byte  |  1 Byte  |  2 Byte  | N Byte | 1 Byte |
 //-----------------------------------------------------------------------------------------
 // head: 数据包头校验 ()
-// type：HUB、RRU、OAM (1,2,3)
+// type：HUB、RRU、OAM (0,1,2)
 // msgID：消息编号 (1001)
-// state: 请求、响应 (1,2)
+// state: 请求、响应 (0,1)
 // RRUID: rruid为4 (4)   
 // PORT: 上联HUB 2端口 (2)
 // length: data 大小
@@ -35,34 +35,13 @@ namespace uv
 class PacketIR
 {
 public:
-
-    enum MsgID
-    {
-        MSG_BEGIN   = 1000,
-        MSG_GET     = 1001,
-        MSG_SET     = 1002,
-        MSG_END
-    };
-
-    enum State
-    {
-        REQUEST     = 1,
-        RESPONSE    = 2 
-    };
-
     PacketIR();
     ~PacketIR();
 
     static int readFromBuffer(PacketBuffer*, PacketIR&);
 
-    void SetMessageHead(uint8_t type, uint16_t msgID, uint8_t state, uint8_t rruid, uint8_t port);
-    void pack(const char* data, uint16_t size);
+    void pack(const char* msgID, const char* type, const char* RRUID, const char* data, uint16_t size);
 
-    const uint8_t GetType();
-    const uint16_t GetMsgID();
-    const uint8_t GetState();
-    const uint8_t GetRRUID();
-    const uint8_t GetPort();
     const char* getData();
     const uint16_t DataSize();
     const std::string& Buffer();
@@ -89,12 +68,6 @@ public:
     static DataMode Mode;
 
 private:
-    uint8_t m_type; 
-    uint16_t m_msgID;
-    uint8_t m_state;
-    uint8_t m_RRUID;
-    uint8_t m_PORT;
-
     std::string buffer_;
     uint16_t dataSize_;
 };

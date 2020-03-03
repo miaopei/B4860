@@ -8,28 +8,28 @@ Last modified: 2019-10-24
 Description: https://github.com/wlgq2/uv-cpp
 */
 
-#include  "include/PacketIR.h"
+#include  "include/Packet.h"
 
 using namespace uv;
 
 
-uint8_t PacketIR::HeadByte = 0x7e;
-uint8_t PacketIR::EndByte = 0xe7;
-PacketIR::DataMode PacketIR::Mode = PacketIR::DataMode::LittleEndian;
+uint8_t Packet::HeadByte = 0x7e;
+uint8_t Packet::EndByte = 0xe7;
+Packet::DataMode Packet::Mode = Packet::DataMode::LittleEndian;
 
-PacketIR::PacketIR()
+Packet::Packet()
     :buffer_(""),
     dataSize_(0)
 {
 
 }
 
-uv::PacketIR::~PacketIR()
+uv::Packet::~Packet()
 {
 
 }
 
-int uv::PacketIR::readFromBuffer(PacketBuffer* packetbuf, PacketIR& out)
+int uv::Packet::readFromBuffer(PacketBuffer* packetbuf, Packet& out)
 {
     std::string data("");
     while (true)
@@ -69,66 +69,46 @@ int uv::PacketIR::readFromBuffer(PacketBuffer* packetbuf, PacketIR& out)
     return 0;
 }
 
-void uv::PacketIR::SetMessageHead(uint8_t type, uint16_t msgID, uint8_t state, uint8_t rruid, uint8_t port)
-{
-    m_type = type;
-    m_msgID = msgID;
-    m_state = state;
-    m_RRUID = rruid;
-    m_PORT = port;
-}
-
-void uv::PacketIR::pack(const char* data, uint16_t size)
+void uv::Packet::pack(const char* data, uint16_t size)
 {
     dataSize_ = size;
     buffer_.resize(size+ PacketMinSize());
 
     buffer_[0] = HeadByte;
-    //buffer_[0] = 'b';
-    //PackNum(&buffer_[0], m_type);
-    //buffer_[2] = m_msgID;
-    //buffer_[4] = m_state;
-    //buffer_[5] = m_RRUID;
-    //buffer_[6] = m_PORT;
-    //PackNum(&buffer_[7], size);
-    PackNum(&buffer_[1], size);
+    PackNum(&buffer_[1],size);
 
     std::copy(data, data + size, &buffer_[sizeof(HeadByte) + sizeof(dataSize_)]);
     buffer_.back() = EndByte;
 }
 
-const uint8_t uv::PacketIR::GetType()
-{
-    return m_type;
-}
-
-const char* uv::PacketIR::getData()
+const char* uv::Packet::getData()
 {
     return buffer_.c_str()+sizeof(HeadByte)+sizeof(dataSize_);
 }
 
-const uint16_t uv::PacketIR::DataSize()
+const uint16_t uv::Packet::DataSize()
 {
     return dataSize_;
 }
 
-const std::string& uv::PacketIR::Buffer()
+const std::string& uv::Packet::Buffer()
 {
     return buffer_;
 }
 
-const uint32_t uv::PacketIR::PacketSize()
+const uint32_t uv::Packet::PacketSize()
 {
     return (uint32_t)buffer_.size();
 }
 
-void uv::PacketIR::swap(std::string& str)
+void uv::Packet::swap(std::string& str)
 {
     buffer_.swap(str);
     dataSize_ = (uint16_t)(buffer_.size() - PacketMinSize());
 }
 
-uint32_t uv::PacketIR::PacketMinSize()
+
+uint32_t uv::Packet::PacketMinSize()
 {
-    return 10;
+    return 4;
 }

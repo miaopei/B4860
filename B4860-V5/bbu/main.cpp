@@ -56,10 +56,24 @@ int main(int argc, char *argv[])
     string sendmsg = "666";
     server.SendMsg(sendmsg.c_str(), sendmsg.length());
 
-    uv::Packet packet;
+    uint8_t type = 1;
+    uint16_t msgID = uv::PacketIR::MsgID::MSG_GET;
+    uint8_t state = uv::PacketIR::State::REQUEST;
+    uint8_t rruid = 4; 
+    uint8_t port = 2;
+    uv::PacketIR packet;
+    packet.SetMessageHead(type, msgID, state, rruid, port);
     packet.pack(sendmsg.c_str(), sendmsg.length());
-    std::cout << "data=" << packet.getData() << std::endl;
-    std::cout << "size=" << packet.DataSize() << std::endl;
+    std::cout << "data=" << packet.Buffer() << std::endl;
+    std::cout << "data[0]=" << (uint8_t)packet.Buffer()[0] << std::endl;
+    std::cout << "size=" << packet.PacketSize() << std::endl;
+    std::cout << "type=" << (int)packet.GetType() << std::endl;
+
+    string testmsg = "123abc";
+    uv::Packet testpacket;
+    testpacket.pack(testmsg.c_str(), testmsg.length());
+    std::cout << "data=" << testpacket.Buffer() << std::endl;
+    std::cout << "size=" << testpacket.PacketSize() << std::endl;
 
 #if 0
     //跨线程发送数据
