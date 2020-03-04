@@ -59,7 +59,8 @@ public:
         char t_state[1];
         char t_RRUID[1];
         char t_PORT[1];
-        int t_length;
+        //int t_length;
+        //char data[1024];
     };
 
     PacketIR();

@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
     });
 #endif
 
+#if 0
     string sendmsg = "666";
     server.SendMsg(sendmsg.c_str(), sendmsg.length());
 
@@ -74,6 +75,7 @@ int main(int argc, char *argv[])
     testpacket.pack(testmsg.c_str(), testmsg.length());
     std::cout << "data=" << testpacket.Buffer() << std::endl;
     std::cout << "size=" << testpacket.PacketSize() << std::endl;
+#endif
 
 #if 0
     //跨线程发送数据

@@ -42,15 +42,71 @@ void Client::reConnect()
 
 void Client::sendTestMessage()
 {
-    char data[1024] = "msgID=1001&type=0&RRUID=00100100";
+    // packet 封装
+    // void packet(uv::PacketIR::PackHead head, std::string& data, size_t size);
+    // return data(消息头+消息体)
+
+    // C 风格 packet
+#if 0
+    const char *data = "timeDelay=100&upDelay=20&downDelay=66";
+
+    std::cout << "data_size=" << strlen(data) << std::endl;
+
+    uv::PacketIR::PackHead packet;
+    memset(packet.data, 0, sizeof(packet.data));
+    strcpy(packet.t_type, "1");
+    strcpy(packet.t_msgID, "1001");
+    strcpy(packet.t_state, "1");
+    strcpy(packet.t_RRUID, "4");
+    strcpy(packet.t_PORT, "2");
+
+    char *send_buf = new char[sizeof(packet) + strlen(data) + 1];
+    memcpy(send_buf, &packet, sizeof(packet));
+    strcat(send_buf, data);
+
+    std::cout << "send_buf=" << send_buf << std::endl;
+    std::cout << "send_buf_size=" << strlen(send_buf) << std::endl;
+
+    write(send_buf, (int)strlen(send_buf));
+
+    delete[] send_buf;
+#endif
+
+    // C++ 风格 Packet
+#if 1
+    std::string data = "timeDelay=100&upDelay=20&downDelay=66";
+    std::cout << "data_size=" << data.length() << std::endl;
+    
+    uv::PacketIR::PackHead packet;
+    strcpy(packet.t_type, "1");
+    strcpy(packet.t_msgID, "1001");
+    strcpy(packet.t_state, "1");
+    strcpy(packet.t_RRUID, "4");
+    strcpy(packet.t_PORT, "2");
+
+    char s[sizeof(packet)];
+    memset(s, 0, sizeof(s));
+    memcpy(s, &packet, sizeof(packet));
+    std::string send_buf(s);
+    send_buf += data;
+
+    std::cout << "send_data=" << send_buf << std::endl;
+    std::cout << "send_buf_size=" << send_buf.length() << std::endl;
+
+    write(send_buf.c_str(), (int)send_buf.length());
+#endif 
+
+#if 0
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
-        write(data, (int)sizeof(data));
+        //write(data, (int)sizeof(data));
+        write(send_buf, (int)sizeof(send_buf));
     } else {
-        uv::Packet packet;
-        packet.pack(data, sizeof(data));
-        write(packet.Buffer().c_str(), packet.PacketSize());
+        uv::Packet packetxx;
+        //packetxx.pack(data.c_str(), data.length());
+        //write(packetxx.Buffer().c_str(), packetxx.PacketSize());
     }
+#endif
 }
 
 void Client::onConnect(ConnectStatus status)

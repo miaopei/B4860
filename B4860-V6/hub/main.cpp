@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
     });
 #endif    
 
-#if 1
+#if 0
     client.setMessageCallback(
         [&client](const char* data, ssize_t size)
     {
