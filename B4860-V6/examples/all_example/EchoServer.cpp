@@ -12,7 +12,7 @@
 #include    <iostream>
 
 #include    "EchoServer.h"
-#include    "uv11.h"
+#include    "uv/include/uv11.h"
 
 using namespace uv;
 using namespace std;

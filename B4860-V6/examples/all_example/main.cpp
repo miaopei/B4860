@@ -115,16 +115,13 @@ int main(int argc, char** args)
 
 
     //定时器测试
-#if 0
+#if  TEST_TIMER
     Timer timer(loop, 1000, 1000,
         [](Timer*)
     {
         std::cout << "timer callback test..." << std::endl;
     });
     timer.start();
-#endif
-
-#if TEST_TIMER
 
     //定时器只运行一次及释放,可用于tcp重连,单次消息超时等。
     Timer* pTimer  =new Timer(loop, 1000, 0,

@@ -7,7 +7,7 @@ INCLUDE_DIR = $(BUILD_DIR)/include/bbu
 LIB_DIR = $(BUILD_DIR)/lib
 BIN_DIR = $(BUILD_DIR)/bin
 
-TARGET = hub-2
+TARGET = test
 
 CC = g++
 CFLAGS = -Wall -std=c++11 
@@ -18,8 +18,7 @@ SOURCE = $(wildcard *.cpp)
 OBJECTS = $(SOURCE:.cpp=.o)
 
 all: $(TARGET)
-	@echo "[build hub ...]"		
-	@mv $(TARGET) $(BIN_DIR)
+	@echo "[build test ...]"		
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) $(USER_LINK_INC) $^ -o $@ $(USER_LINK_LIB) 
@@ -29,6 +28,7 @@ $(TARGET): $(OBJECTS)
 
 .PHONY:clean
 clean:
-	@echo "[Cleanning hub ...]"
-	@rm -rf $(OBJECTS)
+	@echo "[Cleanning test ...]"
+	@rm -f $(OBJECTS)
+	@rm -f $(TARGET)
 

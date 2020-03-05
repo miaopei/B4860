@@ -5,26 +5,9 @@
 	> Created Time: 2020年02月12日 星期三 11时16分50秒
  ************************************************************************/
 
-#include <iostream>
-#include <cstdio>
-#include <cstring>
-
 #include "bbu_server.h"
 
 using namespace uv;
-using namespace std;
-
-string& ClearHeadTailSpace(string &str)
-{
-    if(str.empty())
-    {
-        return str;
-    }
-
-    str.erase(0, str.find_first_not_of(" "));
-    str.erase(str.find_last_not_of(" "));
-    return str;
-}
 
 int main(int argc, char *argv[])
 {
@@ -39,43 +22,6 @@ int main(int argc, char *argv[])
     // 心跳超时
     //server.setTimeout(40);
     server.bindAndListen(addr);
-
-#if 0
-    // server 发消息到 client
-    server.setMessageCallback(
-        [&server](uv::TcpConnectionPtr conn, const char* data, ssize_t size)
-    {
-        std::cout << std::string(data, size) << std::endl;
-        //string sendmsg = "BBU Server send msg all client.";
-        string sendmsg = "666";
-        server.SendMsg(sendmsg.c_str(), sendmsg.length());
-        //conn->write(sendmsg.c_str(), sendmsg.length(), nullptr);
-    });
-#endif
-
-#if 0
-    string sendmsg = "666";
-    server.SendMsg(sendmsg.c_str(), sendmsg.length());
-
-    uint8_t type = 1;
-    uint16_t msgID = uv::PacketIR::MsgID::MSG_GET;
-    uint8_t state = uv::PacketIR::State::REQUEST;
-    uint8_t rruid = 4; 
-    uint8_t port = 2;
-    uv::PacketIR packet;
-    packet.SetMessageHead(type, msgID, state, rruid, port);
-    packet.pack(sendmsg.c_str(), sendmsg.length());
-    std::cout << "data=" << packet.Buffer() << std::endl;
-    std::cout << "data[0]=" << (uint8_t)packet.Buffer()[0] << std::endl;
-    std::cout << "size=" << packet.PacketSize() << std::endl;
-    std::cout << "type=" << (int)packet.GetType() << std::endl;
-
-    string testmsg = "123abc";
-    uv::Packet testpacket;
-    testpacket.pack(testmsg.c_str(), testmsg.length());
-    std::cout << "data=" << testpacket.Buffer() << std::endl;
-    std::cout << "size=" << testpacket.PacketSize() << std::endl;
-#endif
 
 #if 0
     //跨线程发送数据

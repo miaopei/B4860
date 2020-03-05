@@ -74,7 +74,7 @@ void Client::sendTestMessage()
 
     // C++ 风格 Packet
 #if 1
-    std::string data = "timeDelay=100&upDelay=20&downDelay=66";
+    std::string data = "time Delay=100&up Delay=20&down Delay=66";
     std::cout << "data_size=" << data.length() << std::endl;
     
     uv::PacketIR::PackHead packet;

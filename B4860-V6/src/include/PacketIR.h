@@ -46,6 +46,13 @@ public:
         MSG_END
     };
 
+    enum Type
+    {
+        HUB     = 1,
+        RRU     = 2,
+        OAM     = 3
+    };
+
     enum State
     {
         REQUEST     = 1,
