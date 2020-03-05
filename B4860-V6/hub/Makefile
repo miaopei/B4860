@@ -19,7 +19,7 @@ OBJECTS = $(SOURCE:.cpp=.o)
 
 all: $(TARGET)
 	@echo "[build hub ...]"		
-	@mv $(TARGET) $(BIN_DIR)
+	#@mv $(TARGET) $(BIN_DIR)
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) $(USER_LINK_INC) $^ -o $@ $(USER_LINK_LIB) 
@@ -30,5 +30,6 @@ $(TARGET): $(OBJECTS)
 .PHONY:clean
 clean:
 	@echo "[Cleanning hub ...]"
-	@rm -rf $(OBJECTS)
+	@rm -f $(OBJECTS)
+	@rm -f $(TARGET)
 

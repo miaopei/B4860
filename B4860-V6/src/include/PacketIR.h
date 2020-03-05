@@ -17,17 +17,16 @@ Description: https://github.com/wlgq2/uv-cpp
 #include "PacketBuffer.h"
 
 //PacketIR:
-//-----------------------------------------------------------------------------------------
-//  head  |  type  |  msgID  |  state   |  RRUID   |   PORT   |  length  |  data  |  end   |
-// 1 Byte | 1 Byte | 2 Byte  |  1 Byte  |  1 Byte  |  1 Byte  |  2 Byte  | N Byte | 1 Byte |
-//-----------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
+//  head  |  type  |  msgID  |  state   |  RRUID   |   PORT   |  data  |  end   |
+// 1 Byte | 1 Byte | 2 Byte  |  1 Byte  |  1 Byte  |  1 Byte  | N Byte | 1 Byte |
+//-------------------------------------------------------------------------------
 // head: 数据包头校验 ()
 // type：HUB、RRU、OAM (1,2,3)
 // msgID：消息编号 (1001)
 // state: 请求、响应 (1,2)
 // RRUID: rruid为4 (4)   
 // PORT: 上联HUB 2端口 (2)
-// length: data 大小
 // data: 用户数据
 // end: 数据包结尾校验 ()
 
@@ -66,8 +65,6 @@ public:
         char t_state[1];
         char t_RRUID[1];
         char t_PORT[1];
-        //int t_length;
-        //char data[1024];
     };
 
     PacketIR();
@@ -75,15 +72,17 @@ public:
 
     static int readFromBuffer(PacketBuffer*, PacketIR&);
 
+    void pack(const char* data, uint16_t size);
+    
     void SetMessageHead(uint8_t type, uint16_t msgID, uint8_t state, uint8_t rruid, uint8_t port);
     void MakePackage(char* data, uint16_t size);
-    void pack(const char* data, uint16_t size);
+    void PackMessage(std::string type, );
 
-    const uint8_t GetType();
-    const uint16_t GetMsgID();
-    const uint8_t GetState();
-    const uint8_t GetRRUID();
-    const uint8_t GetPort();
+    const uint8_t GetHeadType();
+    const uint16_t GetHeadMsgID();
+    const uint8_t GetHeadState();
+    const uint8_t GetHeadRRUID();
+    const uint8_t GetHeadPort();
     const char* getData();
     const uint16_t DataSize();
     const std::string& Buffer();
