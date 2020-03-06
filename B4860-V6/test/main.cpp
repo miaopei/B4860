@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <cstring>
 #include "test.h"
-#include "Head.h"
+#include "PacketIR.h"
 
 using namespace std;
 
@@ -54,6 +54,7 @@ void dec2char(int dec, char* buf, size_t size)
 
 int main()
 {
+#if 0
     test::Data testData = {"Mr.Miaow", 30};
     
     //test << Data;
@@ -67,16 +68,40 @@ int main()
     std::string dx = "11001x";
     std::cout << "type=" << dx.substr(0, 1) << std::endl;
     std::cout << "msgID=" << dx.substr(1, 4) << std::endl;
+#endif
 
+// 封装 packet
+#if 0
     std::string data = "key=value&key2=value2";
-    uv::Head head("1", "1666");
-    //head.SetHead("1", "1888");
-    head.PackMessage(data, data.length());
-    std::cout << "GetPacket=" << head.GetPacket() << std::endl;
-    std::cout << "GetHead=" << head.GetHead() << std::endl;
-    std::cout << "GetType=" << head.GetType() << std::endl;
-    std::cout << "GetMsgID=" << head.GetMsgID() << std::endl;
-    std::cout << "GetData=" << head.GetData() << std::endl;
+    uv::PacketIR packet;
+    //uv::PacketIR packet("1", "1666");
+    if(packet.SetHead("1", "1888"))
+    {
+        packet.PackMessage(data, data.length());
+        std::cout << "封装 packet:" << std::endl;
+        std::cout << "\tGetPacket: " << packet.GetPacket() << std::endl;
+        std::cout << "\tGetHead: " << packet.GetHead() << std::endl;
+        std::cout << "\tGetType: " << packet.GetType() << std::endl;
+        std::cout << "\tGetMsgID: " << packet.GetMsgID() << std::endl;
+        std::cout << "\tGetData: " << packet.GetData() << std::endl;
+    }
+#endif
+
+// 解析 packet
+#if 1
+    std::string data = "11666key=value&key2=value2&key3=value3";
+
+    uv::PacketIR packet;
+    packet.UnPackMessage(data);
+
+    std::cout << "解析 packet:" << std::endl; 
+    std::cout << "\tGetPacket: " << packet.GetPacket() << std::endl;
+    std::cout << "\tGetHead: " << packet.GetHead() << std::endl;
+    std::cout << "\tGetType: " << packet.GetType() << std::endl;
+    std::cout << "\tGetMsgID: " << packet.GetMsgID() << std::endl;
+    std::cout << "\tGetData: " << packet.GetData() << std::endl;
+
+#endif
 
     return 0;
 }

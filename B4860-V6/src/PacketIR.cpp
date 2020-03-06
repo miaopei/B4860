@@ -104,11 +104,6 @@ void uv::PacketIR::pack(const char* data, uint16_t size)
     buffer_.back() = EndByte;
 }
 
-const uint8_t uv::PacketIR::GetType()
-{
-    return m_type;
-}
-
 const char* uv::PacketIR::getData()
 {
     return buffer_.c_str()+sizeof(HeadByte)+sizeof(dataSize_);
