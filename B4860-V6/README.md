@@ -1,4 +1,8 @@
 
+[c++ - 运算符<<和C++中的stringstream重载](https://www.ojit.com/article/2787306)
+
+[结构体的运算符重载](https://blog.csdn.net/u013355191/article/details/79594898)
+
 [一个封装HTTP请求的函数(C++)](https://www.cnblogs.com/fx2008/p/3682417.html)
 
 [c++ - 封装数据(网络编程)](https://www.ojit.com/article/818453)

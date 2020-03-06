@@ -76,7 +76,6 @@ public:
     
     void SetMessageHead(uint8_t type, uint16_t msgID, uint8_t state, uint8_t rruid, uint8_t port);
     void MakePackage(char* data, uint16_t size);
-    void PackMessage(std::string type, );
 
     const uint8_t GetHeadType();
     const uint16_t GetHeadMsgID();
