@@ -43,8 +43,30 @@ void Client::reConnect()
 void Client::sendTestMessage()
 {
     // packet 封装
-    // void packet(uv::PacketIR::PackHead head, std::string& data, size_t size);
-    // return data(消息头+消息体)
+#if 1
+    std::string data = "key=value&key2=value2";
+    uv::PacketIR packetir;
+    
+    packetir.SetHead(uv::PacketIR::HUB, 
+                     uv::PacketIR::MSG_DELAY_MEASUREMENT, 
+                     uv::PacketIR::REQUEST,
+                     uv::PacketIR::RRUID_2,
+                     uv::PacketIR::PORT_6);
+
+    packetir.PackMessage(data, data.length());
+    std::cout << "封装 packet:" << std::endl;
+    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
+    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
+    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
+    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
+    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
+    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
+
+	std::string send_buf = packetir.GetPacket();
+	write(send_buf.c_str(), send_buf.length());
+#endif
 
     // C 风格 packet
 #if 0
@@ -73,7 +95,7 @@ void Client::sendTestMessage()
 #endif
 
     // C++ 风格 Packet
-#if 1
+#if 0
     std::string data = "time Delay=100&up Delay=20&down Delay=66";
     std::cout << "data_size=" << data.length() << std::endl;
     

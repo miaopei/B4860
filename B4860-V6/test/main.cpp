@@ -6,8 +6,10 @@
 #include <cstdio>
 #include <stdio.h>
 #include <cstring>
+#include <map>
 #include "test.h"
 #include "PacketIR.h"
+#include "Connect.h"
 
 using namespace std;
 
@@ -88,7 +90,7 @@ int main()
 #endif
 
 // 解析 packet
-#if 1
+#if 0
     std::string data = "11666key=value&key2=value2&key3=value3";
 
     uv::PacketIR packet;
@@ -101,6 +103,46 @@ int main()
     std::cout << "\tGetMsgID: " << packet.GetMsgID() << std::endl;
     std::cout << "\tGetData: " << packet.GetData() << std::endl;
 
+#endif
+
+#if 0
+    enum test
+    {
+        TEST_0 = 0,
+        TEST_1 = 1,
+        TEST_2 = 2
+    };
+
+    std::string tostring;
+    std::cout << "tostring=" << to_string(TEST_0) << std::endl;
+    std::cout << "tostring=" << to_string(TEST_1) << std::endl;
+    std::cout << "tostring=" << to_string(TEST_2) << std::endl;
+#endif
+
+
+    std::map<std::string, Connect::ClientInfo> ConnectInfo;
+
+    ConnectInfo.insert(pair<std::string, Connect::ClientInfo>("10", Connect::ClientInfo("1", "1040", "5")));
+    ConnectInfo.insert(pair<std::string, Connect::ClientInfo>("11", Connect::ClientInfo("1", "1041", "6")));
+    ConnectInfo.insert(pair<std::string, Connect::ClientInfo>("12", Connect::ClientInfo("1", "1042", "7")));
+
+#if 0
+    for (auto it = ConnectInfo.begin(); it != ConnectInfo.end(); ++it) {
+        std::cout << it->first << " - > " 
+            << it->second.s_type << " " 
+            << it->second.s_RRUID << " " 
+            << it->second.s_port <<std::endl;
+    }
+#endif
+
+#if 1
+    for(auto &it : ConnectInfo)
+    {
+         std::cout << it.first << " - > " 
+            << it.second.s_type << " " 
+            << it.second.s_RRUID << " " 
+            << it.second.s_port <<std::endl;
+    }
 #endif
 
     return 0;

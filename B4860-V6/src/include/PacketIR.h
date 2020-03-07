@@ -1,13 +1,4 @@
-﻿/*
-Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-Author: orcaer@yeah.net
-
-Last modified: 2018-7-18
-
-Description: https://github.com/wlgq2/uv-cpp
-*/
-
+﻿
 #ifndef  UV_PACKETIR_H
 #define  UV_PACKETIR_H
 
@@ -39,24 +30,49 @@ public:
 
     enum MsgID
     {
-        MSG_BEGIN   = 1000,
-        MSG_GET     = 1001,
-        MSG_SET     = 1002,
+        MSG_BEGIN   			= 1000,
+        MSG_GET     			= 1001,
+        MSG_SET     			= 1002,
+        MSG_UPGRADE 			= 1003,
+        MSG_GET_LOG				= 1004,
+        MSG_CONNECT				= 1040,
+        MSG_DELAY_MEASUREMENT 	= 1041,
         MSG_END
     };
 
     enum Type
     {
-        HUB     = 1,
-        RRU     = 2,
-        OAM     = 3
+        HUB     = 0,
+        RRU     = 1,
+        OAM     = 2
     };
 
     enum State
     {
-        REQUEST     = 1,
-        RESPONSE    = 2 
+        REQUEST     = 0,
+        RESPONSE    = 1 
     };
+
+	enum RRUID
+	{
+		RRUID_0 	= 0,
+		RRUID_1		= 1,
+		RRUID_2	 	= 2,
+		RRUID_3		= 3,
+		RRUID_4		= 4
+	};
+
+	enum Port
+	{
+		PORT_0	= 0,
+		PORT_1	= 1,
+		PORT_2 	= 2,
+		PORT_3 	= 3,
+		PORT_4	= 4,
+		PORT_5	= 5,
+		PORT_6	= 6,
+		PORT_7	= 7
+	};
 
     struct PackHead 
     {
@@ -74,14 +90,21 @@ public:
 
     void pack(const char* data, uint16_t size);
     
-    void SetMessageHead(uint8_t type, uint16_t msgID, uint8_t state, uint8_t rruid, uint8_t port);
-    void MakePackage(char* data, uint16_t size);
+    void SetHead(Type type, MsgID msgID, State state, RRUID rruid, Port port);
 
-    const uint8_t GetHeadType();
-    const uint16_t GetHeadMsgID();
-    const uint8_t GetHeadState();
-    const uint8_t GetHeadRRUID();
-    const uint8_t GetHeadPort();
+    void PackMessage(std::string& data, size_t size);
+
+    void UnPackMessage(std::string& packet);
+
+    std::string GetPacket();
+    std::string GetHead();
+    std::string GetType();
+    std::string GetMsgID();
+	std::string GetState();
+	std::string GetRRUID();
+	std::string GetPort();
+    std::string GetData();
+	
     const char* getData();
     const uint16_t DataSize();
     const std::string& Buffer();
@@ -99,6 +122,9 @@ public:
 
     static uint32_t PacketMinSize();
 
+	//friend std::ostream& operator<<(std::ostream& os, const PacketIR& head);
+    //friend std::istream& operator>>(std::istream& is, PacketIR& head);
+
 public:
     enum DataMode
     {
@@ -111,11 +137,13 @@ public:
     static DataMode Mode;
 
 private:
-    uint8_t m_type; 
-    uint16_t m_msgID;
-    uint8_t m_state;
-    uint8_t m_RRUID;
-    uint8_t m_PORT;
+    std::string m_type;
+    std::string m_msgID;
+	std::string m_state;
+	std::string m_rruid;
+	std::string m_port;
+    std::string m_data;
+    std::string m_packet;
 
     std::string buffer_;
     uint16_t dataSize_;
@@ -182,5 +210,22 @@ inline void PacketIR::PackNum(char* data, NumType num)
         }
     }
 }
+
+#if 0
+std::ostream& operator<<(std::ostream& os, const PacketIR& head)
+{
+	return os << head.m_type << head.m_msgID;
+}
+
+std::istream& operator>>(std::istream& is, PacketIR& head)
+{
+	std::string str;
+	is >> str;
+	head.m_type = str.substr(0, 1);
+	head.m_msgID = str.substr(1, 4);
+	return is; 
+}
+#endif
+
 }
 #endif

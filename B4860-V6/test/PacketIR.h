@@ -10,7 +10,52 @@ namespace uv
 
 class PacketIR
 {
-public:
+public:	
+    enum MsgID
+    {
+        MSG_BEGIN   			= 1000,
+        MSG_GET     			= 1001,
+        MSG_SET     			= 1002,
+        MSG_UPGRADE 			= 1003,
+        MSG_GET_LOG				= 1004,
+        MSG_DELAY_MEASUREMENT 	= 1040,
+        MSG_END
+    };
+
+    enum Type
+    {
+        HUB     = 0,
+        RRU     = 1,
+        OAM     = 2
+    };
+
+    enum State
+    {
+        REQUEST     = 0,
+        RESPONSE    = 1 
+    };
+
+	enum RRUID
+	{
+		RRUID_0 	= 0,
+		RRUID_1		= 1,
+		RRUID_2	 	= 2,
+		RRUID_3		= 3,
+		RRUID_4		= 4
+	};
+
+	enum Port
+	{
+		PORT_0	= 0,
+		PORT_1	= 1,
+		PORT_2 	= 2,
+		PORT_3 	= 3,
+		PORT_4	= 4,
+		PORT_5	= 5,
+		PORT_6	= 6,
+		PORT_7	= 7
+	};
+	
     PacketIR() {}
 #if 0
     PacketIR(std::string type, std::string msgID)
@@ -22,13 +67,15 @@ public:
 #endif
     ~PacketIR() {}
 
-    bool SetHead(std::string type, std::string msgID)
+    bool SetHead(Type type, MsgID msgID)
     {
-        if(type.length() != 1 && msgID.length() != 4)
+   	#if 0
+        if(type.length() != 1 || msgID.length() != 4)
         {
             std::cout << "Error: SetHead Parameter Byte Error!" << std::endl;
             return false;
         }
+	#endif
         m_type = type;
         m_msgID = msgID;
         return true;

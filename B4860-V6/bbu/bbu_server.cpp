@@ -24,23 +24,19 @@ void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ss
     std::cout << "BBU Recv Msg: " << std::string(buf, size) << std::endl;
     std::cout << "Msg size=" << size << std::endl;
 
-    uv::PacketIR::PackHead head;
-    std::string recv_buf(buf, size);
-    std::string phead = recv_buf.substr(0, sizeof(head) - 1);
-    std::cout << "phead=" << phead << std::endl;
+	std::string revb_buf = std::string(buf, size);
+	uv::PacketIR packetir;
+	packetir.UnPackMessage(revb_buf);
+	std::cout << "解析 packet:" << std::endl;
+    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
+    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
+    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
+    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
+    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
+    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
 
-    std::string pdata = recv_buf.substr(sizeof(head));
-    std::cout << "pdata=" << pdata << std::endl;
-
-    //strcpy(head.t_type, phead[0]);                                                                                
-    //strcpy(head.t_msgID, "1001");
-    //strcpy(head.t_state, "1");
-    //strcpy(head.t_RRUID, "4");
-    //strcpy(head.t_PORT, "2");
-    //head.t_type = buf[0];
-
-    //std::cout << "head.t_type=" << head.t_type << std::endl;
-    //std::cout << "head.t_type=" << head.t_type << std::endl;
     WriteMessage(connection, buf, size);
 }
 

@@ -1,13 +1,4 @@
-﻿/*
-Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-Author: orcaer@yeah.net
-
-Last modified: 2019-10-24
-
-Description: https://github.com/wlgq2/uv-cpp
-*/
-
+﻿
 #include <iostream>
 #include <cstring>
 #include "include/PacketIR.h"
@@ -71,25 +62,71 @@ int uv::PacketIR::readFromBuffer(PacketBuffer* packetbuf, PacketIR& out)
     return 0;
 }
 
-void uv::PacketIR::SetMessageHead(uint8_t type, uint16_t msgID, uint8_t state, uint8_t rruid, uint8_t port)
+void uv::PacketIR::SetHead(Type type, MsgID msgID, State state, RRUID rruid, Port port)
 {
-    m_type = type;
-    m_msgID = msgID;
-    m_state = state;
-    m_RRUID = rruid;
-    m_PORT = port;
+	m_type = to_string(type);
+	m_msgID = to_string(msgID);
+	m_state = to_string(state);
+	m_rruid = to_string(rruid);
+	m_port = to_string(port);
 }
 
-void uv::PacketIR::MakePackage(char* data, uint16_t size)
+void uv::PacketIR::PackMessage(std::string& data, size_t size)
 {
-    std::string newData;
-    newData = std::to_string(m_type) + 
-              std::to_string(m_msgID) +
-              std::to_string(m_state) +
-              std::to_string(m_RRUID) +
-              std::to_string(m_PORT) +
-              data;
-    pack(newData.c_str(), newData.length());
+	m_data = data;
+	m_packet = std::string(GetHead() + data);	 
+}
+
+void uv::PacketIR::UnPackMessage(std::string& packet)
+{
+	// 需要增加 packet 解析校验
+	m_packet = packet;
+	m_type = packet.substr(0, 1);
+	m_msgID = packet.substr(1, 4);
+	m_state = packet.substr(5, 1);
+	m_rruid = packet.substr(6, 1);
+	m_port = packet.substr(7, 1);
+	m_data = packet.substr(8);
+}
+
+std::string uv::PacketIR::GetPacket() 
+{ 
+	return m_packet;
+}
+
+std::string uv::PacketIR::GetHead() 
+{ 
+	return std::string(m_type + m_msgID + m_state + m_rruid + m_port); 
+}
+
+std::string uv::PacketIR::GetType() 
+{ 
+	return m_type; 
+}
+
+std::string uv::PacketIR::GetMsgID() 
+{ 
+	return m_msgID; 
+}
+
+std::string uv::PacketIR::GetState()
+{
+	return m_state;
+}
+
+std::string uv::PacketIR::GetRRUID()
+{
+	return m_rruid;
+}
+
+std::string uv::PacketIR::GetPort()
+{
+	return m_port;
+}
+
+std::string uv::PacketIR::GetData() 
+{
+	return m_data;
 }
 
 void uv::PacketIR::pack(const char* data, uint16_t size)
