@@ -25,9 +25,57 @@ void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ss
     std::cout << "Msg size=" << size << std::endl;
 
 	std::string revb_buf = std::string(buf, size);
-	uv::PacketIR packetir;
-	packetir.UnPackMessage(revb_buf);
-	std::cout << "解析 packet:" << std::endl;
+    uv::PacketIR packetir;
+    packetir.UnPackMessage(revb_buf);
+
+    switch(std::stoi(packetir.GetMsgID()))
+    {
+        case uv::PacketIR::MSG_GET:
+            std::cout << "[msg_get]" << std::endl;
+            break;
+		case uv::PacketIR::MSG_SET:
+            std::cout << "[msg_set]" << std::endl;
+            break;
+		case uv::PacketIR::MSG_UPGRADE:
+			std::cout << "[msg_upgrade]" << std::endl;
+            break;
+		case uv::PacketIR::MSG_GET_LOG:
+			std::cout << "[msg_get_log]" << std::endl;
+            break;
+		case uv::PacketIR::MSG_GET_NETWORK_TOPOLOGY:
+			std::cout << "[msg_get_network_topology]" << std::endl;
+			{
+			std::map<std::string, ClientInfo> netTopology;
+		    GetNetworkTopology(netTopology);
+
+		    for(auto &it : netTopology)
+		    { 
+				std::cout << "netTopology" 
+					<< it.first << " - > " 
+					<< it.second.s_ip << " "
+					<< it.second.s_connection << " "
+					<< it.second.s_type << " "
+					<< it.second.s_RRUID << " " 
+					<< it.second.s_port <<std::endl;
+		    }
+			}
+            break;
+		case uv::PacketIR::MSG_CONNECT:
+			std::cout << "[msg_connect]" << std::endl;
+			SetConnectionClient(connection, packetir);
+            break;
+		case uv::PacketIR::MSG_DELAY_MEASUREMENT:
+			std::cout << "[msg_delay_measurement]" << std::endl;
+            break;
+		default:
+			std::cout << "default" << std::endl;
+    }
+
+#if 0
+    std::string revb_buf = std::string(buf, size);
+    uv::PacketIR packetir;
+    packetir.UnPackMessage(revb_buf);
+    std::cout << "解析 packet:" << std::endl;
     std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
     std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
     std::cout << "\tGetType: " << packetir.GetType() << std::endl;
@@ -38,6 +86,7 @@ void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ss
     std::cout << "\tGetData: " << packetir.GetData() << std::endl;
 
     WriteMessage(connection, buf, size);
+#endif
 }
 
 void Server::writeCallback(uv::WriteInfo& info)
@@ -83,3 +132,23 @@ void Server::SendMessage(const char* msg, ssize_t size)
         WriteMessage(conn.second, msg, size);
     }
 }
+
+bool Server::SetConnectionClient(uv::TcpConnectionPtr connection, uv::PacketIR packetir)
+{
+	ClientInfo cInfo;
+	cInfo.s_ip = GetCurrentName(connection);
+	cInfo.s_connection = connection;
+	cInfo.s_type = packetir.GetType();
+	cInfo.s_RRUID = packetir.GetRRUID();
+	cInfo.s_port = packetir.GetPort();
+
+	std::cout << "connect=" << connection << std::endl;
+
+	if(SetConnectionInfo(connection, cInfo))
+	{
+		return true;
+	}
+	std::cout << "SetConnectionInfo error" << std::endl;
+	return false;
+}
+

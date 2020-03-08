@@ -23,6 +23,8 @@ public:
     void WriteMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
 
+	bool SetConnectionClient(uv::TcpConnectionPtr connection, uv::PacketIR packetir); 
+
 private:
     void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size); 
 };

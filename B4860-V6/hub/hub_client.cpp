@@ -48,7 +48,7 @@ void Client::sendTestMessage()
     uv::PacketIR packetir;
     
     packetir.SetHead(uv::PacketIR::HUB, 
-                     uv::PacketIR::MSG_DELAY_MEASUREMENT, 
+                     uv::PacketIR::MSG_CONNECT, 
                      uv::PacketIR::REQUEST,
                      uv::PacketIR::RRUID_2,
                      uv::PacketIR::PORT_6);

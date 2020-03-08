@@ -30,13 +30,14 @@ public:
 
     enum MsgID
     {
-        MSG_BEGIN   			= 1000,
-        MSG_GET     			= 1001,
-        MSG_SET     			= 1002,
-        MSG_UPGRADE 			= 1003,
-        MSG_GET_LOG				= 1004,
-        MSG_CONNECT				= 1040,
-        MSG_DELAY_MEASUREMENT 	= 1041,
+        MSG_BEGIN   				= 1000,
+        MSG_GET     				= 1001,
+        MSG_SET     				= 1002,
+        MSG_UPGRADE 				= 1003,
+        MSG_GET_LOG					= 1004,
+        MSG_GET_NETWORK_TOPOLOGY	= 1005,
+        MSG_CONNECT					= 1040,
+        MSG_DELAY_MEASUREMENT 		= 1041,
         MSG_END
     };
 

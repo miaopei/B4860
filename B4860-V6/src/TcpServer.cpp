@@ -11,6 +11,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <iostream>
 
 #include "include/TcpServer.h"
 #include "include/LogWriter.h"
@@ -80,11 +81,14 @@ int TcpServer::bindAndListen(SocketAddr& addr)
 void TcpServer::addConnnection(std::string& name,TcpConnectionPtr connection)
 {
     connnections_.insert(pair<string,shared_ptr<TcpConnection>>(std::move(name),connection));
+	//cInfo_.s_connection = connection;
+	connectionInfo_.insert(pair<std::string, ClientInfo>(std::move(name), cInfo_));
 }
 
 void TcpServer::removeConnnection(string& name)
 {
     connnections_.erase(name);
+	connectionInfo_.erase(name);
 }
 
 shared_ptr<TcpConnection> TcpServer::getConnnection(string& name)
@@ -95,6 +99,68 @@ shared_ptr<TcpConnection> TcpServer::getConnnection(string& name)
         return nullptr;
     }
     return rst->second;
+}
+
+void TcpServer::getAllConnection(std::map<std::string ,TcpConnectionPtr>  &allconnnections)
+{
+    allconnnections = connnections_;
+}
+
+std::string TcpServer::GetCurrentName(TcpConnectionPtr connection)
+{
+	for(auto &it : connnections_)
+	{
+		std::cout << "it.second=" << it.second << std::endl;
+		if(it.second == connection)
+		{
+			return it.first;
+			break;
+		}
+	}
+	return "";
+}
+
+bool TcpServer::SetConnectionInfo(TcpConnectionPtr connection, ClientInfo& cInfo)
+{
+	std::cout << "connection=" << connection << std::endl;
+	std::string cName = GetCurrentName(connection);
+	std::cout << "cName=" << cName << std::endl;
+	
+	auto rst = connectionInfo_.find(cName);
+    if(rst == connectionInfo_.end())
+    {
+    	std::cout << "Not find cName" << std::endl;
+        return false;
+    } 
+	connectionInfo_[rst->first] = cInfo;
+	return true;
+}
+
+void TcpServer::GetHUBsConnection(std::vector<TcpConnectionPtr>& hubsConnection)
+{
+	for(auto &it : connectionInfo_)
+	{
+		if(it.second.s_type == to_string(uv::PacketIR::HUB))
+		{
+			hubsConnection.push_back(it.second.s_connection);
+		}
+	}
+}
+
+void TcpServer::GetRRUsConnection(std::vector<TcpConnectionPtr>& rrusConnection)
+{
+	for(auto &it : connectionInfo_)
+	{
+		if(it.second.s_type == to_string(uv::PacketIR::RRU))
+		{
+			rrusConnection.push_back(it.second.s_connection);
+		}
+	}
+}
+
+void TcpServer::GetNetworkTopology(std::map<std::string, ClientInfo>& netTopology)
+{
+	netTopology = connectionInfo_;
 }
 
 void TcpServer::closeConnection(string& name)
@@ -112,15 +178,11 @@ void TcpServer::closeConnection(string& name)
                     onConnectCloseCallback_(connection);
                 }
                 connnections_.erase(name);
+				connectionInfo_.erase(name);
             }
 
         });
     }
-}
-
-void TcpServer::getAllConnection(std::map<std::string ,TcpConnectionPtr>  &allconnnections)
-{
-    allconnnections = connnections_;
 }
 
 void TcpServer::onMessage(TcpConnectionPtr connection,const char* buf,ssize_t size)

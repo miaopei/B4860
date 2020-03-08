@@ -118,13 +118,19 @@ int main()
     std::cout << "tostring=" << to_string(TEST_1) << std::endl;
     std::cout << "tostring=" << to_string(TEST_2) << std::endl;
 #endif
-
+    Connect::ClientInfo s;
 
     std::map<std::string, Connect::ClientInfo> ConnectInfo;
 
     ConnectInfo.insert(pair<std::string, Connect::ClientInfo>("10", Connect::ClientInfo("1", "1040", "5")));
     ConnectInfo.insert(pair<std::string, Connect::ClientInfo>("11", Connect::ClientInfo("1", "1041", "6")));
     ConnectInfo.insert(pair<std::string, Connect::ClientInfo>("12", Connect::ClientInfo("1", "1042", "7")));
+    ConnectInfo.insert(pair<std::string, Connect::ClientInfo>("13", s));
+    s.s_type = "1";
+    s.s_RRUID = "1043";
+    s.s_port = "8";
+    //ConnectInfo.insert(pair<std::string, Connect::ClientInfo>("13", s));
+    ConnectInfo["13"] = s;
 
 #if 0
     for (auto it = ConnectInfo.begin(); it != ConnectInfo.end(); ++it) {
