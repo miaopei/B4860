@@ -11,7 +11,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <iostream>
 
 #include "include/TcpServer.h"
 #include "include/LogWriter.h"
@@ -80,9 +79,8 @@ int TcpServer::bindAndListen(SocketAddr& addr)
 
 void TcpServer::addConnnection(std::string& name,TcpConnectionPtr connection)
 {
+	connectionInfo_.insert(pair<std::string, ClientInfo>(name, cInfo_));
     connnections_.insert(pair<string,shared_ptr<TcpConnection>>(std::move(name),connection));
-	//cInfo_.s_connection = connection;
-	connectionInfo_.insert(pair<std::string, ClientInfo>(std::move(name), cInfo_));
 }
 
 void TcpServer::removeConnnection(string& name)
@@ -110,7 +108,6 @@ std::string TcpServer::GetCurrentName(TcpConnectionPtr connection)
 {
 	for(auto &it : connnections_)
 	{
-		std::cout << "it.second=" << it.second << std::endl;
 		if(it.second == connection)
 		{
 			return it.first;
@@ -122,14 +119,11 @@ std::string TcpServer::GetCurrentName(TcpConnectionPtr connection)
 
 bool TcpServer::SetConnectionInfo(TcpConnectionPtr connection, ClientInfo& cInfo)
 {
-	std::cout << "connection=" << connection << std::endl;
 	std::string cName = GetCurrentName(connection);
-	std::cout << "cName=" << cName << std::endl;
 	
 	auto rst = connectionInfo_.find(cName);
     if(rst == connectionInfo_.end())
     {
-    	std::cout << "Not find cName" << std::endl;
         return false;
     } 
 	connectionInfo_[rst->first] = cInfo;

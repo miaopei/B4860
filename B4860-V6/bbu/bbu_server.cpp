@@ -50,7 +50,7 @@ void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ss
 
 		    for(auto &it : netTopology)
 		    { 
-				std::cout << "netTopology" 
+				std::cout << "netTopology: " 
 					<< it.first << " - > " 
 					<< it.second.s_ip << " "
 					<< it.second.s_connection << " "
@@ -141,8 +141,6 @@ bool Server::SetConnectionClient(uv::TcpConnectionPtr connection, uv::PacketIR p
 	cInfo.s_type = packetir.GetType();
 	cInfo.s_RRUID = packetir.GetRRUID();
 	cInfo.s_port = packetir.GetPort();
-
-	std::cout << "connect=" << connection << std::endl;
 
 	if(SetConnectionInfo(connection, cInfo))
 	{
