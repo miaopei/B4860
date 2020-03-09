@@ -14,7 +14,6 @@ LD_LIBRARY_PATH = $(LIB_DIR)
 
 all: before bbu
 	@echo "[build done ...]"
-	#@make -C $(WORK_ROOT)/hub
 
 before:
 	@test -d $(BUILD_DIR) || mkdir -p $(BUILD_DIR)
@@ -22,9 +21,8 @@ before:
 
 libuv:
 	@echo "[build libuv ...]"
-	#@tar -zxf $(WORK_ROOT)/$(LIBUV).tar.gz -C $(BUILD_DIR)
-	@cp -rf $(WORK_ROOT)/$(LIBUV) $(BUILD_DIR)
-	@cd $(BUILD_DIR)/$(LIBUV) && ./configure --prefix=$(WORK_ROOT)/../ && make && make install
+	@tar -zxf $(WORK_ROOT)/$(LIBUV).tar.gz -C $(BUILD_DIR)
+	@cd $(BUILD_DIR)/$(LIBUV) && sh autogen.sh && ./configure --prefix=$(WORK_ROOT)/../ && make && make install
 
 src: libuv
 	make -C $(WORK_ROOT)/src
@@ -38,5 +36,4 @@ clean:
 	@rm -rf $(BUILD_DIR)
 	@make clean -C src
 	@make clean -C bbu
-	#@make clean -C hub
 

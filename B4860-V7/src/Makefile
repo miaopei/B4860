@@ -4,7 +4,6 @@ WORK_ROOT = $(PWD)
 
 BUILD_DIR = $(WORK_ROOT)/../build
 INCLUDE_DIR = $(BUILD_DIR)/include
-BBU_INCLUDE_DIR = $(INCLUDE_DIR)/bbu
 LIB_DIR = $(BUILD_DIR)/lib
 
 TARGET = libbbu
@@ -24,8 +23,7 @@ OBJECTS = $(SOURCE:.cpp=.o)
 all: $(TARGET).so
 	@echo "[build libbbu ...]"
 	@mv $(TARGET).so $(LIB_DIR)
-	@test -d $(BBU_INCLUDE_DIR) || mkdir -p $(BBU_INCLUDE_DIR)
-	@cp -rf include/* $(BBU_INCLUDE_DIR)
+	@cp -rf include/* $(INCLUDE_DIR)
 
 $(TARGET).so: $(OBJECTS)
 	$(SOLINK.cc) $(TARGET).so $(OBJECTS) $(LINK_ARG)

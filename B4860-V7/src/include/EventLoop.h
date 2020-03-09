@@ -11,10 +11,10 @@
 #ifndef   UV_EVENT_LOOP_H
 #define   UV_EVENT_LOOP_H
 
-#include <uv.h>
 #include <thread>
 #include <atomic>
 #include <functional>
+#include "uv.h"
 
 namespace uv
 {

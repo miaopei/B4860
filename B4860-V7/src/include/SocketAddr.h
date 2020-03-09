@@ -13,7 +13,7 @@ Description: https://github.com/wlgq2/uv-cpp
 
 #include <string>
 #include <memory>
-#include <uv.h>
+#include "uv.h"
 
 namespace uv
 {

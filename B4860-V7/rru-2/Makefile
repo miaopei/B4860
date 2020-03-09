@@ -3,11 +3,11 @@ PWD=`pwd`
 WORK_ROOT = $(PWD)
 
 BUILD_DIR = $(WORK_ROOT)/../build
-INCLUDE_DIR = $(BUILD_DIR)/include
+INCLUDE_DIR = $(BUILD_DIR)/include/bbu
 LIB_DIR = $(BUILD_DIR)/lib
 BIN_DIR = $(BUILD_DIR)/bin
 
-TARGET = bbu
+TARGET = rru-2
 
 CC = g++
 CFLAGS = -Wall -std=c++11 
@@ -18,7 +18,7 @@ SOURCE = $(wildcard *.cpp)
 OBJECTS = $(SOURCE:.cpp=.o)
 
 all: $(TARGET)
-	@echo "[build bbu ...]"		
+	@echo "[build hub ...]"		
 	#@mv $(TARGET) $(BIN_DIR)
 
 $(TARGET): $(OBJECTS)
@@ -29,7 +29,7 @@ $(TARGET): $(OBJECTS)
 
 .PHONY:clean
 clean:
-	@echo "[Cleanning bbu ...]"
+	@echo "[Cleanning hub ...]"
 	@rm -f $(OBJECTS)
 	@rm -f $(TARGET)
 
