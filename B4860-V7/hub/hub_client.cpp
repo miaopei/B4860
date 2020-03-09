@@ -194,3 +194,62 @@ void Client::SendMesg(const char* buf, ssize_t size)
 
 }
 
+void Client::SendMesgThread()
+{
+    sendTestMessage();
+#if 0
+    //跨线程发送数据
+    std::thread thread([]()
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        //char* data = new char[4] {'t','e','s','t'};
+#if 1
+		std::string data = "key=value&key2=value2";
+	    uv::PacketIR packetir;
+	    
+	    packetir.SetHead(uv::PacketIR::HUB, 
+	                     uv::PacketIR::MSG_GET_NETWORK_TOPOLOGY, 
+	                     uv::PacketIR::REQUEST,
+	                     uv::PacketIR::RRUID_2,
+	                     uv::PacketIR::PORT_6);
+
+	    packetir.PackMessage(data, data.length());
+	    std::cout << "封装 packet:" << std::endl;
+	    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
+	    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
+	    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
+	    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
+	    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+	    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
+	    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+	    std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
+	    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
+	    std::cout << "\tData Length: " << data.length() << std::endl;
+
+		std::string send_buf = packetir.GetPacket();
+		//char* data = new char[send_buf.length()]{};	
+		//strcpy(data,send_buf.c_str());
+		std::cout << "send_buf=" << send_buf << std::endl;
+		//std::cout << "data=" << data << std::endl;
+		write(send_buf.c_str(), send_buf.length());
+#endif   
+#if 0
+        //线程安全;
+        client.writeInLoop(send_buf.c_str(), send_buf.length(),
+        //client.writeInLoop(data, sizeof(data),
+            [](uv::WriteInfo& info)
+        {
+            //数据需要在发生完成回调中释放
+            //write message error.
+            if (0 != info.status)
+            {
+                //打印错误信息
+                std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
+            }
+            delete[] info.buf;
+        });
+#endif
+    });
+#endif
+}
+

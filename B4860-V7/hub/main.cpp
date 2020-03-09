@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
 
     //sendMessageThread(client);
     //sendMessageThread_2(addr);
-    
+    client.SendMesgThread();
 #if 0
     client.setConnectStatusCallback(
         [&client](uv::TcpClient::ConnectStatus status)

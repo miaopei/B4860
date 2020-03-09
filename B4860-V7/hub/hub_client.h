@@ -14,6 +14,7 @@
 
 #include "uv11.h"
 
+
 class Client :public uv::TcpClient
 {
 public:
@@ -26,8 +27,10 @@ public:
     void newMessage(const char* buf, ssize_t size);
     void RecvMesg(const char* buf, ssize_t size);
     void SendMesg(const char* buf, ssize_t size);
+    void SendMesgThread();
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
+    std::shared_ptr<Client> clientptr_;
 };
 
 #endif // TEST_CLIENT_H
