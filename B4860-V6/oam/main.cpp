@@ -12,22 +12,67 @@
 #include <condition_variable>
 #include <cstdio>
 #include <cstring>
+#include <vector>
 
-#include "hub_client.h"
+#include "oam_client.h"
 
 using namespace uv;
 using namespace std;
 
-string& ClearHeadTailSpace(string &str)
+void SendDataThroughThreads(Client& client)
 {
-    if(str.empty())
+    //跨线程发送数据
+    std::thread thread([&client]()
     {
-        return str;
-    }
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        //char* data = new char[4] {'t','e','s','t'};
+#if 1
+		std::string data = "key=value&key2=value2";
+	    uv::PacketIR packetir;
+	    
+	    packetir.SetHead(uv::PacketIR::OAM, 
+	                     uv::PacketIR::MSG_GET, 
+	                     uv::PacketIR::REQUEST,
+	                     uv::PacketIR::RRUID_X,
+	                     uv::PacketIR::PORT_X);
 
-    str.erase(0, str.find_first_not_of(" "));
-    str.erase(str.find_last_not_of(" "));
-    return str;
+	    packetir.PackMessage(data, data.length());
+	    std::cout << "封装 packet:" << std::endl;
+	    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
+	    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
+	    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
+	    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
+	    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+	    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
+	    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+	    std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
+	    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
+	    std::cout << "\tData Length: " << data.length() << std::endl;
+
+		std::string send_buf = packetir.GetPacket();
+		//char* data = new char[send_buf.length()]{};	
+		//strcpy(data,send_buf.c_str());
+		std::cout << "send_buf=" << send_buf << std::endl;
+		//std::cout << "data=" << data << std::endl;
+		client.write(send_buf.c_str(), send_buf.length());
+#endif   
+#if 0
+        //线程安全;
+        client.writeInLoop(send_buf.c_str(), send_buf.length(),
+        //client.writeInLoop(data, sizeof(data),
+            [](uv::WriteInfo& info)
+        {
+            //数据需要在发生完成回调中释放
+            //write message error.
+            if (0 != info.status)
+            {
+                //打印错误信息
+                std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
+            }
+            delete[] info.buf;
+        });
+#endif
+    });
 }
 
 int main(int argc, char* argv[])
@@ -40,6 +85,8 @@ int main(int argc, char* argv[])
     Client client(loop);
 
     client.connectToServer(addr);
+
+    //SendDataThroughThreads(client);
 #if 0
     client.setConnectStatusCallback(
         [&client](uv::TcpClient::ConnectStatus status)
@@ -56,62 +103,6 @@ int main(int argc, char* argv[])
         }
     });
 
-#endif
-
-#if 0
-    // client 接收 server 消息
-    client.setMessageCallback(
-        [&client](const char* data, ssize_t size)
-    {
-        std::cout << std::string(data, size) << std::endl;
-
-        std::string str = std::string(data, size);
-        int pos = str.find(':');
-        str = str.substr(pos+1);
-        str = ClearHeadTailSpace(str);
-
-        std::cout << "sbustr: " << str;
-        std::cout << " sizeof: " << str.length() << '\n' << std::endl;
-
-        string msg = "HUB recv msg: ";
-        msg += str;
-        client.write(msg.c_str(), msg.length());
-        //client.write(str.c_str(), str.length());
-    });
-#endif
-
-#if 0
-    // client 发消息到server处理
-    client.setConnectStatusCallback(
-        [&client](uv::TcpClient::ConnectStatus status)
-    {
-        if(status == uv::TcpClient::ConnectStatus::OnConnectSuccess)
-        {
-            while(1)
-            {
-                int c, i = 0;
-                string msg;
-
-                std::cout << "HUB Client msg: ";
-                do {
-                    c = getchar();
-                    if(c == '\n')
-                        break;
-                    msg += c;
-                    i++;
-                } while(1);
-
-                msg = "HUB Client send msg: " + msg;
-                uv::Packet packet;
-                packet.pack(msg.c_str(), msg.length());
-
-                client.write(packet.Buffer().c_str(), packet.PacketSize());
-                //client.onMessage(conn, packet.Buffer().c_str(), packet.PacketSize());
-            }
-        } else {
-            std::cout << "Error: HUB Client connect to server fail" << std::endl;
-        }
-    });
 #endif
 
 #if 0
@@ -148,113 +139,53 @@ int main(int argc, char* argv[])
         [&client](const char* data, ssize_t size)
     {
         std::cout << std::string(data, size) << std::endl;
-        int c, i = 0;
-        string msg;
-        if(std::string(data, size) == "666")
-        {
-            return;
-        }
- 
-        msg = "HUB-2 Client send msg: 111";
-        //uv::Packet packet;
-        //packet.pack(msg.c_str(), msg.length());
 
-        //client.write(packet.Buffer().c_str(), packet.PacketSize());
-        client.write(msg.c_str(), msg.length());
-    
+        string msg = "time delay";
+        client.SendMesg(msg.c_str(), msg.length());
+        //client.write(msg.c_str(), msg.length());
     });
 #endif    
 
-#if 0
-    client.setMessageCallback(
-        [&client](const char* data, ssize_t size)
-    {
-        std::cout << std::string(data, size) << std::endl;
-        int c, i = 0;
-        string msg;
-
-        msg = "HUB-2 Client send msg: 222";
-        //uv::Packet packet;
-        //packet.pack(msg.c_str(), msg.length());
-
-        //client.write(packet.Buffer().c_str(), packet.PacketSize());
-        client.write(msg.c_str(), msg.length(),
-            [](uv::WriteInfo& info){
-            //数据需要在发生完成回调中释放
-            //write message error.
-            if (0 != info.status)
-            {
-                //打印错误信息
-                std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
-            }
-            delete[] info.buf;
-        });
-    });
-#endif  
-
-#if 0
-    // client 发消息到server处理
-    client.setConnectStatusCallback(
-        [&client](uv::TcpClient::ConnectStatus status)
-    {
-        if(status == uv::TcpClient::ConnectStatus::OnConnectSuccess)
-        {
-            string msg;
-            msg = "HUB Client Connet  msg: 123abc";
-
-            uv::Packet packet;
-            packet.pack(msg.c_str(), msg.length());
-            client.write(packet.Buffer().c_str(), packet.PacketSize());
-        } else {
-            std::cout << "Error: HUB Client connect to server fail" << std::endl;
-        }
-    });
-
-#endif
-
-#if 0
-    client.setMessageCallback(
-        [&client](const char* data, ssize_t size)
-    {
-        std::cout << std::string(data, size) << std::endl;
-        if(std::string(data, size) == "666")
-        {
-            std::cout << "very six" << std::endl;
-            return;
-        } else {
-            string msg;
-            msg = "HUB Client send msg: HUB Client Send Msg";
-            //msg = "HUB Client Send Msg";
-
-            uv::Packet packet;
-            packet.pack(msg.c_str(), msg.length());
-            client.write(packet.Buffer().c_str(), packet.PacketSize());
-        }
-    });
-#endif 
-
-#if 0
-    string msg = "This is hub-2 write";
-    client.writeInLoop(msg.c_str(), msg.length(),
-        [&client](uv::WriteInfo& info)
-    {
-        if(0 != info.status)
-        {
-            std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
-        }
-        delete[] info.buf;
-    });
-#endif
-
-#if 0
+#if 1
     //跨线程发送数据
     std::thread thread([&client]()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        char* data = new char[4] {'t','e','s','t'};
-       
+        //char* data = new char[4] {'t','e','s','t'};
+#if 1
+		std::string data = "key=value&key2=value2";
+	    uv::PacketIR packetir;
+	    
+	    packetir.SetHead(uv::PacketIR::OAM, 
+	                     uv::PacketIR::MSG_GET, 
+	                     uv::PacketIR::REQUEST,
+	                     uv::PacketIR::RRUID_X,
+	                     uv::PacketIR::PORT_X);
+
+	    packetir.PackMessage(data, data.length());
+	    std::cout << "封装 packet:" << std::endl;
+	    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
+	    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
+	    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
+	    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
+	    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+	    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
+	    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+	    std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
+	    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
+	    std::cout << "\tData Length: " << data.length() << std::endl;
+
+		std::string send_buf = packetir.GetPacket();
+		//char* data = new char[send_buf.length()]{};	
+		//strcpy(data,send_buf.c_str());
+		std::cout << "send_buf=" << send_buf << std::endl;
+		//std::cout << "data=" << data << std::endl;
+		client.write(send_buf.c_str(), send_buf.length());
+#endif   
+#if 0
         //线程安全;
-        client.writeInLoop(data,sizeof(data),
+        client.writeInLoop(send_buf.c_str(), send_buf.length(),
+        //client.writeInLoop(data, sizeof(data),
             [](uv::WriteInfo& info)
         {
             //数据需要在发生完成回调中释放
@@ -266,34 +197,21 @@ int main(int argc, char* argv[])
             }
             delete[] info.buf;
         });
+#endif
     });
 #endif
 
 #if 0
-    //跨线程发送数据
-    std::thread thread1([&client]()
+    loop->runInThisLoop(
+        [&client]()
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        char* data = new char[6] {'t','e','s','t','-','2'};
-
-        //线程安全;
-        client.writeInLoop(data,sizeof(data),
-            [](uv::WriteInfo& info)
-        {
-            //数据需要在发生完成回调中释放
-            //write message error.
-            if (0 != info.status)
-            {
-                //打印错误信息
-                std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
-            }
-            delete[] info.buf;
-        });
-        return;
+        std::cout << "run funciton in loop thread one." << endl;
+        //string msg = "time delay";
+        char* msg = new char[4] {'1', '2', '3', '4'};
+        client.SendMesg(msg, sizeof(msg));
+        //client.writeInLoop(msg, sizeof(msg), nullptr);
     });
 #endif
-
-    //client.newMessage();
 
     loop->run();
 

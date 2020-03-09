@@ -151,6 +151,17 @@ int main()
     }
 #endif
 
+    std::string testlength = "0021";
+
+    std::cout << std::stoi(testlength) << std::endl;
+
+    int i = 21211;                     
+    char ss[3];                    
+    sprintf(ss, "%04d", i);         
+
+    std::cout << "ss=" << ss << std::endl;
+    std::cout << "size-ss=" << strlen(ss) << std::endl;
+
     return 0;
 }
 

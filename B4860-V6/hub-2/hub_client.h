@@ -24,6 +24,8 @@ public:
     void sendTestMessage();
     void onConnect(ConnectStatus status);
     void newMessage(const char* buf, ssize_t size);
+    void RecvMesg(const char* buf, ssize_t size);
+    void SendMesg(const char* buf, ssize_t size);
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
 };

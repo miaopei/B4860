@@ -25,6 +25,10 @@ public:
 
 	bool SetConnectionClient(uv::TcpConnectionPtr connection, uv::PacketIR packetir); 
 
+    void NetworkTopology();
+
+    void TestGet();
+
 private:
     void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size); 
 };

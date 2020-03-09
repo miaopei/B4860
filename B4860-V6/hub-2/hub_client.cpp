@@ -50,8 +50,8 @@ void Client::sendTestMessage()
     packetir.SetHead(uv::PacketIR::HUB, 
                      uv::PacketIR::MSG_CONNECT, 
                      uv::PacketIR::REQUEST,
-                     uv::PacketIR::RRUID_2,
-                     uv::PacketIR::PORT_6);
+                     uv::PacketIR::RRUID_3,
+                     uv::PacketIR::PORT_7);
 
     packetir.PackMessage(data, data.length());
     std::cout << "封装 packet:" << std::endl;

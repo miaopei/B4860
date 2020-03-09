@@ -21,17 +21,26 @@ Server::Server(EventLoop* loop)
 
 void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
-    std::cout << "BBU Recv Msg: " << std::string(buf, size) << std::endl;
-    std::cout << "Msg size=" << size << std::endl;
-
+    // 需要增加对消息进行校验
 	std::string revb_buf = std::string(buf, size);
     uv::PacketIR packetir;
     packetir.UnPackMessage(revb_buf);
+    std::cout << "解析 packet:" << std::endl;
+    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
+    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
+    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
+    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
+    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
+    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+    std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
+    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
 
     switch(std::stoi(packetir.GetMsgID()))
     {
         case uv::PacketIR::MSG_GET:
             std::cout << "[msg_get]" << std::endl;
+            TestGet();
             break;
 		case uv::PacketIR::MSG_SET:
             std::cout << "[msg_set]" << std::endl;
@@ -44,21 +53,7 @@ void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ss
             break;
 		case uv::PacketIR::MSG_GET_NETWORK_TOPOLOGY:
 			std::cout << "[msg_get_network_topology]" << std::endl;
-			{
-			std::map<std::string, ClientInfo> netTopology;
-		    GetNetworkTopology(netTopology);
-
-		    for(auto &it : netTopology)
-		    { 
-				std::cout << "netTopology: " 
-					<< it.first << " - > " 
-					<< it.second.s_ip << " "
-					<< it.second.s_connection << " "
-					<< it.second.s_type << " "
-					<< it.second.s_RRUID << " " 
-					<< it.second.s_port <<std::endl;
-		    }
-			}
+            NetworkTopology();
             break;
 		case uv::PacketIR::MSG_CONNECT:
 			std::cout << "[msg_connect]" << std::endl;
@@ -144,9 +139,43 @@ bool Server::SetConnectionClient(uv::TcpConnectionPtr connection, uv::PacketIR p
 
 	if(SetConnectionInfo(connection, cInfo))
 	{
-		return true;
+        return true;
 	}
 	std::cout << "SetConnectionInfo error" << std::endl;
 	return false;
+}
+
+void Server::NetworkTopology()
+{
+    std::map<std::string, ClientInfo> netTopology;
+    GetNetworkTopology(netTopology);
+
+    for(auto &it : netTopology)
+    { 
+        std::cout << "netTopology: " 
+            << it.first << " - > " 
+            << it.second.s_ip << " "
+            << it.second.s_connection << " "
+            << it.second.s_type << " "
+            << it.second.s_RRUID << " " 
+            << it.second.s_port <<std::endl;
+    }
+}
+
+void Server::TestGet()
+{
+    std::vector<TcpConnectionPtr> hubsConnection;
+    GetHUBsConnection(hubsConnection);
+    for(auto &it : hubsConnection)
+    {
+        std::cout << "hubsConnection: " << it << std::endl;
+    }
+
+    std::vector<TcpConnectionPtr> rrusConnection;
+    GetRRUsConnection(rrusConnection);
+    for(auto &it : rrusConnection)
+    {
+        std::cout << "rrusConnection: " << it << std::endl;
+    }
 }
 

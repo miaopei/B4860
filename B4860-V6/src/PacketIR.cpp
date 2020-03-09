@@ -71,10 +71,23 @@ void uv::PacketIR::SetHead(Type type, MsgID msgID, State state, RRUID rruid, Por
 	m_port = to_string(port);
 }
 
+std::string uv::PacketIR::num2str(int num)
+{
+    char ss[10];
+    sprintf(ss, "%04d", num);
+    return ss;
+}
+
 void uv::PacketIR::PackMessage(std::string& data, size_t size)
 {
+    if(size >= 10000)
+    {
+        std::cout << "The data is too big" << std::endl;
+        return;
+    }
 	m_data = data;
-	m_packet = std::string(GetHead() + data);	 
+    m_length = size;
+	m_packet = std::string(GetHead() + num2str(size) + data);	 
 }
 
 void uv::PacketIR::UnPackMessage(std::string& packet)
@@ -86,7 +99,8 @@ void uv::PacketIR::UnPackMessage(std::string& packet)
 	m_state = packet.substr(5, 1);
 	m_rruid = packet.substr(6, 1);
 	m_port = packet.substr(7, 1);
-	m_data = packet.substr(8);
+    m_length = std::stoi(packet.substr(8, 4));
+	m_data = packet.substr(12);
 }
 
 std::string uv::PacketIR::GetPacket() 
@@ -122,6 +136,11 @@ std::string uv::PacketIR::GetRRUID()
 std::string uv::PacketIR::GetPort()
 {
 	return m_port;
+}
+
+int uv::PacketIR::GetLength()
+{
+    return m_length;
 }
 
 std::string uv::PacketIR::GetData() 

@@ -7,7 +7,7 @@ INCLUDE_DIR = $(BUILD_DIR)/include/bbu
 LIB_DIR = $(BUILD_DIR)/lib
 BIN_DIR = $(BUILD_DIR)/bin
 
-TARGET = oam
+TARGET = hub-2
 
 CC = g++
 CFLAGS = -Wall -std=c++11 

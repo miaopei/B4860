@@ -8,18 +8,19 @@
 #include "PacketBuffer.h"
 
 //PacketIR:
-//-------------------------------------------------------------------------------
-//  head  |  type  |  msgID  |  state   |  RRUID   |   PORT   |  data  |  end   |
-// 1 Byte | 1 Byte | 2 Byte  |  1 Byte  |  1 Byte  |  1 Byte  | N Byte | 1 Byte |
-//-------------------------------------------------------------------------------
-// head: 数据包头校验 ()
+//------------------------------------------------------------------------------------------
+//  head  |  type  |  msgID  |  state   |  RRUID   |   PORT   |  length  |   data  |  end   |
+// 1 Byte | 1 Byte | 2 Byte  |  1 Byte  |  1 Byte  |  1 Byte  |  4 Byte  |  N Byte | 1 Byte |
+//------------------------------------------------------------------------------------------
+// head: 数据包头校验 (0x7e)
 // type：HUB、RRU、OAM (1,2,3)
 // msgID：消息编号 (1001)
 // state: 请求、响应 (1,2)
 // RRUID: rruid为4 (4)   
 // PORT: 上联HUB 2端口 (2)
+// length: 0021 (data 数据长度)
 // data: 用户数据
-// end: 数据包结尾校验 ()
+// end: 数据包结尾校验 (0xe7)
 
 namespace uv
 {
@@ -60,7 +61,8 @@ public:
 		RRUID_1		= 1,
 		RRUID_2	 	= 2,
 		RRUID_3		= 3,
-		RRUID_4		= 4
+		RRUID_4		= 4,
+        RRUID_X     = 9
 	};
 
 	enum Port
@@ -72,7 +74,8 @@ public:
 		PORT_4	= 4,
 		PORT_5	= 5,
 		PORT_6	= 6,
-		PORT_7	= 7
+		PORT_7	= 7,
+        PORT_X  = 9
 	};
 
     struct PackHead 
@@ -93,6 +96,7 @@ public:
     
     void SetHead(Type type, MsgID msgID, State state, RRUID rruid, Port port);
 
+    std::string num2str(int num);
     void PackMessage(std::string& data, size_t size);
 
     void UnPackMessage(std::string& packet);
@@ -104,6 +108,7 @@ public:
 	std::string GetState();
 	std::string GetRRUID();
 	std::string GetPort();
+    int GetLength();
     std::string GetData();
 	
     const char* getData();
@@ -143,6 +148,7 @@ private:
 	std::string m_state;
 	std::string m_rruid;
 	std::string m_port;
+    int m_length;
     std::string m_data;
     std::string m_packet;
 

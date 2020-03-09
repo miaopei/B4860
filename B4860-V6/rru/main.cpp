@@ -14,7 +14,7 @@
 #include <cstring>
 #include <vector>
 
-#include "hub_client.h"
+#include "rru_client.h"
 
 using namespace uv;
 using namespace std;
@@ -111,11 +111,11 @@ int main(int argc, char* argv[])
 		std::string data = "key=value&key2=value2";
 	    uv::PacketIR packetir;
 	    
-	    packetir.SetHead(uv::PacketIR::HUB, 
+	    packetir.SetHead(uv::PacketIR::RRU, 
 	                     uv::PacketIR::MSG_GET_NETWORK_TOPOLOGY, 
 	                     uv::PacketIR::REQUEST,
-	                     uv::PacketIR::RRUID_2,
-	                     uv::PacketIR::PORT_6);
+	                     uv::PacketIR::RRUID_4,
+	                     uv::PacketIR::PORT_1);
 
 	    packetir.PackMessage(data, data.length());
 	    std::cout << "封装 packet:" << std::endl;
