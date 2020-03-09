@@ -31,6 +31,128 @@ string& ClearHeadTailSpace(string &str)
     return str;
 }
 
+void sendMessageThread(Client client)
+{
+#if 0
+    thread sendMessage([&client](){
+        std::string data = "key=value&key2=value2";
+        //client.sendTestMessage();
+	    uv::PacketIR packetir;
+	    
+	    packetir.SetHead(uv::PacketIR::HUB, 
+	                     uv::PacketIR::MSG_GET_NETWORK_TOPOLOGY, 
+	                     uv::PacketIR::REQUEST,
+	                     uv::PacketIR::RRUID_2,
+	                     uv::PacketIR::PORT_6);
+
+        std::cout << "sendMessageThread" << std::endl;
+	    packetir.PackMessage(data, data.length());
+	    std::cout << "封装 packet:" << std::endl;
+	    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
+	    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
+	    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
+	    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
+	    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+	    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
+	    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+	    std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
+	    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
+	    std::cout << "\tData Length: " << data.length() << std::endl;
+
+		std::string send_buf = packetir.GetPacket();
+		//char* data = new char[send_buf.length()]{};	
+		//strcpy(data,send_buf.c_str());
+		std::cout << "send_buf=" << send_buf << std::endl;
+		//std::cout << "data=" << data << std::endl;
+		client.write(send_buf.c_str(), send_buf.length());
+    });
+    sendMessage.detach();
+    this_thread::sleep_for(chrono::milliseconds(200));
+#endif
+#if 0
+    client.setMessageCallback(
+        [&client](const char* buf, ssize_t size)
+    {
+        std::cout << std::string(buf, size) << std::endl;
+
+        std::string data = "key=value&key2=value2";
+        //client.sendTestMessage();
+	    uv::PacketIR packetir;
+	    
+	    packetir.SetHead(uv::PacketIR::HUB, 
+	                     uv::PacketIR::MSG_GET_NETWORK_TOPOLOGY, 
+	                     uv::PacketIR::REQUEST,
+	                     uv::PacketIR::RRUID_2,
+	                     uv::PacketIR::PORT_6);
+
+        std::cout << "sendMessageThread" << std::endl;
+	    packetir.PackMessage(data, data.length());
+	    std::cout << "封装 packet:" << std::endl;
+	    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
+	    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
+	    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
+	    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
+	    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+	    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
+	    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+	    std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
+	    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
+	    std::cout << "\tData Length: " << data.length() << std::endl;
+
+		std::string send_buf = packetir.GetPacket();
+		//char* data = new char[send_buf.length()]{};	
+		//strcpy(data,send_buf.c_str());
+		std::cout << "send_buf=" << send_buf << std::endl;
+		//std::cout << "data=" << data << std::endl;
+		client.write(send_buf.c_str(), send_buf.length());
+
+    });
+#endif    
+}
+
+void sendMessageThread_2(uv::SocketAddr& addr)
+{
+    thread sendMessage([&addr](){
+        uv::EventLoop loop;
+        Client client(&loop);
+        client.connectToServer(addr);
+
+        std::string data = "key=value&key2=value2";
+        //client.sendTestMessage();
+	    uv::PacketIR packetir;
+	    
+	    packetir.SetHead(uv::PacketIR::HUB, 
+	                     uv::PacketIR::MSG_GET_NETWORK_TOPOLOGY, 
+	                     uv::PacketIR::REQUEST,
+	                     uv::PacketIR::RRUID_2,
+	                     uv::PacketIR::PORT_6);
+
+        std::cout << "sendMessageThread" << std::endl;
+	    packetir.PackMessage(data, data.length());
+	    std::cout << "封装 packet:" << std::endl;
+	    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
+	    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
+	    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
+	    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
+	    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+	    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
+	    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+	    std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
+	    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
+	    std::cout << "\tData Length: " << data.length() << std::endl;
+
+		std::string send_buf = packetir.GetPacket();
+		//char* data = new char[send_buf.length()]{};	
+		//strcpy(data,send_buf.c_str());
+		std::cout << "send_buf=" << send_buf << std::endl;
+		//std::cout << "data=" << data << std::endl;
+		client.write(send_buf.c_str(), send_buf.length());
+        loop.run();
+    });
+    sendMessage.detach();
+    this_thread::sleep_for(chrono::milliseconds(200));
+}
+
 int main(int argc, char* argv[])
 {
     EventLoop* loop = new EventLoop();
@@ -42,6 +164,9 @@ int main(int argc, char* argv[])
 
     client.connectToServer(addr);
 
+    //sendMessageThread(client);
+    //sendMessageThread_2(addr);
+    
 #if 0
     client.setConnectStatusCallback(
         [&client](uv::TcpClient::ConnectStatus status)
@@ -169,6 +294,7 @@ int main(int argc, char* argv[])
 #endif
 
     loop->run();
+
 
     return 0;
 }

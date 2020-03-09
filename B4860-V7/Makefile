@@ -14,6 +14,11 @@ LD_LIBRARY_PATH = $(LIB_DIR)
 
 all: before bbu
 	@echo "[build done ...]"
+	@make -C hub
+	@make -C hub-2
+	@make -C rru
+	@make -C rru-2
+	@make -C oam
 
 before:
 	@test -d $(BUILD_DIR) || mkdir -p $(BUILD_DIR)
@@ -36,4 +41,9 @@ clean:
 	@rm -rf $(BUILD_DIR)
 	@make clean -C src
 	@make clean -C bbu
+	@make clean -C hub
+	@make clean -C hub-2
+	@make clean -C rru
+	@make clean -C rru-2
+	@make clean -C oam
 

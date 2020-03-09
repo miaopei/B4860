@@ -56,7 +56,7 @@ void runClientsCrossThread(Clients& clients)
     }
 	EventLoop loop;
 	char data[] = "test";
-	uv::Timer timer(&loop,1000,1000,
+	uv::Timer timer(&loop,1000,5,
 	[&clients,data](uv::Timer*)
 	{
 		for(auto ptr : clients.clients)
@@ -70,7 +70,7 @@ void runClientsCrossThread(Clients& clients)
 
 int main(int argc, char** args)
 {
-    SocketAddr addr("127.0.0.1",10005);
+    SocketAddr addr("127.0.0.1",30000);
     struct Clients clients;
     clients.inited = false;
     //开1000客户端

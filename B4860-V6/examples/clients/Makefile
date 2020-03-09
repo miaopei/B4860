@@ -1,34 +1,35 @@
-WORKDIR = `pwd`
+PWD=`pwd`
+
+WORK_ROOT = $(PWD)
+
+BUILD_DIR = $(WORK_ROOT)/../../build
+INCLUDE_DIR = $(BUILD_DIR)/include/bbu
+LIB_DIR = $(BUILD_DIR)/lib
+BIN_DIR = $(BUILD_DIR)/bin
+
+TARGET = clients
 
 CC = g++
+CFLAGS = -Wall -std=c++11 
+USER_LINK_INC = -I$(INCLUDE_DIR)
+USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -Wl,-rpath,$(LIB_DIR)
 
-CFLAGS = -Wall -std=c++11
-INC = -I../../
-LIB = -luv
-LDFLAGS = -pthread 
+SOURCE = $(wildcard *.cpp)
+OBJECTS = $(SOURCE:.cpp=.o)
 
-SOURCES = $(wildcard *.cpp)
-OBJECTS = $(SOURCES:.cpp=.o)
+all: $(TARGET)
+	@echo "[build bbu ...]"		
+	#@mv $(TARGET) $(BIN_DIR)
 
-EXECUTABLE = main
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) $(USER_LINK_INC) $^ -o $@ $(USER_LINK_LIB) 
 
-OBJDIR = $(EXECUTABLE)/obj
-EXECDIR = $(EXECUTABLE)/bin
-
-all: before $(SOURCES) $(EXECUTABLE)
-		
-before:
-	test -d $(OBJDIR) || mkdir -p $(OBJDIR)
-	test -d $(EXECDIR) || mkdir -p $(EXECDIR)
-	cp ../../uv/obj/* $(OBJDIR)
-
-$(EXECUTABLE): $(OBJECTS) 
-	$(CC) $(LDFLAGS) $(wildcard $(OBJDIR)/*.o) $(INC) $(LIB) -o $(EXECDIR)/$@
-
-.cpp.o:
-	$(CC) -c $(CFLAGS) $(INC) $(LIB) $< -o $(OBJDIR)/$@
+%.o: %.cpp
+	$(CC) -c $(CFLAGS) $(USER_LINK_INC) $< -o $@ $(USER_LINK_LIB) 
 
 .PHONY:clean
 clean:
-	rm -rf $(EXECUTABLE)
+	@echo "[Cleanning bbu ...]"
+	@rm -f $(OBJECTS)
+	@rm -f $(TARGET)
 
