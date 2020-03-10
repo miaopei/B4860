@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
     //uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::CycleBuffer;
 
-    SocketAddr addr("192.168.2.76", 30000, SocketAddr::Ipv4);
+    SocketAddr addr("0.0.0.0", 30000, SocketAddr::Ipv4);
 
     Server server(loop);
 

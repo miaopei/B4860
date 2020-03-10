@@ -10,7 +10,7 @@
 //PacketIR:
 //--------------------------------------------------------------------------------------------------
 //  head  |  type  | msgID  | state  | target | RRUID  |  port  | uPort  | length |  data  |  end   |
-// 1 Byte | 1 Byte | 4 Byte | 1 Byte | 1 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
+// 1 Byte | 1 Byte | 2 Byte | 1 Byte | 1 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
 //--------------------------------------------------------------------------------------------------
 // head: 数据包头校验 (0x7e)
 // type：HUB、RRU、BBU、OAM (0,1,2,3)
@@ -23,10 +23,6 @@
 // length: 0021 (data 数据长度)
 // data: 用户数据
 // end: 数据包结尾校验 (0xe7)
-// eg: (head 14 Byte)
-//      HUB MSG_CONNECT REQUEST TO_BBU RRUID_2 PORT_1 UPORT_4 length data
-//      0   1040        0       2      2       1      4       0023   key0=value0&key1=value1
-//      01040022140023key0=value0&key1=value1
 
 namespace uv
 {
@@ -38,37 +34,27 @@ public:
     enum MsgID
     {
         MSG_BEGIN   				= 1000,
-        MSG_GET_KEY     			= 1001,
-        MSG_GET_MSGID               = 1002,
-        MSG_SET     				= 1003,
-        MSG_UPGRADE 				= 1004,
-        MSG_GET_LOG					= 1005,
-        MSG_GET_NETWORK_TOPOLOGY	= 1006,
+        MSG_GET     				= 1001,
+        MSG_SET     				= 1002,
+        MSG_UPGRADE 				= 1003,
+        MSG_GET_LOG					= 1004,
+        MSG_GET_NETWORK_TOPOLOGY	= 1005,
         MSG_CONNECT					= 1040,
         MSG_DELAY_MEASUREMENT 		= 1041,
-        MSG_END                     = 9999
+        MSG_END
     };
 
     enum Type
     {
         HUB     = 0,
         RRU     = 1,
-        BBU     = 2,
-        OAM     = 3
+        OAM     = 2
     };
 
     enum State
     {
         REQUEST     = 0,
         RESPONSE    = 1 
-    };
-
-    enum Target
-    {
-        TO_HUB     = 0,
-        TO_RRU     = 1,
-        TO_BBU     = 2,
-        TO_OAM     = 3
     };
 
 	enum RRUID
@@ -91,22 +77,7 @@ public:
 		PORT_5	= 5,
 		PORT_6	= 6,
 		PORT_7	= 7,
-		PORT_8	= 8,
         PORT_X  = 9
-	};
-
-    enum UPort
-	{
-		UPORT_0	    = 0,
-		UPORT_1	    = 1,
-		UPORT_2 	= 2,
-		UPORT_3 	= 3,
-		UPORT_4	    = 4,
-		UPORT_5	    = 5,
-		UPORT_6	    = 6,
-		UPORT_7	    = 7,
-		UPORT_8	    = 8,
-        UPORT_X     = 9
 	};
 
     struct PackHead 
