@@ -5,13 +5,14 @@
 - [x] B4860 项目概设文档更新，去掉dnsmasq的相关操作描述，增加BBU Server系统架构，消息处理流程图，以及通道建立流程图。消息相关描述。Client信息拓扑表。
 - [x] Packet 操作封装
 - [x] BBU Client Connect map 封装
-- [x] BBU Server OnMessage 消息解析处理，分发处理（thread）（**基本简单消息处理测试完成，还有很多细节需要处理**）
-- [x] OAM 适配层 测试 client（**发送消息对外接口未实现**）
+- [x] BBU Server OnMessage 消息解析处理，分发处理（**基本简单消息处理测试完成，还有很多细节需要处理**）
 - [x] HUB Client 消息解析，消息处理
+- [ ] BBU 代码打包，编译（编译安装很多问题，目前compile是没有问题，再编译大包的时候安装的时候有问题）
+- [x] HUB 代码打包编译（环境完成，rootfs已经生成还未烧到板子上调试）
+- [ ] HUB client 调用提供的API 
 - [ ] BBU Server 时延测量算法实现
-- [ ] BBU 代码打包，编译
-- [ ] HUB 代码打包编译，HUB 接口调用 
 - [ ] BBU HUB RRU（RRU client由张云松开发）设备联调
+- [ ] OAM 适配层 测试 client
 
 
 
