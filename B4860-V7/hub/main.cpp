@@ -19,6 +19,8 @@
 using namespace uv;
 using namespace std;
 
+std::string serverIP;
+
 string& ClearHeadTailSpace(string &str)
 {
     if(str.empty())
@@ -158,8 +160,15 @@ int main(int argc, char* argv[])
     EventLoop* loop = new EventLoop();
 
     //uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::CycleBuffer;
+    
+    if(argc != 2)
+    {
+        fprintf(stdout, "usage: %s server_ip_address\neg.%s 192.168.1.1\n", argv[0], argv[0]);
+        return 0;
+    }
+    serverIP = argv[1];
 
-    SocketAddr addr("127.0.0.1", 30000, SocketAddr::Ipv4);
+    SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
     Client client(loop);
 
     client.connectToServer(addr);
