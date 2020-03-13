@@ -75,6 +75,7 @@ bitbake -s | grep <package-name>  这里的package-name可以模糊匹配
 ### image烧录
 
 ```shell
+$ scp miaopei@192.168.2.76:/home/miaopei/fitImage .
 $ flash_eraseall /dev/mtd3
 $ nandwrite -p /dev/mtd3 fitImage
 ```
