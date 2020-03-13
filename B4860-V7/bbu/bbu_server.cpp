@@ -38,7 +38,7 @@ void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ss
 
     switch(std::stoi(packetir.GetMsgID()))
     {
-        case uv::PacketIR::MSG_GET:
+        case uv::PacketIR::MSG_GET_KEY:
             std::cout << "[msg_get]" << std::endl;
             TestGet();
             break;
