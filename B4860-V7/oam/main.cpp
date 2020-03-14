@@ -31,7 +31,7 @@ void SendDataThroughThreads(Client& client)
 	    uv::PacketIR packetir;
 	    
 	    packetir.SetHead(uv::PacketIR::OAM, 
-	                     uv::PacketIR::MSG_GET, 
+	                     uv::PacketIR::MSG_GET_KEY, 
 	                     uv::PacketIR::REQUEST,
 	                     uv::PacketIR::RRUID_X,
 	                     uv::PacketIR::PORT_X);
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
 	    uv::PacketIR packetir;
 	    
 	    packetir.SetHead(uv::PacketIR::OAM, 
-	                     uv::PacketIR::MSG_GET, 
+	                     uv::PacketIR::MSG_GET_KEY, 
 	                     uv::PacketIR::REQUEST,
 	                     uv::PacketIR::RRUID_X,
 	                     uv::PacketIR::PORT_X);
