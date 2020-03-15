@@ -62,13 +62,15 @@ int uv::PacketIR::readFromBuffer(PacketBuffer* packetbuf, PacketIR& out)
     return 0;
 }
 
-void uv::PacketIR::SetHead(Type type, MsgID msgID, State state, RRUID rruid, Port port)
+void uv::PacketIR::SetHead(Type type, MsgID msgID, State state, Target target, RRUID rruid, Port port, UPort uport)
 {
 	m_type = to_string(type);
 	m_msgID = to_string(msgID);
 	m_state = to_string(state);
+	m_target = to_string(target);
 	m_rruid = to_string(rruid);
 	m_port = to_string(port);
+	m_uport = to_string(uport);
 }
 
 std::string uv::PacketIR::num2str(int num)
@@ -97,10 +99,12 @@ void uv::PacketIR::UnPackMessage(std::string& packet)
 	m_type = packet.substr(0, 1);
 	m_msgID = packet.substr(1, 4);
 	m_state = packet.substr(5, 1);
-	m_rruid = packet.substr(6, 1);
-	m_port = packet.substr(7, 1);
-    m_length = std::stoi(packet.substr(8, 4));
-	m_data = packet.substr(12);
+	m_target = packet.substr(6, 1);
+	m_rruid = packet.substr(7, 1);
+	m_port = packet.substr(8, 1);
+	m_uport = packet.substr(9, 1);
+    m_length = std::stoi(packet.substr(10, 4));
+	m_data = packet.substr(14);
 }
 
 std::string uv::PacketIR::GetPacket() 
@@ -128,6 +132,11 @@ std::string uv::PacketIR::GetState()
 	return m_state;
 }
 
+std::string uv::PacketIR::GetTarget()
+{
+	return m_target;
+}
+
 std::string uv::PacketIR::GetRRUID()
 {
 	return m_rruid;
@@ -136,6 +145,11 @@ std::string uv::PacketIR::GetRRUID()
 std::string uv::PacketIR::GetPort()
 {
 	return m_port;
+}
+
+std::string uv::PacketIR::GetUPort()
+{
+	return m_uport;
 }
 
 int uv::PacketIR::GetLength()

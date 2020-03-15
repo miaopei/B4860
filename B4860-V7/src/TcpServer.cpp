@@ -152,6 +152,17 @@ void TcpServer::GetRRUsConnection(std::vector<TcpConnectionPtr>& rrusConnection)
 	}
 }
 
+void TcpServer::GetOAMConnection(std::vector<TcpConnectionPtr>& oamConnection)
+{
+	for(auto &it : connectionInfo_)
+	{
+		if(it.second.s_type == to_string(uv::PacketIR::OAM))
+		{
+			oamConnection.push_back(it.second.s_connection);
+		}
+	}
+}
+
 void TcpServer::GetNetworkTopology(std::map<std::string, ClientInfo>& netTopology)
 {
 	netTopology = connectionInfo_;

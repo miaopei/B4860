@@ -126,8 +126,10 @@ void sendMessageThread_2(uv::SocketAddr& addr)
 	    packetir.SetHead(uv::PacketIR::HUB, 
 	                     uv::PacketIR::MSG_GET_NETWORK_TOPOLOGY, 
 	                     uv::PacketIR::REQUEST,
+	                     uv::PacketIR::TO_BBU,
 	                     uv::PacketIR::RRUID_2,
-	                     uv::PacketIR::PORT_6);
+	                     uv::PacketIR::PORT_6,
+	                     uv::PacketIR::UPORT_4);
 
         std::cout << "sendMessageThread" << std::endl;
 	    packetir.PackMessage(data, data.length());
@@ -175,7 +177,7 @@ int main(int argc, char* argv[])
 
     //sendMessageThread(client);
     //sendMessageThread_2(addr);
-    client.SendMesgThread();
+    //client.SendMesgThread();
 #if 0
     client.setConnectStatusCallback(
         [&client](uv::TcpClient::ConnectStatus status)

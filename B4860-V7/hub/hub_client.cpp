@@ -50,8 +50,10 @@ void Client::sendTestMessage()
     packetir.SetHead(uv::PacketIR::HUB, 
                      uv::PacketIR::MSG_CONNECT, 
                      uv::PacketIR::REQUEST,
+                     uv::PacketIR::TO_BBU,
                      uv::PacketIR::RRUID_2,
-                     uv::PacketIR::PORT_6);
+                     uv::PacketIR::PORT_0,
+                     uv::PacketIR::UPORT_4);
 
     packetir.PackMessage(data, data.length());
     std::cout << "封装 packet:" << std::endl;
@@ -60,8 +62,10 @@ void Client::sendTestMessage()
     std::cout << "\tGetType: " << packetir.GetType() << std::endl;
     std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
     std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+	std::cout << "\tGetTarget: " << packetir.GetTarget() << std::endl;
     std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
     std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+	std::cout << "\tGetUPort: " << packetir.GetUPort() << std::endl;
     std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
     std::cout << "\tGetData: " << packetir.GetData() << std::endl;
     std::cout << "\tData Length: " << data.length() << std::endl;

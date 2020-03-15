@@ -7,6 +7,8 @@
 #include <iomanip>
 #include "PacketBuffer.h"
 
+#define HEADLENGTH 		14
+
 //PacketIR:
 //--------------------------------------------------------------------------------------------------
 //  head  |  type  | msgID  | state  | target | RRUID  |  port  | uPort  | length |  data  |  end   |
@@ -125,7 +127,7 @@ public:
 
     void pack(const char* data, uint16_t size);
     
-    void SetHead(Type type, MsgID msgID, State state, RRUID rruid, Port port);
+    void SetHead(Type type, MsgID msgID, State state, Target target, RRUID rruid, Port port, UPort uport);
 
     std::string num2str(int num);
     void PackMessage(std::string& data, size_t size);
@@ -137,8 +139,10 @@ public:
     std::string GetType();
     std::string GetMsgID();
 	std::string GetState();
+	std::string GetTarget();
 	std::string GetRRUID();
 	std::string GetPort();
+	std::string GetUPort();
     int GetLength();
     std::string GetData();
 	
@@ -177,8 +181,10 @@ private:
     std::string m_type;
     std::string m_msgID;
 	std::string m_state;
+	std::string m_target;
 	std::string m_rruid;
 	std::string m_port;
+	std::string m_uport;
     int m_length;
     std::string m_data;
     std::string m_packet;

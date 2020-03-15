@@ -74,6 +74,7 @@ public:
 	bool SetConnectionInfo(TcpConnectionPtr connection, ClientInfo& cInfo);
 	void GetHUBsConnection(std::vector<TcpConnectionPtr>& hubsConnection);
 	void GetRRUsConnection(std::vector<TcpConnectionPtr>& rrusConnection);
+	void GetOAMConnection(std::vector<TcpConnectionPtr>& oamConnection);
 	void GetNetworkTopology(std::map<std::string, ClientInfo>& netTopology);
 
     void setTimeout(unsigned int);

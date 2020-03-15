@@ -21,6 +21,11 @@ Server::Server(EventLoop* loop)
 
 void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
+	if(size < HEADLENGTH)
+	{
+		std::cout << "Message length error." << std::endl;
+		return ;
+	}
     // 需要增加对消息进行校验
 	std::string revb_buf = std::string(buf, size);
     uv::PacketIR packetir;
@@ -31,8 +36,10 @@ void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ss
     std::cout << "\tGetType: " << packetir.GetType() << std::endl;
     std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
     std::cout << "\tGetState: " << packetir.GetState() << std::endl;
+	std::cout << "\tGetTarget: " << packetir.GetTarget() << std::endl;
     std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
     std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
+	std::cout << "\tGetUPort: " << packetir.GetUPort() << std::endl;
     std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
     std::cout << "\tGetData: " << packetir.GetData() << std::endl;
 

@@ -12,8 +12,8 @@ TARGET = bbu
 CC = g++
 CFLAGS = -Wall -std=c++11 
 USER_LINK_INC = -I$(INCLUDE_DIR)
-#USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -Wl,-rpath,$(LIB_DIR)
-USER_LINK_LIB = -pthread -L$(LIB_DIR) -luv -lbbu 
+USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -Wl,-rpath,$(LIB_DIR)
+#USER_LINK_LIB = -pthread -L$(LIB_DIR) -luv -L$(LIB_DIR) -lbbu 
 
 SOURCE = $(wildcard *.cpp)
 OBJECTS = $(SOURCE:.cpp=.o)
