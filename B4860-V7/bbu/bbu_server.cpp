@@ -31,69 +31,140 @@ void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ss
     uv::PacketIR packetir;
     packetir.UnPackMessage(revb_buf);
     
-    switch(std::stoi(packetir.GetState()))
-    {
-        case uv::PacketIR::REQUEST:
-            std::cout << "[Request]" << std::endl;
-            ReqMessageProcess(connection, packetir);
-            break;
-        case uv::PacketIR::RESPONSE:
-            std::cout << "[Response]" << std::endl;
-            ResMessageProcess(connection, packetir);
-            break;
-        default:
-			std::cout << "default" << std::endl;
-    }
+	MessageProcess(connection, packetir);
+}
 
-#if 0
-    switch(std::stoi(packetir.GetMsgID()))
-    {
-        case uv::PacketIR::MSG_GET_KEY:
-            std::cout << "[msg_get]" << std::endl;
-            TestGet();
-            break;
-		case uv::PacketIR::MSG_SET:
-            std::cout << "[msg_set]" << std::endl;
-            break;
-		case uv::PacketIR::MSG_UPGRADE:
-			std::cout << "[msg_upgrade]" << std::endl;
-            break;
-		case uv::PacketIR::MSG_GET_LOG:
-			std::cout << "[msg_get_log]" << std::endl;
-            break;
-		case uv::PacketIR::MSG_GET_NETWORK_TOPOLOGY:
-			std::cout << "[msg_get_network_topology]" << std::endl;
-            NetworkTopology();
-            break;
+void Server::MessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+{
+	std::cout << "解析 packet:" << std::endl;
+    std::cout << "\tPacket: " << packet.GetPacket() << std::endl;
+    std::cout << "\tHead: " << packet.GetHead() << std::endl;
+    std::cout << "\tSource: " << packet.GetSource() << std::endl;
+	std::cout << "\tDestination: " << packet.GetDestination() << std::endl;
+    std::cout << "\tState: " << packet.GetState() << std::endl;
+    std::cout << "\tMsgID: " << packet.GetMsgID() << std::endl;
+    std::cout << "\tRRUID: " << packet.GetRRUID() << std::endl;
+    std::cout << "\tPort: " << packet.GetPort() << std::endl;
+	std::cout << "\tUPort: " << packet.GetUPort() << std::endl;
+    std::cout << "\tLength: " << packet.GetLength() << std::endl;
+    std::cout << "\tData: " << packet.GetData() << std::endl;
+
+	switch(std::stoi(packet.GetDestination()))
+	{
+		case uv::PacketIR::TO_BBU:
+			std::cout << "[Destiantion: BBU]" << std::endl;
+			BBUMessageProcess(connection, packet);
+			break;
+		case uv::PacketIR::TO_HUB:
+			std::cout << "[Destiantion: HUB]" << std::endl;
+			break;
+		case uv::PacketIR::TO_RRU:
+			std::cout << "[Destiantion: HUB]" << std::endl;
+			break;
+		case uv::PacketIR::TO_OAM:
+			std::cout << "[Destiantion: HUB]" << std::endl;
+			break;
+		default:
+			std::cout << "[Error: Destiantion: Error]" << std::endl;
+	}
+}
+
+void Server::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+{
+	/* BBU 为消息处理中心，接收到的都是 request 消息*/
+	switch(std::stoi(packet.GetMsgID()))
+	{
 		case uv::PacketIR::MSG_CONNECT:
 			std::cout << "[msg_connect]" << std::endl;
-			SetConnectionClient(connection, packetir);
-            break;
-		case uv::PacketIR::MSG_DELAY_MEASUREMENT:
-			std::cout << "[msg_delay_measurement]" << std::endl;
+			SetConnectionClient(connection, packet);
             break;
 		default:
-			std::cout << "default" << std::endl;
-    }
-#endif
+			std::cout << "[Error: MessageID Error]" << std::endl;
+	}
+}
 
-#if 0
-    std::string revb_buf = std::string(buf, size);
+void Server::HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+{
+
+}
+
+void Server::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+{
+
+}
+void Server::OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+{
+
+}
+
+void Server::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+{
+	ClientInfo cInfo;
+	cInfo.s_ip = GetCurrentName(connection);
+	cInfo.s_connection = connection;
+	cInfo.s_source = packet.GetSource();
+	cInfo.s_RRUID = packet.GetRRUID();
+	cInfo.s_port = packet.GetPort();
+	cInfo.s_uport = packet.GetUPort();
+
+	if(!SetConnectionInfo(connection, cInfo))
+	{
+		std::cout << "[Error: SetConnectionInfo Error]" << std::endl;
+		return;
+	}
+	
+	std::cout << "[SetConnectionInfo Success, Echo Message to " << packet.GetSource() << "]"<< std::endl;
+
+	/* Version Check */
+	/* TODO*/
+
+#if 1
+	std::string data = "CheckResult=0";
     uv::PacketIR packetir;
-    packetir.UnPackMessage(revb_buf);
-    std::cout << "解析 packet:" << std::endl;
-    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
-    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
-    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
-    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
-    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
-    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
-    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
-    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
+    
+    packetir.SetHead(packet.GetDestination(), 
+                     packet.GetSource(),
+                     to_string(uv::PacketIR::RESPONSE),
+                     packet.GetMsgID(), 
+                     packet.GetRRUID(),
+                     packet.GetPort(),
+                     packet.GetUPort());
 
-    WriteMessage(connection, buf, size);
+    packetir.PackMessage(data, data.length());
+    std::cout << "封装 packet:" << std::endl;
+    std::cout << "\tPacket: " << packetir.GetPacket() << std::endl;
+    std::cout << "\tHead: " << packetir.GetHead() << std::endl;
+    std::cout << "\tSource: " << packetir.GetSource() << std::endl;
+	std::cout << "\tDestination: " << packetir.GetDestination() << std::endl;
+    std::cout << "\tState: " << packetir.GetState() << std::endl;
+    std::cout << "\tMsgID: " << packetir.GetMsgID() << std::endl;
+    std::cout << "\tRRUID: " << packetir.GetRRUID() << std::endl;
+    std::cout << "\tPort: " << packetir.GetPort() << std::endl;
+	std::cout << "\tUPort: " << packetir.GetUPort() << std::endl;
+    std::cout << "\tLength: " << packetir.GetLength() << std::endl;
+    std::cout << "\tData: " << packetir.GetData() << std::endl;
+    std::cout << "\tData Length: " << data.length() << std::endl;
+
+	std::string send_buf = packetir.GetPacket();
+
+	SendMessage(connection, send_buf.c_str(), send_buf.length());
 #endif
 }
+
+void UnPackData(uv::PacketIR& packet)
+{
+	/* Json 存储数据 jsoncpp，考虑同时支持 xml 存储数据 */
+	
+}
+
+
+
+
+
+
+
+
+
 
 void Server::writeCallback(uv::WriteInfo& info)
 {
@@ -105,7 +176,7 @@ void Server::writeCallback(uv::WriteInfo& info)
     delete[] info.buf;
 }
 
-void Server::WriteMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
+void Server::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
@@ -126,7 +197,7 @@ void Server::WriteMessage(shared_ptr<TcpConnection> connection, const char* buf,
     }
 }
 
-void Server::SendMessage(const char* msg, ssize_t size)
+void Server::SendAllClientMessage(const char* msg, ssize_t size)
 {
     std::map<std::string ,TcpConnectionPtr>  allconnnections;
     getAllConnection(allconnnections);
@@ -135,26 +206,8 @@ void Server::SendMessage(const char* msg, ssize_t size)
     {
         std::cout << "client ip=" << conn.first << std::endl; 
         //conn.second->write(msg, size, nullptr);
-        WriteMessage(conn.second, msg, size);
+        SendMessage(conn.second, msg, size);
     }
-}
-
-bool Server::SetConnectionClient(uv::TcpConnectionPtr connection, uv::PacketIR packetir)
-{
-	ClientInfo cInfo;
-	cInfo.s_ip = GetCurrentName(connection);
-	cInfo.s_connection = connection;
-	cInfo.s_source = packetir.GetSource();
-	cInfo.s_RRUID = packetir.GetRRUID();
-	cInfo.s_port = packetir.GetPort();
-	cInfo.s_uport = packetir.GetUPort();
-
-	if(SetConnectionInfo(connection, cInfo))
-	{
-        return true;
-	}
-	std::cout << "SetConnectionInfo error" << std::endl;
-	return false;
 }
 
 void Server::NetworkTopology()
@@ -192,37 +245,4 @@ void Server::TestGet()
     }
 }
 
-void Server::ReqMessageProcess(uv::TcpConnectionPtr connection, uv::PacketIR& packet)
-{
-    std::cout << "解析 packet:" << std::endl;
-    std::cout << "\tPacket: " << packet.GetPacket() << std::endl;
-    std::cout << "\tHead: " << packet.GetHead() << std::endl;
-    std::cout << "\tSource: " << packet.GetSource() << std::endl;
-	std::cout << "\tDestination: " << packet.GetDestination() << std::endl;
-    std::cout << "\tState: " << packet.GetState() << std::endl;
-    std::cout << "\tMsgID: " << packet.GetMsgID() << std::endl;
-    std::cout << "\tRRUID: " << packet.GetRRUID() << std::endl;
-    std::cout << "\tPort: " << packet.GetPort() << std::endl;
-	std::cout << "\tUPort: " << packet.GetUPort() << std::endl;
-    std::cout << "\tLength: " << packet.GetLength() << std::endl;
-    std::cout << "\tData: " << packet.GetData() << std::endl;
-
-}
-
-void Server::ResMessageProcess(uv::TcpConnectionPtr connection, uv::PacketIR& packet)
-{
-    std::cout << "解析 packet:" << std::endl;
-    std::cout << "\tPacket: " << packet.GetPacket() << std::endl;
-    std::cout << "\tHead: " << packet.GetHead() << std::endl;
-    std::cout << "\tSource: " << packet.GetSource() << std::endl;
-	std::cout << "\tDestination: " << packet.GetDestination() << std::endl;
-    std::cout << "\tState: " << packet.GetState() << std::endl;
-    std::cout << "\tMsgID: " << packet.GetMsgID() << std::endl;
-    std::cout << "\tRRUID: " << packet.GetRRUID() << std::endl;
-    std::cout << "\tPort: " << packet.GetPort() << std::endl;
-	std::cout << "\tUPort: " << packet.GetUPort() << std::endl;
-    std::cout << "\tLength: " << packet.GetLength() << std::endl;
-    std::cout << "\tData: " << packet.GetData() << std::endl;
-
-}
 

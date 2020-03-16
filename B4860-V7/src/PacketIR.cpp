@@ -5,7 +5,6 @@
 
 using namespace uv;
 
-
 uint8_t PacketIR::HeadByte = 0x7e;
 uint8_t PacketIR::EndByte = 0xe7;
 PacketIR::DataMode PacketIR::Mode = PacketIR::DataMode::LittleEndian;
@@ -62,15 +61,21 @@ int uv::PacketIR::readFromBuffer(PacketBuffer* packetbuf, PacketIR& out)
     return 0;
 }
 
-void uv::PacketIR::SetHead(Source sour, Destination dest, State state, MsgID msgID, RRUID rruid, Port port, UPort uport)
+void uv::PacketIR::SetHead(std::string sour, 
+							   std::string dest, 
+							   std::string state, 
+							   std::string msgID, 
+							   std::string rruid, 
+							   std::string port, 
+							   std::string uport)
 {
-	m_source = to_string(sour);
-	m_destination = to_string(dest);
-	m_state = to_string(state);
-	m_msgID = to_string(msgID);
-	m_rruid = to_string(rruid);
-	m_port = to_string(port);
-	m_uport = to_string(uport);
+	m_source = sour;
+	m_destination = dest;
+	m_state = state;
+	m_msgID = msgID;
+	m_rruid = rruid;
+	m_port = port;
+	m_uport = uport;
 }
 
 std::string uv::PacketIR::num2str(int num)
@@ -161,6 +166,18 @@ std::string uv::PacketIR::GetData()
 {
 	return m_data;
 }
+
+#if 0
+int uv::PacketIR::Source2Destination()
+{
+	return (enum Destination)(std::stoi(m_source));
+}
+
+int uv::PacketIR::Destination2Source()
+{
+	return (enum Source)(std::stoi(m_destination));
+}
+#endif
 
 void uv::PacketIR::pack(const char* data, uint16_t size)
 {

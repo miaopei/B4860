@@ -47,13 +47,13 @@ void Client::sendTestMessage()
     std::string data = "key=value&key2=value2";
     uv::PacketIR packetir;
     
-    packetir.SetHead(uv::PacketIR::HUB, 
-                     uv::PacketIR::TO_BBU,
-                     uv::PacketIR::REQUEST,
-                     uv::PacketIR::MSG_CONNECT, 
-                     uv::PacketIR::RRUID_2,
-                     uv::PacketIR::PORT_0,
-                     uv::PacketIR::UPORT_4);
+    packetir.SetHead(to_string(uv::PacketIR::HUB), 
+                     to_string(uv::PacketIR::TO_BBU),
+                     to_string(uv::PacketIR::REQUEST),
+                     to_string(uv::PacketIR::MSG_CONNECT), 
+                     to_string(uv::PacketIR::RRUID_2),
+                     to_string(uv::PacketIR::PORT_0),
+                     to_string(uv::PacketIR::UPORT_4));
 
     packetir.PackMessage(data, data.length());
     std::cout << "封装 packet:" << std::endl;

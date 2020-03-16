@@ -112,6 +112,7 @@ void sendMessageThread(Client client)
 #endif    
 }
 
+# if 0
 void sendMessageThread_2(uv::SocketAddr& addr)
 {
     thread sendMessage([&addr](){
@@ -156,6 +157,7 @@ void sendMessageThread_2(uv::SocketAddr& addr)
     sendMessage.detach();
     this_thread::sleep_for(chrono::milliseconds(200));
 }
+#endif
 
 int main(int argc, char* argv[])
 {

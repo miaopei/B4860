@@ -118,6 +118,8 @@ int main()
     std::cout << "tostring=" << to_string(TEST_1) << std::endl;
     std::cout << "tostring=" << to_string(TEST_2) << std::endl;
 #endif
+
+#if 0
     Connect::ClientInfo s;
 
     std::map<std::string, Connect::ClientInfo> ConnectInfo;
@@ -131,6 +133,7 @@ int main()
     s.s_port = "8";
     //ConnectInfo.insert(pair<std::string, Connect::ClientInfo>("13", s));
     ConnectInfo["13"] = s;
+#endif
 
 #if 0
     for (auto it = ConnectInfo.begin(); it != ConnectInfo.end(); ++it) {
@@ -141,7 +144,7 @@ int main()
     }
 #endif
 
-#if 1
+#if 0
     for(auto &it : ConnectInfo)
     {
          std::cout << it.first << " - > " 
@@ -151,6 +154,7 @@ int main()
     }
 #endif
 
+#if 0
     std::string testlength = "0021";
 
     std::cout << std::stoi(testlength) << std::endl;
@@ -161,6 +165,30 @@ int main()
 
     std::cout << "ss=" << ss << std::endl;
     std::cout << "size-ss=" << strlen(ss) << std::endl;
+#endif
+
+#if 1
+    enum Source
+    {
+        HUB     = 0,
+        RRU     = 1,
+        BBU     = 2,
+        OAM     = 3
+
+    };
+
+    enum Destination
+    {
+        TO_HUB     = 0,
+        TO_RRU     = 1,
+        TO_BBU     = 2,
+        TO_OAM     = 3
+
+    };
+
+    std::cout << "s2d = " << (enum Destination)OAM << std::endl;
+
+#endif
 
     return 0;
 }

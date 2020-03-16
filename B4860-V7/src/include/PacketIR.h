@@ -127,7 +127,7 @@ public:
 
     void pack(const char* data, uint16_t size);
     
-    void SetHead(Source sour, Destination dest, State state, MsgID msgID, RRUID rruid, Port port, UPort uport);
+    void SetHead(std::string sour, std::string dest, std::string state, std::string msgID, std::string rruid, std::string port, std::string uport);
 
     std::string num2str(int num);
     void PackMessage(std::string& data, size_t size);
@@ -145,6 +145,9 @@ public:
 	std::string GetUPort();
     int GetLength();
     std::string GetData();
+
+	//int Source2Destination();
+	//int Destination2Source();
 	
     const char* getData();
     const uint16_t DataSize();
