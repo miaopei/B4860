@@ -57,12 +57,15 @@ void Server::MessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& pack
 			break;
 		case uv::PacketIR::TO_HUB:
 			std::cout << "[Destiantion: HUB]" << std::endl;
+			HUBMessageProcess(connection, packet);
 			break;
 		case uv::PacketIR::TO_RRU:
 			std::cout << "[Destiantion: HUB]" << std::endl;
+			RRUMessageProcess(connection, packet);
 			break;
 		case uv::PacketIR::TO_OAM:
 			std::cout << "[Destiantion: HUB]" << std::endl;
+			OAMMessageProcess(connection, packet);
 			break;
 		default:
 			std::cout << "[Error: Destiantion: Error]" << std::endl;
@@ -118,7 +121,17 @@ void Server::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR&
 	/* Version Check */
 	/* TODO*/
 
-#if 1
+	PackMessageSend(connection, packet);
+}
+
+void Server::UnPackData(uv::PacketIR& packet)
+{
+	/* Json 存储数据 jsoncpp，考虑同时支持 xml 存储数据 */
+	
+}
+
+void Server::PackMessageSend(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+{
 	std::string data = "CheckResult=0";
     uv::PacketIR packetir;
     
@@ -148,16 +161,7 @@ void Server::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR&
 	std::string send_buf = packetir.GetPacket();
 
 	SendMessage(connection, send_buf.c_str(), send_buf.length());
-#endif
 }
-
-void UnPackData(uv::PacketIR& packet)
-{
-	/* Json 存储数据 jsoncpp，考虑同时支持 xml 存储数据 */
-	
-}
-
-
 
 
 

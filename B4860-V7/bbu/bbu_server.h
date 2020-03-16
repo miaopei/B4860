@@ -33,6 +33,7 @@ public:
 	void SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
 
 	void UnPackData(uv::PacketIR& packet);
+	void PackMessageSend(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
 
     void NetworkTopology();
 
