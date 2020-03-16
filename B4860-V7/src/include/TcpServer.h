@@ -36,17 +36,19 @@ public:
     {
     	std::string s_ip;
     	TcpConnectionPtr s_connection;
-        std::string s_type;
+        std::string s_source;
         std::string s_RRUID;
         std::string s_port;
+        std::string s_uport;
         ClientInfo(){};
-        ClientInfo(std::string ip, TcpConnectionPtr      connect, std::string type, std::string rruid, std::string port)
+        ClientInfo(std::string ip, TcpConnectionPtr connect, std::string source, std::string rruid, std::string port, std::string uport)
         {
         	s_ip = ip;
 			s_connection = connect;
-            s_type = type;
+            s_source = source;
             s_RRUID = rruid;
             s_port = port;
+            s_uport = uport;
         };
     };
 	

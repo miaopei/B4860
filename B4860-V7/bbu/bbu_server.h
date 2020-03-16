@@ -12,6 +12,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+#include <memory>
 
 #include "uv11.h"
 
@@ -22,6 +23,9 @@ public:
     static void writeCallback(uv::WriteInfo& info);
     void WriteMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
+
+    void ReqMessageProcess(uv::TcpConnectionPtr connection, uv::PacketIR& packet);
+    void ResMessageProcess(uv::TcpConnectionPtr connection, uv::PacketIR& packet);
 
 	bool SetConnectionClient(uv::TcpConnectionPtr connection, uv::PacketIR packetir); 
 

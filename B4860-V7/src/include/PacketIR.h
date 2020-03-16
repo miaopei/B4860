@@ -10,15 +10,15 @@
 #define HEADLENGTH 		14
 
 //PacketIR:
-//--------------------------------------------------------------------------------------------------
-//  head  |  type  | msgID  | state  | target | RRUID  |  port  | uPort  | length |  data  |  end   |
-// 1 Byte | 1 Byte | 4 Byte | 1 Byte | 1 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
-//--------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
+//  head  | source | destination | state  | msgID  | RRUID  |  port  | uPort  | length |  data  |  end   |
+// 1 Byte | 1 Byte |    1 Byte   | 1 Byte | 4 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
+//-------------------------------------------------------------------------------------------------------
 // head: 数据包头校验 (0x7e)
-// type：HUB、RRU、BBU、OAM (0,1,2,3)
-// msgID：消息编号 (1001)
+// source：HUB、RRU、BBU、OAM (0,1,2,3)
+// destination: 消息目标发给谁 HUB、RRU、BBU、OAM 
 // state: 请求、响应 (0,1)
-// target: 消息目标发给谁 HUB、RRU、BBU、OAM 
+// msgID：消息编号 (1001)
 // RRUID: rruid为4 (4)   
 // port: 设备本端端口号 (0,1)
 // uPort: 设备连接对端端口号 (0-7)
@@ -37,6 +37,28 @@ class PacketIR
 {
 public:
 
+    enum Source
+    {
+        HUB     = 0,
+        RRU     = 1,
+        BBU     = 2,
+        OAM     = 3
+    };
+
+    enum Destination
+    {
+        TO_HUB     = 0,
+        TO_RRU     = 1,
+        TO_BBU     = 2,
+        TO_OAM     = 3
+    };
+
+    enum State
+    {
+        REQUEST     = 0,
+        RESPONSE    = 1 
+    };
+
     enum MsgID
     {
         MSG_BEGIN   				= 1000,
@@ -49,28 +71,6 @@ public:
         MSG_CONNECT					= 1040,
         MSG_DELAY_MEASUREMENT 		= 1041,
         MSG_END                     = 9999
-    };
-
-    enum Type
-    {
-        HUB     = 0,
-        RRU     = 1,
-        BBU     = 2,
-        OAM     = 3
-    };
-
-    enum State
-    {
-        REQUEST     = 0,
-        RESPONSE    = 1 
-    };
-
-    enum Target
-    {
-        TO_HUB     = 0,
-        TO_RRU     = 1,
-        TO_BBU     = 2,
-        TO_OAM     = 3
     };
 
 	enum RRUID
@@ -111,14 +111,14 @@ public:
         UPORT_X     = 9
 	};
 
-    struct PackHead 
-    {
-        char t_type[1];
-        char t_msgID[4];
-        char t_state[1];
-        char t_RRUID[1];
-        char t_PORT[1];
-    };
+    /* struct PackHead */ 
+    /* { */
+    /*     char t_type[1]; */
+    /*     char t_msgID[4]; */
+    /*     char t_state[1]; */
+    /*     char t_RRUID[1]; */
+    /*     char t_PORT[1]; */
+    /* }; */
 
     PacketIR();
     ~PacketIR();
@@ -127,7 +127,7 @@ public:
 
     void pack(const char* data, uint16_t size);
     
-    void SetHead(Type type, MsgID msgID, State state, Target target, RRUID rruid, Port port, UPort uport);
+    void SetHead(Source sour, Destination dest, State state, MsgID msgID, RRUID rruid, Port port, UPort uport);
 
     std::string num2str(int num);
     void PackMessage(std::string& data, size_t size);
@@ -136,10 +136,10 @@ public:
 
     std::string GetPacket();
     std::string GetHead();
-    std::string GetType();
-    std::string GetMsgID();
+    std::string GetSource();
+	std::string GetDestination();
 	std::string GetState();
-	std::string GetTarget();
+    std::string GetMsgID();
 	std::string GetRRUID();
 	std::string GetPort();
 	std::string GetUPort();
@@ -178,10 +178,10 @@ public:
     static DataMode Mode;
 
 private:
-    std::string m_type;
-    std::string m_msgID;
+    std::string m_source;
+	std::string m_destination;
 	std::string m_state;
-	std::string m_target;
+    std::string m_msgID;
 	std::string m_rruid;
 	std::string m_port;
 	std::string m_uport;

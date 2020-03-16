@@ -48,26 +48,26 @@ void Client::sendTestMessage()
     uv::PacketIR packetir;
     
     packetir.SetHead(uv::PacketIR::HUB, 
-                     uv::PacketIR::MSG_CONNECT, 
-                     uv::PacketIR::REQUEST,
                      uv::PacketIR::TO_BBU,
+                     uv::PacketIR::REQUEST,
+                     uv::PacketIR::MSG_CONNECT, 
                      uv::PacketIR::RRUID_2,
                      uv::PacketIR::PORT_0,
                      uv::PacketIR::UPORT_4);
 
     packetir.PackMessage(data, data.length());
     std::cout << "封装 packet:" << std::endl;
-    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
-    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
-    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
-    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
-    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
-	std::cout << "\tGetTarget: " << packetir.GetTarget() << std::endl;
-    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
-    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
-	std::cout << "\tGetUPort: " << packetir.GetUPort() << std::endl;
-    std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
-    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
+    std::cout << "\tPacket: " << packetir.GetPacket() << std::endl;
+    std::cout << "\tHead: " << packetir.GetHead() << std::endl;
+    std::cout << "\tSource: " << packetir.GetSource() << std::endl;
+	std::cout << "\tDestination: " << packetir.GetDestination() << std::endl;
+    std::cout << "\tState: " << packetir.GetState() << std::endl;
+    std::cout << "\tMsgID: " << packetir.GetMsgID() << std::endl;
+    std::cout << "\tRRUID: " << packetir.GetRRUID() << std::endl;
+    std::cout << "\tPort: " << packetir.GetPort() << std::endl;
+	std::cout << "\tUPort: " << packetir.GetUPort() << std::endl;
+    std::cout << "\tLength: " << packetir.GetLength() << std::endl;
+    std::cout << "\tData: " << packetir.GetData() << std::endl;
     std::cout << "\tData Length: " << data.length() << std::endl;
 
 	std::string send_buf = packetir.GetPacket();

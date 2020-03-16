@@ -62,12 +62,12 @@ int uv::PacketIR::readFromBuffer(PacketBuffer* packetbuf, PacketIR& out)
     return 0;
 }
 
-void uv::PacketIR::SetHead(Type type, MsgID msgID, State state, Target target, RRUID rruid, Port port, UPort uport)
+void uv::PacketIR::SetHead(Source sour, Destination dest, State state, MsgID msgID, RRUID rruid, Port port, UPort uport)
 {
-	m_type = to_string(type);
-	m_msgID = to_string(msgID);
+	m_source = to_string(sour);
+	m_destination = to_string(dest);
 	m_state = to_string(state);
-	m_target = to_string(target);
+	m_msgID = to_string(msgID);
 	m_rruid = to_string(rruid);
 	m_port = to_string(port);
 	m_uport = to_string(uport);
@@ -96,10 +96,10 @@ void uv::PacketIR::UnPackMessage(std::string& packet)
 {
 	// 需要增加 packet 解析校验
 	m_packet = packet;
-	m_type = packet.substr(0, 1);
-	m_msgID = packet.substr(1, 4);
-	m_state = packet.substr(5, 1);
-	m_target = packet.substr(6, 1);
+	m_source = packet.substr(0, 1);
+	m_destination= packet.substr(1, 1);
+	m_state = packet.substr(2, 1);
+	m_msgID = packet.substr(3, 4);
 	m_rruid = packet.substr(7, 1);
 	m_port = packet.substr(8, 1);
 	m_uport = packet.substr(9, 1);
@@ -114,17 +114,17 @@ std::string uv::PacketIR::GetPacket()
 
 std::string uv::PacketIR::GetHead() 
 { 
-	return std::string(m_type + m_msgID + m_state + m_rruid + m_port); 
+	return std::string(m_source + m_destination + m_state + m_msgID + m_rruid + m_port + m_uport); 
 }
 
-std::string uv::PacketIR::GetType() 
+std::string uv::PacketIR::GetSource() 
 { 
-	return m_type; 
+	return m_source; 
 }
 
-std::string uv::PacketIR::GetMsgID() 
-{ 
-	return m_msgID; 
+std::string uv::PacketIR::GetDestination()
+{
+	return m_destination;
 }
 
 std::string uv::PacketIR::GetState()
@@ -132,9 +132,9 @@ std::string uv::PacketIR::GetState()
 	return m_state;
 }
 
-std::string uv::PacketIR::GetTarget()
-{
-	return m_target;
+std::string uv::PacketIR::GetMsgID() 
+{ 
+	return m_msgID; 
 }
 
 std::string uv::PacketIR::GetRRUID()
