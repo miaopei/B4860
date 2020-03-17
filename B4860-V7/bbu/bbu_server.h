@@ -12,7 +12,6 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
-#include <memory>
 
 #include "uv11.h"
 
