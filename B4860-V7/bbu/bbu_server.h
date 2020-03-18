@@ -19,11 +19,11 @@ class Server :public uv::TcpServer
 {
 public:
     Server(uv::EventLoop* loop);
-    static void writeCallback(uv::WriteInfo& info);
+    //static void writeCallback(uv::WriteInfo& info);
     void SendMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
-    void SendAllClientMessage(const char* buf, ssize_t size);
+	void SendPackMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
+    //void SendAllClientMessage(const char* buf, ssize_t size);
 
-	void MessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
 	void BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
 	void HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
 	void RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
@@ -32,7 +32,7 @@ public:
 	void SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
 
 	void UnPackData(uv::PacketIR& packet);
-	void PackMessageSend(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
+	
 
     void NetworkTopology();
 
