@@ -60,11 +60,11 @@ void Server::MessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& pack
 			HUBMessageProcess(connection, packet);
 			break;
 		case uv::PacketIR::TO_RRU:
-			std::cout << "[Destiantion: HUB]" << std::endl;
+			std::cout << "[Destiantion: RRB]" << std::endl;
 			RRUMessageProcess(connection, packet);
 			break;
 		case uv::PacketIR::TO_OAM:
-			std::cout << "[Destiantion: HUB]" << std::endl;
+			std::cout << "[Destiantion: OAM]" << std::endl;
 			OAMMessageProcess(connection, packet);
 			break;
 		default:

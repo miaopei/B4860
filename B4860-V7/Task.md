@@ -20,6 +20,27 @@
 
 
 
+1. rhub的hop号，rruid查询接口
+2. rhub对应bbu的端口号，查询接口？
+3. cpri 链路时延查询，rhub 级联口 T14  下联口 T14
+
+
+
+
+
+HUB 时延测试量参数：
+
+- Toffset
+- TBdelay DL
+- TBdelya UL
+- DL/UL callbbu_max 
+
+
+
+
+
+
+
 <i class="fab fa-weixin fa-lg"></i> wxmiaopei
 
 
