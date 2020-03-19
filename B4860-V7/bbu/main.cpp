@@ -26,11 +26,11 @@ int main(int argc, char *argv[])
 
     SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
 
-    Server server(loop);
+    BBU bbu(loop);
 
     // 心跳超时
     //server.setTimeout(40);
-    server.bindAndListen(addr);
+    bbu.bindAndListen(addr);
 
 #if 0
     //跨线程发送数据

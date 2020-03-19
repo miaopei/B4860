@@ -15,10 +15,10 @@
 
 #include "uv11.h"
 
-class Server :public uv::TcpServer
+class BBU :public uv::TcpServer
 {
 public:
-    Server(uv::EventLoop* loop);
+    BBU(uv::EventLoop* loop);
     //static void writeCallback(uv::WriteInfo& info);
     void SendMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
 	void SendPackMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);

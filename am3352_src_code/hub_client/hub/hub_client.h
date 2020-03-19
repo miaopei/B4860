@@ -37,10 +37,10 @@ unsigned int gpmc_mpi_read_device(int fd,unsigned int module_addr, unsigned int 
 #endif
 
 
-class Client :public uv::TcpClient
+class HUB :public uv::TcpClient
 {
 public:
-    Client(uv::EventLoop* loop);
+    HUB(uv::EventLoop* loop);
 
     void onConnect(ConnectStatus status);
     void reConnect();
@@ -55,7 +55,7 @@ public:
 
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
-    std::shared_ptr<Client> clientptr_;
+    std::shared_ptr<HUB> clientptr_;
     std::string m_source;
     std::string m_rruid;
     std::string m_port;

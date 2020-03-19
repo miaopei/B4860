@@ -33,7 +33,7 @@ string& ClearHeadTailSpace(string &str)
     return str;
 }
 
-void sendMessageThread(Client client)
+void sendMessageThread(HUB hub)
 {
 #if 0
     thread sendMessage([&client](){
@@ -173,9 +173,9 @@ int main(int argc, char* argv[])
     serverIP = argv[1];
 
     SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
-    Client client(loop);
+    HUB hub(loop);
 
-    client.connectToServer(addr);
+    hub.connectToServer(addr);
 
     //sendMessageThread(client);
     //sendMessageThread_2(addr);

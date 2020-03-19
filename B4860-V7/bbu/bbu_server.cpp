@@ -13,13 +13,13 @@
 using namespace uv;
 using namespace std;
 
-Server::Server(EventLoop* loop)
+BBU::BBU(EventLoop* loop)
     :TcpServer(loop)
 {
-    setMessageCallback(std::bind(&Server::OnMessage, this, placeholders::_1, placeholders::_2, placeholders::_3));
+    setMessageCallback(std::bind(&BBU::OnMessage, this, placeholders::_1, placeholders::_2, placeholders::_3));
 }
 
-void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
+void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
 	if(size < HEADLENGTH)
 	{
@@ -57,7 +57,7 @@ void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ss
 	}
 }
 
-void Server::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+void BBU::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
 {
 	/* BBU 为消息处理中心，接收到的都是 request 消息*/
 	switch(std::stoi(packet.GetMsgID()))
@@ -71,21 +71,21 @@ void Server::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& p
 	}
 }
 
-void Server::HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+void BBU::HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
 {
 
 }
 
-void Server::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+void BBU::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
 {
 
 }
-void Server::OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+void BBU::OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
 {
 
 }
 
-void Server::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
 {
 	ClientInfo cInfo;
 	cInfo.s_ip = GetCurrentName(connection);
@@ -109,13 +109,13 @@ void Server::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR&
 	SendPackMessage(connection, packet);
 }
 
-void Server::UnPackData(uv::PacketIR& packet)
+void BBU::UnPackData(uv::PacketIR& packet)
 {
 	/* Json 存储数据 jsoncpp，考虑同时支持 xml 存储数据 */
 	
 }
 
-void Server::SendPackMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
 {
 	std::string data = "CheckResult=0";
     uv::PacketIR packetir;
@@ -145,7 +145,7 @@ void Server::SendPackMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& pac
 
 
 #if 0
-void Server::writeCallback(uv::WriteInfo& info)
+void BBU::writeCallback(uv::WriteInfo& info)
 {
     uv::LogWriter::Instance()->debug("Server::writeCallback");
     if(0 != info.status)
@@ -156,7 +156,7 @@ void Server::writeCallback(uv::WriteInfo& info)
 }
 #endif
 
-void Server::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
+void BBU::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
@@ -178,7 +178,7 @@ void Server::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, 
 }
 
 #if 0
-void Server::SendAllClientMessage(const char* msg, ssize_t size)
+void BBU::SendAllClientMessage(const char* msg, ssize_t size)
 {
     std::map<std::string ,TcpConnectionPtr>  allconnnections;
     getAllConnection(allconnnections);
@@ -192,7 +192,7 @@ void Server::SendAllClientMessage(const char* msg, ssize_t size)
 }
 #endif
 
-void Server::NetworkTopology()
+void BBU::NetworkTopology()
 {
     std::map<std::string, ClientInfo> netTopology;
     GetNetworkTopology(netTopology);
@@ -210,7 +210,7 @@ void Server::NetworkTopology()
     }
 }
 
-void Server::TestGet()
+void BBU::TestGet()
 {
     std::vector<TcpConnectionPtr> hubsConnection;
     GetHUBsConnection(hubsConnection);

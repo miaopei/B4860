@@ -146,6 +146,9 @@ public:
     int GetLength();
     std::string GetData();
 
+	void EchoPackMessage();
+	void EchoUnPackMessage();
+
 	//int Source2Destination();
 	//int Destination2Source();
 	

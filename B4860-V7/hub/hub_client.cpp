@@ -13,21 +13,21 @@
 using namespace uv;
 using namespace std;
 
-Client::Client(uv::EventLoop* loop)
+HUB::HUB(uv::EventLoop* loop)
     :TcpClient(loop),
     sockAddr(nullptr)
 {
-    setConnectStatusCallback(std::bind(&Client::onConnect, this, std::placeholders::_1));
-    setMessageCallback(std::bind(&Client::RecvMesg, this, std::placeholders::_1, std::placeholders::_2));
+    setConnectStatusCallback(std::bind(&HUB::onConnect, this, std::placeholders::_1));
+    setMessageCallback(std::bind(&HUB::RecvMesg, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-void Client::connectToServer(uv::SocketAddr& addr)
+void HUB::connectToServer(uv::SocketAddr& addr)
 {
     sockAddr = std::make_shared<uv::SocketAddr>(addr);
     connect(addr);
 }
 
-void Client::reConnect()
+void HUB::reConnect()
 {
     uv::Timer* timer = new uv::Timer(loop_, 500, 0, [this](uv::Timer* ptr)
     {
@@ -40,7 +40,7 @@ void Client::reConnect()
     timer->start();
 }
 
-void Client::sendTestMessage()
+void HUB::sendTestMessage()
 {
     // packet 封装
 #if 1
@@ -137,7 +137,7 @@ void Client::sendTestMessage()
 #endif
 }
 
-void Client::onConnect(ConnectStatus status)
+void HUB::onConnect(ConnectStatus status)
 {
     if(status != ConnectStatus::OnConnectSuccess)
     {
@@ -147,7 +147,7 @@ void Client::onConnect(ConnectStatus status)
     }
 }
 
-void Client::newMessage(const char* buf, ssize_t size)
+void HUB::newMessage(const char* buf, ssize_t size)
 {
     std::cout << "HUB newMessage: " << std::string(buf, size) << std::endl;
 
@@ -170,14 +170,14 @@ void Client::newMessage(const char* buf, ssize_t size)
 #endif
 }
 
-void Client::RecvMesg(const char* buf, ssize_t size)
+void HUB::RecvMesg(const char* buf, ssize_t size)
 {
     std::cout << "HUB Recv Msg: " << std::string(buf, size) << std::endl;
     //string msg = "ttt";
     //write(msg.c_str(), msg.length());
 }
 
-void Client::SendMesg(const char* buf, ssize_t size)
+void HUB::SendMesg(const char* buf, ssize_t size)
 {
     std::cout << "Client::SendMesg" << std::endl;
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
@@ -198,7 +198,7 @@ void Client::SendMesg(const char* buf, ssize_t size)
 
 }
 
-void Client::SendMesgThread()
+void HUB::SendMesgThread()
 {
     sendTestMessage();
 #if 0

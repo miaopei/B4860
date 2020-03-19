@@ -15,10 +15,10 @@
 #include "uv11.h"
 
 
-class Client :public uv::TcpClient
+class HUB :public uv::TcpClient
 {
 public:
-    Client(uv::EventLoop* loop);
+    HUB(uv::EventLoop* loop);
 
     void connectToServer(uv::SocketAddr& addr);
     void reConnect();
@@ -30,7 +30,7 @@ public:
     void SendMesgThread();
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
-    std::shared_ptr<Client> clientptr_;
+    std::shared_ptr<HUB> clientptr_;
 };
 
 #endif // TEST_CLIENT_H

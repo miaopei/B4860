@@ -13,22 +13,22 @@
 using namespace uv;
 using namespace std;
 
-Client::Client(uv::EventLoop* loop)
+HUB::HUB(uv::EventLoop* loop)
     :TcpClient(loop),
     sockAddr(nullptr)
 {
-    setConnectStatusCallback(std::bind(&Client::onConnect, this, std::placeholders::_1));
-    setMessageCallback(std::bind(&Client::RecvMessage, this, std::placeholders::_1, std::placeholders::_2));
+    setConnectStatusCallback(std::bind(&HUB::onConnect, this, std::placeholders::_1));
+    setMessageCallback(std::bind(&HUB::RecvMessage, this, std::placeholders::_1, std::placeholders::_2));
     SetRHUBInfo();
 }
 
-void Client::connectToServer(uv::SocketAddr& addr)
+void HUB::connectToServer(uv::SocketAddr& addr)
 {
     sockAddr = std::make_shared<uv::SocketAddr>(addr);
     connect(addr);
 }
 
-void Client::onConnect(ConnectStatus status)
+void HUB::onConnect(ConnectStatus status)
 {
     if(status != ConnectStatus::OnConnectSuccess)
     {
@@ -38,7 +38,7 @@ void Client::onConnect(ConnectStatus status)
     }
 }
 
-void Client::reConnect()
+void HUB::reConnect()
 {
     uv::Timer* timer = new uv::Timer(loop_, 500, 0, [this](uv::Timer* ptr)
     {
@@ -51,7 +51,7 @@ void Client::reConnect()
     timer->start();
 }
 
-void Client::SendConnectMessage()
+void HUB::SendConnectMessage()
 {
     std::string data = "Version=1.0";
     uv::PacketIR packetir;
@@ -83,7 +83,7 @@ void Client::SendConnectMessage()
 	write(send_buf.c_str(), send_buf.length());
 }
 
-void Client::SetRHUBInfo()
+void HUB::SetRHUBInfo()
 {
     int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
     /* 获取 rhub 的 port id 信息 */
@@ -102,7 +102,7 @@ void Client::SetRHUBInfo()
     gpmc_mpi_close(mpi_fd);
 }
 
-void Client::GetRHUBDelayInfo()
+void HUB::GetRHUBDelayInfo()
 {
     int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
     /* 获取 rhub 的处理时延  */
@@ -171,14 +171,14 @@ void Client::GetRHUBDelayInfo()
 #endif
 }
 
-void Client::RecvMessage(const char* buf, ssize_t size)
+void HUB::RecvMessage(const char* buf, ssize_t size)
 {
     std::cout << "HUB Recv Msg: " << std::string(buf, size) << std::endl;
 
     /* 接收到的数据解析 */
 }
 
-void Client::SendMessage(const char* buf, ssize_t size)
+void HUB::SendMessage(const char* buf, ssize_t size)
 {
     std::cout << "Client::SendMesg" << std::endl;
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
