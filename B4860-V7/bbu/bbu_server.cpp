@@ -28,26 +28,11 @@ void Server::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ss
 	}
 
 	std::string revb_buf = std::string(buf, size);
-    uv::PacketIR packetir;
-    packetir.UnPackMessage(revb_buf);
-    
-	MessageProcess(connection, packetir);
-}
+    uv::PacketIR packet;
+    packet.UnPackMessage(revb_buf);
 
-void Server::MessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
-{
-	std::cout << "解析 packet:" << std::endl;
-    std::cout << "\tPacket: " << packet.GetPacket() << std::endl;
-    std::cout << "\tHead: " << packet.GetHead() << std::endl;
-    std::cout << "\tSource: " << packet.GetSource() << std::endl;
-	std::cout << "\tDestination: " << packet.GetDestination() << std::endl;
-    std::cout << "\tState: " << packet.GetState() << std::endl;
-    std::cout << "\tMsgID: " << packet.GetMsgID() << std::endl;
-    std::cout << "\tRRUID: " << packet.GetRRUID() << std::endl;
-    std::cout << "\tPort: " << packet.GetPort() << std::endl;
-	std::cout << "\tUPort: " << packet.GetUPort() << std::endl;
-    std::cout << "\tLength: " << packet.GetLength() << std::endl;
-    std::cout << "\tData: " << packet.GetData() << std::endl;
+	/* 打印解包信息 */
+	packet.EchoUnPackMessage();
 
 	switch(std::stoi(packet.GetDestination()))
 	{
@@ -121,7 +106,7 @@ void Server::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR&
 	/* Version Check */
 	/* TODO*/
 
-	PackMessageSend(connection, packet);
+	SendPackMessage(connection, packet);
 }
 
 void Server::UnPackData(uv::PacketIR& packet)
@@ -130,7 +115,7 @@ void Server::UnPackData(uv::PacketIR& packet)
 	
 }
 
-void Server::PackMessageSend(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+void Server::SendPackMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
 {
 	std::string data = "CheckResult=0";
     uv::PacketIR packetir;
@@ -144,19 +129,9 @@ void Server::PackMessageSend(uv::TcpConnectionPtr& connection, uv::PacketIR& pac
                      packet.GetUPort());
 
     packetir.PackMessage(data, data.length());
-    std::cout << "封装 packet:" << std::endl;
-    std::cout << "\tPacket: " << packetir.GetPacket() << std::endl;
-    std::cout << "\tHead: " << packetir.GetHead() << std::endl;
-    std::cout << "\tSource: " << packetir.GetSource() << std::endl;
-	std::cout << "\tDestination: " << packetir.GetDestination() << std::endl;
-    std::cout << "\tState: " << packetir.GetState() << std::endl;
-    std::cout << "\tMsgID: " << packetir.GetMsgID() << std::endl;
-    std::cout << "\tRRUID: " << packetir.GetRRUID() << std::endl;
-    std::cout << "\tPort: " << packetir.GetPort() << std::endl;
-	std::cout << "\tUPort: " << packetir.GetUPort() << std::endl;
-    std::cout << "\tLength: " << packetir.GetLength() << std::endl;
-    std::cout << "\tData: " << packetir.GetData() << std::endl;
-    std::cout << "\tData Length: " << data.length() << std::endl;
+
+	/* 打印数据封装信息 */
+	packetir.EchoPackMessage();
 
 	std::string send_buf = packetir.GetPacket();
 
@@ -169,7 +144,7 @@ void Server::PackMessageSend(uv::TcpConnectionPtr& connection, uv::PacketIR& pac
 
 
 
-
+#if 0
 void Server::writeCallback(uv::WriteInfo& info)
 {
     uv::LogWriter::Instance()->debug("Server::writeCallback");
@@ -179,6 +154,7 @@ void Server::writeCallback(uv::WriteInfo& info)
     }
     delete[] info.buf;
 }
+#endif
 
 void Server::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
@@ -201,6 +177,7 @@ void Server::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, 
     }
 }
 
+#if 0
 void Server::SendAllClientMessage(const char* msg, ssize_t size)
 {
     std::map<std::string ,TcpConnectionPtr>  allconnnections;
@@ -213,6 +190,7 @@ void Server::SendAllClientMessage(const char* msg, ssize_t size)
         SendMessage(conn.second, msg, size);
     }
 }
+#endif
 
 void Server::NetworkTopology()
 {

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstring>
 #include "include/PacketIR.h"
+#include "include/LogWriter.h"
 
 using namespace uv;
 
@@ -166,6 +167,39 @@ std::string uv::PacketIR::GetData()
 {
 	return m_data;
 }
+
+void uv::PacketIR::EchoPackMessage()
+{
+	std::cout << "封装 packet:" 
+		<< "\n\tPacket: " << m_packet
+		<< "\n\tSource: " << m_source << " [HUB,RRU,BBU,OAM]"
+		<< "\n\tDestination: " << m_destination << " [HUB,RRU,BBU,OAM]"
+		<< "\n\tState: " << m_state << " [REQUEST,RESPONSE]"
+		<< "\n\tMsgID: " << m_msgID 
+		<< "\n\tRRUID: " << m_rruid
+		<< "\n\tPort: " << m_port
+		<< "\n\tUPort: " << m_uport
+		<< "\n\tLength: " << m_length
+		<< "\n\tData: " << m_data
+		<< std::endl;
+}
+
+void uv::PacketIR::EchoUnPackMessage()
+{
+	std::cout << "解析 packet:" 
+		<< "\n\tPacket: " << m_packet
+		<< "\n\tSource: " << m_source << " [HUB,RRU,BBU,OAM]"
+		<< "\n\tDestination: " << m_destination << " [HUB,RRU,BBU,OAM]"
+		<< "\n\tState: " << m_state << " [REQUEST,RESPONSE]"
+		<< "\n\tMsgID: " << m_msgID 
+		<< "\n\tRRUID: " << m_rruid
+		<< "\n\tPort: " << m_port
+		<< "\n\tUPort: " << m_uport
+		<< "\n\tLength: " << m_length
+		<< "\n\tData: " << m_data
+		<< std::endl;
+}
+
 
 #if 0
 int uv::PacketIR::Source2Destination()

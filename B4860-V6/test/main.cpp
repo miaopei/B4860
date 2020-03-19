@@ -188,6 +188,9 @@ int main()
 
     std::cout << "s2d = " << (enum Destination)OAM << std::endl;
 
+    std::cout << "enum2string: " << Source(RRU) << std::endl;
+
+
 #endif
 
     return 0;
