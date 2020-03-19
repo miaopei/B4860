@@ -27,13 +27,16 @@
 #include <linux/i2c-dev.h>
 #include <linux/spi/spidev.h>
 
-#define GPMC_MPI_DEV	"/dev/gpmc_mpi"
+#define GPMC_MPI_DEV	"/dev/gpmc"
 
 /*gpmc_MPI CONFIG IP REG*/
 #define  GPMC_MPI_REG0	0X00
 #define  GPMC_MPI_REG1	0X02
 #define  GPMC_MPI_REG2	0X04
-#define  GPMC_MPI_REG3	0X08
+#define  GPMC_MPI_REG3	0X06
+#define  GPMC_MPI_REG4	0X08
+#define  GPMC_MPI_REG5	0X0a
+#define  GPMC_MPI_REG6	0X0c
 /*gpmc_MPI CONFIG VALUES*/
 #define  GPMC_MPI_EN         0x00000001
 /*gpmc_MPI CONFIG CTRL*/

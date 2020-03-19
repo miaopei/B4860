@@ -20,9 +20,8 @@ all:
 	#@cd $(BUILD_DIR)/$(LIBUV) && sh autogen.sh && ./configure --host=powerpc64-fsl-linux --prefix=$(WORK_ROOT)/../ && make && make install
 	@cp -rf $(LIBUV)/* $(BUILD_DIR)
 	@cp libstdc++.so.6 ./build/lib
-	@cp librhub/librhub.so ./build/lib
-	@cp librhub/rhub.h ./build/include
-	@cp librhub/gpmc_mpi.h ./build/include
+	@cp -d librhub/*.so* ./build/lib
+	@cp librhub/*.h ./build/include
 	make -C $(WORK_ROOT)/src
 	#make -C $(WORK_ROOT)/bbu
 	@make -C $(WORK_ROOT)/hub

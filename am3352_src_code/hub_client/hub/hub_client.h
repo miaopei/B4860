@@ -11,6 +11,8 @@
 
 #include "uv11.h"
 
+#define TOFFSET 3
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,7 +21,7 @@ extern "C" {
 
 uint16_t get_rhup_port_id(int mpi_fd, uint8_t port);
 void get_rhup_cpri_stat(int mpi_fd, uint8_t dir, uint8_t port, struct rhup_cpri_stat* cpri_stat);
-void get_rhup_delay(int mpi_fd, uint8_t dir,struct rhup_data_delay* rhup_delay);
+void get_rhup_delay(int mpi_fd, uint8_t dir, struct rhup_data_delay* rhup_delay);
 uint16_t get_rhup_port_stat(int mpi_fd);
 void get_rhup_t14_delay(int mpi_fd, struct rhup_t14_delay* t14_delay);
 
@@ -40,16 +42,23 @@ class Client :public uv::TcpClient
 public:
     Client(uv::EventLoop* loop);
 
-    void connectToServer(uv::SocketAddr& addr);
-    void reConnect();
-    void sendTestMessage();
     void onConnect(ConnectStatus status);
-    void newMessage(const char* buf, ssize_t size);
-    void RecvMesg(const char* buf, ssize_t size);
-    void SendMesg(const char* buf, ssize_t size);
-    void SendMesgThread();
+    void reConnect();
+    void SendConnectMessage();
+    void connectToServer(uv::SocketAddr& addr);
+    void RecvMessage(const char* buf, ssize_t size);
+
+    void SetRHUBInfo();
+    void GetRHUBDelayInfo();
+
+    void SendMessage(const char* buf, ssize_t size);
+
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
     std::shared_ptr<Client> clientptr_;
+    std::string m_source;
+    std::string m_rruid;
+    std::string m_port;
+    std::string m_uport;
 };
 

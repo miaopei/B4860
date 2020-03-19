@@ -70,12 +70,17 @@ unsigned int gpmc_mpi_write_device(int fd,unsigned int module_addr, unsigned int
 	struct gpmc_mpi_data gpmc_mpi_data;
 	unsigned int mpi_write_addr;
 
-	mpi_write_addr = ( module_addr << 16 ) | reg_addr;
+	mpi_write_addr = reg_addr;
 	gpmc_mpi_data.regaddress = GPMC_MPI_REG1;
 	gpmc_mpi_data.regvalue = mpi_write_addr;
 	ioctl(fd,GPMC_MPI_WR,(unsigned long *)&gpmc_mpi_data);
 	usleep(200);
+	mpi_write_addr = module_addr;
 	gpmc_mpi_data.regaddress = GPMC_MPI_REG2;
+	gpmc_mpi_data.regvalue = mpi_write_addr;
+	ioctl(fd,GPMC_MPI_WR,(unsigned long *)&gpmc_mpi_data);
+	usleep(200);
+	gpmc_mpi_data.regaddress = GPMC_MPI_REG3;
 	gpmc_mpi_data.regvalue = reg_wdata;
 	ioctl(fd,GPMC_MPI_WR,(unsigned long *)&gpmc_mpi_data);
 	usleep(200);
@@ -101,8 +106,13 @@ unsigned int gpmc_mpi_read_device(int fd,unsigned int module_addr, unsigned int 
 	unsigned int mpi_read_addr;
 	unsigned int mpi_read_data;
 
-	mpi_read_addr = ( module_addr << 16 ) | reg_addr;
+	mpi_read_addr = reg_addr;
 	gpmc_mpi_data.regaddress = GPMC_MPI_REG1;
+	gpmc_mpi_data.regvalue = mpi_read_addr;
+	ioctl(fd,GPMC_MPI_WR,(unsigned long *)&gpmc_mpi_data);
+	usleep(200);
+	mpi_read_addr = module_addr;
+	gpmc_mpi_data.regaddress = GPMC_MPI_REG2;
 	gpmc_mpi_data.regvalue = mpi_read_addr;
 	ioctl(fd,GPMC_MPI_WR,(unsigned long *)&gpmc_mpi_data);
 	usleep(200);
@@ -114,7 +124,7 @@ unsigned int gpmc_mpi_read_device(int fd,unsigned int module_addr, unsigned int 
 	gpmc_mpi_data.regvalue = 0x00000002;
 	ioctl(fd,GPMC_MPI_WR,(unsigned long *)&gpmc_mpi_data);
 	usleep(500);
-	gpmc_mpi_data.regaddress = GPMC_MPI_REG3;
+	gpmc_mpi_data.regaddress = GPMC_MPI_REG4;
 	gpmc_mpi_data.regvalue = mpi_read_data;
 	ioctl(fd,GPMC_MPI_RD,(unsigned long *)&gpmc_mpi_data);
 	mpi_read_data = gpmc_mpi_data.regvalue;
