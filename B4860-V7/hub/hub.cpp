@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string.h>
 
-#include "hub_client.h"
+#include "hub.h"
 
 using namespace uv;
 using namespace std;
@@ -72,68 +72,6 @@ void HUB::sendTestMessage()
 
 	std::string send_buf = packetir.GetPacket();
 	write(send_buf.c_str(), send_buf.length());
-#endif
-
-    // C 风格 packet
-#if 0
-    const char *data = "timeDelay=100&upDelay=20&downDelay=66";
-
-    std::cout << "data_size=" << strlen(data) << std::endl;
-
-    uv::PacketIR::PackHead packet;
-    memset(packet.data, 0, sizeof(packet.data));
-    strcpy(packet.t_type, "1");
-    strcpy(packet.t_msgID, "1001");
-    strcpy(packet.t_state, "1");
-    strcpy(packet.t_RRUID, "4");
-    strcpy(packet.t_PORT, "2");
-
-    char *send_buf = new char[sizeof(packet) + strlen(data) + 1];
-    memcpy(send_buf, &packet, sizeof(packet));
-    strcat(send_buf, data);
-
-    std::cout << "send_buf=" << send_buf << std::endl;
-    std::cout << "send_buf_size=" << strlen(send_buf) << std::endl;
-
-    write(send_buf, (int)strlen(send_buf));
-
-    delete[] send_buf;
-#endif
-
-    // C++ 风格 Packet
-#if 0
-    std::string data = "time Delay=100&up Delay=20&down Delay=66";
-    std::cout << "data_size=" << data.length() << std::endl;
-    
-    uv::PacketIR::PackHead packet;
-    strcpy(packet.t_type, "1");
-    strcpy(packet.t_msgID, "1001");
-    strcpy(packet.t_state, "1");
-    strcpy(packet.t_RRUID, "4");
-    strcpy(packet.t_PORT, "2");
-
-    char s[sizeof(packet)];
-    memset(s, 0, sizeof(s));
-    memcpy(s, &packet, sizeof(packet));
-    std::string send_buf(s);
-    send_buf += data;
-
-    std::cout << "send_data=" << send_buf << std::endl;
-    std::cout << "send_buf_size=" << send_buf.length() << std::endl;
-
-    write(send_buf.c_str(), (int)send_buf.length());
-#endif 
-
-#if 0
-    if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
-    {
-        //write(data, (int)sizeof(data));
-        write(send_buf, (int)sizeof(send_buf));
-    } else {
-        uv::Packet packetxx;
-        //packetxx.pack(data.c_str(), data.length());
-        //write(packetxx.Buffer().c_str(), packetxx.PacketSize());
-    }
 #endif
 }
 
@@ -201,59 +139,5 @@ void HUB::SendMesg(const char* buf, ssize_t size)
 void HUB::SendMesgThread()
 {
     sendTestMessage();
-#if 0
-    //跨线程发送数据
-    std::thread thread([]()
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        //char* data = new char[4] {'t','e','s','t'};
-#if 1
-		std::string data = "key=value&key2=value2";
-	    uv::PacketIR packetir;
-	    
-	    packetir.SetHead(uv::PacketIR::HUB, 
-	                     uv::PacketIR::MSG_GET_NETWORK_TOPOLOGY, 
-	                     uv::PacketIR::REQUEST,
-	                     uv::PacketIR::RRUID_2,
-	                     uv::PacketIR::PORT_6);
-
-	    packetir.PackMessage(data, data.length());
-	    std::cout << "封装 packet:" << std::endl;
-	    std::cout << "\tGetPacket: " << packetir.GetPacket() << std::endl;
-	    std::cout << "\tGetHead: " << packetir.GetHead() << std::endl;
-	    std::cout << "\tGetType: " << packetir.GetType() << std::endl;
-	    std::cout << "\tGetMsgID: " << packetir.GetMsgID() << std::endl;
-	    std::cout << "\tGetState: " << packetir.GetState() << std::endl;
-	    std::cout << "\tGetRRUID: " << packetir.GetRRUID() << std::endl;
-	    std::cout << "\tGetPort: " << packetir.GetPort() << std::endl;
-	    std::cout << "\tGetLength: " << packetir.GetLength() << std::endl;
-	    std::cout << "\tGetData: " << packetir.GetData() << std::endl;
-	    std::cout << "\tData Length: " << data.length() << std::endl;
-
-		std::string send_buf = packetir.GetPacket();
-		//char* data = new char[send_buf.length()]{};	
-		//strcpy(data,send_buf.c_str());
-		std::cout << "send_buf=" << send_buf << std::endl;
-		//std::cout << "data=" << data << std::endl;
-		write(send_buf.c_str(), send_buf.length());
-#endif   
-#if 0
-        //线程安全;
-        client.writeInLoop(send_buf.c_str(), send_buf.length(),
-        //client.writeInLoop(data, sizeof(data),
-            [](uv::WriteInfo& info)
-        {
-            //数据需要在发生完成回调中释放
-            //write message error.
-            if (0 != info.status)
-            {
-                //打印错误信息
-                std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
-            }
-            delete[] info.buf;
-        });
-#endif
-    });
-#endif
 }
 

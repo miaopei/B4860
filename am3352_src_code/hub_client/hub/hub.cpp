@@ -1,5 +1,5 @@
 /*************************************************************************
-	> File Name: hub_client.cpp
+	> File Name: hub.cpp
 	> Author: miaopei
 	> Mail: miaopei@baicells.com 
 	> Created Time: 2020年02月12日 星期三 11时16分50秒
@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string.h>
 
-#include "hub_client.h"
+#include "hub.h"
 
 using namespace uv;
 using namespace std;
