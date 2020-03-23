@@ -1,5 +1,5 @@
 /*************************************************************************
-	> File Name: bbu_server.cpp
+	> File Name: bbu.cpp
 	> Author: miaopei
 	> Mail: miaopei@baicells.com 
 	> Created Time: 2020年02月12日 星期三 11时15分05秒
@@ -66,6 +66,10 @@ void BBU::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& pack
 			std::cout << "[msg_connect]" << std::endl;
 			SetConnectionClient(connection, packet);
             break;
+		case uv::PacketIR::MSG_DELAY_MEASUREMENT:
+			std::cout << "[msg_delay_measurement]" << std::endl;
+			DelayMeasurementProcess(connection, packet);
+			break;
 		default:
 			std::cout << "[Error: MessageID Error]" << std::endl;
 	}
@@ -108,6 +112,12 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& pa
 
 	SendPackMessage(connection, packet);
 }
+
+void BBU::DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
+{
+	std::cout << "packet.data=" << packet.GetData() << std::endl;
+}
+
 
 void BBU::UnPackData(uv::PacketIR& packet)
 {

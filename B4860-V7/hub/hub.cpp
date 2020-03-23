@@ -294,40 +294,35 @@ void HUB::TestProcess(uv::PacketIR& packet)
                    to_string(uv::PacketIR::TO_BBU),
                    to_string(uv::PacketIR::RESPONSE),
                    to_string(uv::PacketIR::MSG_DELAY_MEASUREMENT),
-                   m_rruid, m_port, m_uport);
-
-    std::string head = packetir.GetHead();
-#if 1 
-    struct delay_measurement_info dm_info;
-    memset(&dm_info, 0, sizeof(struct delay_measurement_info));
-    //(struct delay_measurement_info*)malloc(sizeof(struct delay_measurement_info));
-    memcpy(dm_info.head, head.c_str(), sizeof(dm_info.head)); 
+                   m_rruid, m_port, m_uport); 
 
     struct rhub_data_delay* rhub_up = (struct rhub_data_delay*)malloc(sizeof(struct rhub_data_delay));
-    memset(rhub_up, 0, sizeof(struct rhub_data_delay));
     TestGetRhubDelay(0, rhub_up);
-    dm_info.rhub_delay_up = rhub_up;
+    std::string data = std::string("delay1_up=" + to_string(rhub_up->delay1) + 
+								   "&delay2_up=" + to_string(rhub_up->delay2));
 
     struct rhub_data_delay* rhub_down = (struct rhub_data_delay*)malloc(sizeof(struct rhub_data_delay));
-    memset(rhub_down, 0, sizeof(struct rhub_data_delay));
     TestGetRhubDelay(1, rhub_down);
-    dm_info.rhub_delay_down = rhub_down;
+	data += std::string("&delay1_down=" + to_string(rhub_down->delay1) + 
+						"&delay2_down=" + to_string(rhub_down->delay2));
 
     struct rhub_t14_delay* t14_delay = (struct rhub_t14_delay*)malloc(sizeof(struct rhub_t14_delay));
     TestGetRhubT14Delay(t14_delay);
-    dm_info.rhub_t14 = t14_delay;
-    
-    char buf[sizeof(struct rhub_data_delay)+1];
-    memcpy(buf, rhub_up, sizeof(struct rhub_data_delay));
+	data += std::string("&t14_delay1=" + to_string(t14_delay->delay1) + 
+						"&t14_delay2=" + to_string(t14_delay->delay2));
 
-    std::cout << "buf=" << buf << std::endl;
-    SendMessage(buf, sizeof(buf));
+	packetir.PackMessage(data, data.length());
 
-    //free(dm_info);
-    //free(rhub_up);
+	/* 打印数据封装信息 */
+	packetir.EchoPackMessage();
+
+	std::string send_buf = packetir.GetPacket();
+
+	SendMessage(send_buf.c_str(), send_buf.length());
+
+    free(rhub_up);
     free(rhub_down);
     free(t14_delay);
-#endif
 }
 
 void HUB::TestGetRhubDelay(uint8_t dir, struct rhub_data_delay* rhub_delay)

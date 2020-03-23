@@ -19,7 +19,7 @@ HUB::HUB(uv::EventLoop* loop)
 {
     setConnectStatusCallback(std::bind(&HUB::onConnect, this, std::placeholders::_1));
     setMessageCallback(std::bind(&HUB::RecvMessage, this, std::placeholders::_1, std::placeholders::_2));
-    setMessageCallback(std::bind(&HUB::SendMessage, this, std::placeholders::_1, std::placeholders::_2));
+    //setMessageCallback(std::bind(&HUB::SendMessage, this, std::placeholders::_1, std::placeholders::_2));
     SetRHUBInfo();
 }
 
@@ -173,7 +173,34 @@ void HUB::SendRHUBDelayInfo()
                    to_string(uv::PacketIR::MSG_DELAY_MEASUREMENT),
                    m_rruid, m_port, m_uport);
 
-    
+
+    struct rhub_data_delay* rhub_up = (struct rhub_data_delay*)malloc(sizeof(struct rhub_data_delay));
+    TestGetRhubDelay(0, rhub_up);
+    std::string data = std::string("delay1_up=" + to_string(rhub_up->delay1) + 
+								   "&delay2_up=" + to_string(rhub_up->delay2));
+
+    struct rhub_data_delay* rhub_down = (struct rhub_data_delay*)malloc(sizeof(struct rhub_data_delay));
+    TestGetRhubDelay(1, rhub_down);
+	data += std::string("&delay1_down=" + to_string(rhub_down->delay1) + 
+						"&delay2_down=" + to_string(rhub_down->delay2));
+
+    struct rhub_t14_delay* t14_delay = (struct rhub_t14_delay*)malloc(sizeof(struct rhub_t14_delay));
+    TestGetRhubT14Delay(t14_delay);
+	data += std::string("&t14_delay1=" + to_string(t14_delay->delay1) + 
+						"&t14_delay2=" + to_string(t14_delay->delay2));
+
+	packetir.PackMessage(data, data.length());
+
+	/* 打印数据封装信息 */
+	packetir.EchoPackMessage();
+
+	std::string send_buf = packetir.GetPacket();
+
+	SendMessage(send_buf.c_str(), send_buf.length());
+
+    free(rhub_up);
+    free(rhub_down);
+    free(t14_delay);
 
     //free(rhup_delay);
     //free(t14_delay);

@@ -54,7 +54,7 @@ struct rhub_t14_delay{
 };
 
 struct delay_measurement_info {
-    char head[HEADLENGTH];
+    char head[HEADLENGTH+1];
     struct rhub_data_delay* rhub_delay_up;
     struct rhub_data_delay* rhub_delay_down;
     struct rhub_t14_delay* rhub_t14;

@@ -167,7 +167,7 @@ int main()
     std::cout << "size-ss=" << strlen(ss) << std::endl;
 #endif
 
-#if 1
+#if 0
     enum Source
     {
         HUB     = 0,
@@ -189,10 +189,39 @@ int main()
     std::cout << "s2d = " << (enum Destination)OAM << std::endl;
 
     std::cout << "enum2string: " << Source(RRU) << std::endl;
-
-
 #endif
 
+    struct Test
+    {
+        int a;
+        char b;
+        char c[1024];
+        unsigned short d;
+
+    };
+
+    char* ch = "abcdefghijklmn1234567890";
+    char* chTest = new char[2048];
+    memset(chTest, 0, sizeof(chTest));
+     
+    Test* t1 = new Test;
+    t1->a = 10;
+    t1->b = -20;
+    strcpy(t1->c, ch);
+    t1->d = 12;
+     
+    //结构体转为char*
+    memcpy(chTest, (char*)t1, sizeof(Test));
+
+    std::cout << "chTest=" << chTest << std::endl;
+    
+    //char*转为结构体
+    Test* t2;
+    t2 = (Test*)chTest;
+
+    std::cout << "t2.a=" << t2->a << std::endl;
+    std::cout << "t2.c=" << t2->c << std::endl;
+    
     return 0;
 }
 

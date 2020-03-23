@@ -1,5 +1,5 @@
 /*************************************************************************
-	> File Name: bbu_server.h
+	> File Name: bbu.h
 	> Author: miaopei
 	> Mail: miaopei@baicells.com 
 	> Created Time: 2020年02月12日 星期三 11时15分58秒
@@ -30,6 +30,7 @@ public:
 	void OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
 
 	void SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
+	void DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
 
 	void UnPackData(uv::PacketIR& packet);
 	
