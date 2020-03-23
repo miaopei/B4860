@@ -54,3 +54,15 @@ HUB 时延测试量参数：
   <i class="fas fa-terminal fa-stack-1x fa-inverse"></i>miaow</span>
 
 
+
+
+
+Netconf 升级相关操作步骤：
+
+1. 写升级的yang模型文件
+2. 实现对应的rpc接口函数
+3. 在netopeer中安装升级模型
+4. 检查模块安装，启动netopeer服务
+5. 准备对应操作的netconf框架的xml文件
+6. netopeer-cli 测试相关
+

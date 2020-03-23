@@ -36,6 +36,10 @@ unsigned int gpmc_mpi_read_device(int fd,unsigned int module_addr, unsigned int 
 }
 #endif
 
+struct delay_measurement_info {
+    struct rhup_data_delay* rhup_delay;
+    struct rhup_t14_delay* t14_delay;
+};
 
 class HUB :public uv::TcpClient
 {
@@ -49,7 +53,10 @@ public:
     void RecvMessage(const char* buf, ssize_t size);
 
     void SetRHUBInfo();
-    void GetRHUBDelayInfo();
+    void SendRHUBDelayInfo();
+
+    void ConnectResultProcess(uv::PacketIR& packet);
+
 
     void SendMessage(const char* buf, ssize_t size);
 

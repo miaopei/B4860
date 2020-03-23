@@ -70,6 +70,7 @@ public:
         MSG_GET_NETWORK_TOPOLOGY	= 1006,
         MSG_CONNECT					= 1040,
         MSG_DELAY_MEASUREMENT 		= 1041,
+        MSG_DELAY_COMPENSATION      = 1042,
         MSG_END                     = 9999
     };
 
