@@ -12,6 +12,10 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+#include <map>
+#include <vector>
+#include <set>
+#include <regex>
 
 #include "uv11.h"
 
@@ -40,14 +44,19 @@ public:
     /* 时延补偿计算，整个链路如何实现自动计算？补偿计算值排序，最大时延支持可配置 */
     void CalculationDelayCompensation();
     /* HUB 时延信息存储map维护，设备掉电需要更新map RRU新接入需要更新 */
-    void HubDelayInfo();
+    void HubDelayInfo(uv::PacketIR& packet);
+
+
+
+
 
     void NetworkTopology();
 
     void TestGet();
 
 private:
-    void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size); 
+    void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
+	int m_base = 2;
 };
 
 #endif // BBU_SERVER_H

@@ -126,6 +126,7 @@ void BBU::DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::PacketIR
     {
         case uv::PacketIR::HUB:
             std::cout << "[hub_delay_measurement]" << std::endl;
+			HubDelayInfo(packet);
             break;
         case uv::PacketIR::RRU:
             std::cout << "[rru_delay_measurement]" << std::endl;
@@ -163,6 +164,41 @@ void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& packet
 	std::string send_buf = packetir.GetPacket();
 
 	SendMessage(connection, send_buf.c_str(), send_buf.length());
+}
+
+
+void BBU::HubDelayInfo(uv::PacketIR& packet)
+{
+#if 1
+	/* 测试hubdelayinfo */ 
+	std::string data = packet.GetData();
+	std::string rruid = "1";
+    //std::map<std::string, atom> delay_map;
+    SplitStrings2Map(data, rruid, delay_map);
+
+    //rruid = "3";
+    SplitStrings2Map(data, packet.GetRRUID(), delay_map);
+
+	rruid = "4";
+    SplitStrings2Map(data, rruid, delay_map);
+
+    for(auto &it : delay_map)
+    {
+        std::cout << "key=" << it.first 
+                  << " key.key=" << it.second.key
+                  << " key.value=" << it.second.value << std::endl;
+    }
+
+    rruid = "1";
+    DeleteHubDelay(rruid, delay_map);
+    std::cout << "/t----------------------" << std::endl;
+    for(auto &it : delay_map)
+    {
+        std::cout << "key=" << it.first 
+                  << " key.key=" << it.second.key
+                  << " key.value=" << it.second.value << std::endl;
+    }
+#endif
 }
 
 

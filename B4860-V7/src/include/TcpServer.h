@@ -11,12 +11,14 @@
 #ifndef UV_TCP_SERVER_H
 #define UV_TCP_SERVER_H
 
+#include <iostream>
 #include <functional>
 #include <memory>
 #include <set>
 #include <map>
 #include <vector>
-
+#include <cstring>
+#include <regex>
 
 #include "TcpAccepter.h"
 #include "TcpConnection.h"
@@ -79,6 +81,20 @@ public:
 	void GetOAMConnection(std::vector<TcpConnectionPtr>& oamConnection);
 	void GetNetworkTopology(std::map<std::string, ClientInfo>& netTopology);
 
+	std::vector<std::string> Split(const std::string& in, const std::string& delim);
+	/* 实现key-value数据插入及修改 */
+	typedef struct atom_node
+	{
+	    std::string key;
+	    std::string value;
+
+	} atom;
+	typedef std::pair <std::string, struct atom_node> _KV_ ;
+	std::map<std::string, atom> delay_map;
+
+	void SplitStrings2Map(const std::string &input, std::string rruid, std::map<std::string, atom>& map);
+	void DeleteHubDelay(std::string rruid, std::map<std::string, atom>& map);
+
     void setTimeout(unsigned int);
 private:
     void onAccept(EventLoop* loop, UVTcpPtr client);
@@ -96,6 +112,8 @@ private:
     OnConnectionStatusCallback onNewConnectCallback_;
     OnConnectionStatusCallback onConnectCloseCallback_;
     TimerWheel timerWheel_;
+
+	int m_base = 2;
 };
 
 

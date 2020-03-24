@@ -85,6 +85,13 @@ void TcpServer::addConnnection(std::string& name,TcpConnectionPtr connection)
 
 void TcpServer::removeConnnection(string& name)
 {
+	/* 需要处理hub delay info dalay_map*/
+	auto rst = connectionInfo_.find(name);
+    if(rst != connectionInfo_.end())
+    {
+		DeleteHubDelay(rst->second.s_RRUID, delay_map);
+    }
+
     connnections_.erase(name);
 	connectionInfo_.erase(name);
 }
@@ -168,6 +175,77 @@ void TcpServer::GetNetworkTopology(std::map<std::string, ClientInfo>& netTopolog
 	netTopology = connectionInfo_;
 }
 
+std::vector<std::string> TcpServer::Split(const std::string& in, const std::string& delim)
+{
+    vector<string> ret;
+    try
+    {
+        regex re{delim};
+        return vector<string>{
+            sregex_token_iterator(in.begin(), in.end(), re, -1),
+            sregex_token_iterator()
+        };      
+    }
+    catch(const std::exception& e)
+    {
+        std::cout << "error:" << e.what() << std::endl;
+    }
+    return ret;
+}
+
+void TcpServer::SplitStrings2Map(const std::string &input, std::string rruid, std::map<std::string, atom>& map)
+{
+    std::string key;
+    atom v;
+    int cout = 0;
+    vector<string>ret = Split(input.c_str(), "&");
+    int ret_size = ret.size();
+    for(int i = 0; i < ret_size; i++)
+    {
+        /* key = type + delay num  
+         * type: rhub_delay_up(1) rhub_delay_down(2) t14_delay(3) 
+         * delay num: 1-9
+         */
+        cout = (i % m_base) + 1;
+        if(i < m_base)
+        {
+            key = std::string(rruid + "1" + to_string(cout));
+            vector<string>kv = Split(ret[i].c_str(), "=");
+            v.key = kv[0].c_str();
+            v.value = kv[1].c_str();
+            map.insert(_KV_(key, v));
+        } else if((i >= m_base) && (i < (m_base*2)))
+        {
+            key = std::string(rruid + "2" + to_string(cout));
+            vector<string>kv = Split(ret[i].c_str(), "=");
+            v.key = kv[0].c_str();
+            v.value = kv[1].c_str();
+            map.insert(_KV_(key, v));
+        } else if((i >= (m_base*2)) && (i < (m_base*3)))
+        {
+            key = std::string(rruid + "3" + to_string(cout));
+            vector<string>kv = Split(ret[i].c_str(), "=");
+            v.key = kv[0].c_str();
+            v.value = kv[1].c_str();
+            map.insert(_KV_(key, v));
+        }
+    }
+}
+
+void TcpServer::DeleteHubDelay(std::string rruid, std::map<std::string, atom>& map)
+{
+    std::string key;
+    int cout = 0;
+    for(int i = 0; i < (m_base*3); i++)
+    {
+        cout = (i % m_base) + 1;
+        key = std::string(rruid + to_string((i/m_base)+1) + to_string(cout));
+        //std::cout << "key=" << key << std::endl;
+        map.erase(key);
+    }
+}
+
+
 void TcpServer::closeConnection(string& name)
 {
     auto connection = getConnnection(name);
@@ -182,6 +260,13 @@ void TcpServer::closeConnection(string& name)
                 {
                     onConnectCloseCallback_(connection);
                 }
+				/* 需要处理hub delay info dalay_map*/
+				auto rst = connectionInfo_.find(name);
+			    if(rst != connectionInfo_.end())
+			    {
+					DeleteHubDelay(rst->second.s_RRUID, delay_map);
+			    }
+				
                 connnections_.erase(name);
 				connectionInfo_.erase(name);
             }
