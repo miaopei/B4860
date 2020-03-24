@@ -97,140 +97,67 @@ void HUB::SendRHUBDelayInfo()
 {
     int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
     
-    struct delay_measurement_info* dm_info = (struct delay_measurement_info*)malloc(sizeof(struct delay_measurement_info));
-
-    /* 获取 rhub 的处理时延  */
-    //struct rhup_data_delay* rhup_delay = (struct rhup_data_delay*)malloc(sizeof(struct rhup_data_delay));
-    get_rhup_delay(mpi_fd, UP, dm_info->rhup_delay);
-
-#if 0
-    std::cout << "delay1 = " << rhup_delay->delay1 
-              << "\ndelay2 = " << rhup_delay->delay2
-              << "\ndelay3 = " << rhup_delay->delay3
-              << "\ndelay4 = " << rhup_delay->delay4
-              << "\ndelay5 = " << rhup_delay->delay5
-              << "\ndelay6 = " << rhup_delay->delay6
-              << "\ndelay7 = " << rhup_delay->delay7
-              << "\ndelay8 = " << rhup_delay->delay8
-              << "\ndelay9 = " << rhup_delay->delay9
-              << std::endl;
-#endif
-
-    /* 获取 rhub T14 测量时延信息 */
-    //struct rhup_t14_delay* t14_delay = (struct rhup_t14_delay*)malloc(sizeof(struct rhup_t14_delay));
-    get_rhup_t14_delay(mpi_fd, dm_info->t14_delay);
-
-#if 0
-    std::cout << "rhub级联口的T14 = " << t14_delay->delay1
-              << "\nrhub下联 0 号口的T14 = " << t14_delay->delay2
-              << "\nrhub下联 1 号口的T14 = " << t14_delay->delay3
-              << "\nrhub下联 2 号口的T14 = " << t14_delay->delay4
-              << "\nrhub下联 3 号口的T14 = " << t14_delay->delay5
-              << "\nrhub下联 4 号口的T14 = " << t14_delay->delay6
-              << "\nrhub下联 5 号口的T14 = " << t14_delay->delay7
-              << "\nrhub下联 6 号口的T14 = " << t14_delay->delay8
-              << "\nrhub下联 7 号口的T14 = " << t14_delay->delay9
-              << std::endl;
-
-    std::cout << "Toffset = " << TOFFSET << std::endl;
-#endif
-
-    /* 封装时延测量数据并发送到 BBU */ 
-
-#if 1
-    std::cout << "delay1 = " << dm_info->rhup_delay->delay1 
-              << "\ndelay2 = " << dm_info->rhup_delay->delay2
-              << "\ndelay3 = " << dm_info->rhup_delay->delay3
-              << "\ndelay4 = " << dm_info->rhup_delay->delay4
-              << "\ndelay5 = " << dm_info->rhup_delay->delay5
-              << "\ndelay6 = " << dm_info->rhup_delay->delay6
-              << "\ndelay7 = " << dm_info->rhup_delay->delay7
-              << "\ndelay8 = " << dm_info->rhup_delay->delay8
-              << "\ndelay9 = " << dm_info->rhup_delay->delay9
-              << std::endl;
-#endif
-
-#if 1
-    std::cout << "rhub级联口的T14 = " << dm_info->t14_delay->delay1
-              << "\nrhub下联 0 号口的T14 = " << dm_info->t14_delay->delay2
-              << "\nrhub下联 1 号口的T14 = " << dm_info->t14_delay->delay3
-              << "\nrhub下联 2 号口的T14 = " << dm_info->t14_delay->delay4
-              << "\nrhub下联 3 号口的T14 = " << dm_info->t14_delay->delay5
-              << "\nrhub下联 4 号口的T14 = " << dm_info->t14_delay->delay6
-              << "\nrhub下联 5 号口的T14 = " << dm_info->t14_delay->delay7
-              << "\nrhub下联 6 号口的T14 = " << dm_info->t14_delay->delay8
-              << "\nrhub下联 7 号口的T14 = " << dm_info->t14_delay->delay9
-              << std::endl;
-
-    std::cout << "Toffset = " << TOFFSET << std::endl;
-#endif
-
     uv::PacketIR packet;
-
     packet.SetHead(to_string(uv::PacketIR::HUB),
                    to_string(uv::PacketIR::TO_BBU),
                    to_string(uv::PacketIR::RESPONSE),
                    to_string(uv::PacketIR::MSG_DELAY_MEASUREMENT),
                    m_rruid, m_port, m_uport);
 
-
-    struct rhub_data_delay* rhub_up = (struct rhub_data_delay*)malloc(sizeof(struct rhub_data_delay));
-    TestGetRhubDelay(0, rhub_up);
+    /* 获取 rhub 的处理时延  */
+    struct rhup_data_delay* rhub_up = (struct rhup_data_delay*)malloc(sizeof(struct rhup_data_delay));
+    get_rhup_delay(mpi_fd, UP, rhub_up);
     std::string data = std::string("delay1_up=" + to_string(rhub_up->delay1) + 
-								   "&delay2_up=" + to_string(rhub_up->delay2));
+								   "&delay2_up=" + to_string(rhub_up->delay2) +
+								   "&delay3_up=" + to_string(rhub_up->delay3) +
+								   "&delay4_up=" + to_string(rhub_up->delay4) +
+								   "&delay5_up=" + to_string(rhub_up->delay5) +
+								   "&delay6_up=" + to_string(rhub_up->delay6) +
+								   "&delay7_up=" + to_string(rhub_up->delay7) +
+								   "&delay8_up=" + to_string(rhub_up->delay8) +
+								   "&delay9_up=" + to_string(rhub_up->delay9));
 
-    struct rhub_data_delay* rhub_down = (struct rhub_data_delay*)malloc(sizeof(struct rhub_data_delay));
-    TestGetRhubDelay(1, rhub_down);
+    struct rhup_data_delay* rhub_down = (struct rhup_data_delay*)malloc(sizeof(struct rhup_data_delay));
+    get_rhup_delay(mpi_fd, DOWN, rhub_down);
 	data += std::string("&delay1_down=" + to_string(rhub_down->delay1) + 
-						"&delay2_down=" + to_string(rhub_down->delay2));
-
-    struct rhub_t14_delay* t14_delay = (struct rhub_t14_delay*)malloc(sizeof(struct rhub_t14_delay));
-    TestGetRhubT14Delay(t14_delay);
+						"&delay2_down=" + to_string(rhub_down->delay2) +
+						"&delay3_down=" + to_string(rhub_down->delay3) +
+						"&delay4_down=" + to_string(rhub_down->delay4) +
+						"&delay5_down=" + to_string(rhub_down->delay5) +
+						"&delay6_down=" + to_string(rhub_down->delay6) +
+						"&delay7_down=" + to_string(rhub_down->delay7) +
+						"&delay8_down=" + to_string(rhub_down->delay8) +
+						"&delay9_down=" + to_string(rhub_down->delay9));
+    
+    /* 获取 rhub T14 测量时延信息 */
+    struct rhup_t14_delay* t14_delay = (struct rhup_t14_delay*)malloc(sizeof(struct rhup_t14_delay));
+    get_rhup_t14_delay(mpi_fd, t14_delay);
 	data += std::string("&t14_delay1=" + to_string(t14_delay->delay1) + 
-						"&t14_delay2=" + to_string(t14_delay->delay2));
+						"&t14_delay2=" + to_string(t14_delay->delay2) +
+						"&t14_delay3=" + to_string(t14_delay->delay3) +
+						"&t14_delay4=" + to_string(t14_delay->delay4) +
+						"&t14_delay5=" + to_string(t14_delay->delay5) +
+						"&t14_delay6=" + to_string(t14_delay->delay6) +
+						"&t14_delay7=" + to_string(t14_delay->delay7) +
+						"&t14_delay8=" + to_string(t14_delay->delay8) +
+						"&t14_delay9=" + to_string(t14_delay->delay9));
 
-	packetir.PackMessage(data, data.length());
+    data += std::string("&toffset=" + to_string(TOFFSET));
+
+    /* 封装时延测量数据并发送到 BBU */ 
+    packet.PackMessage(data, data.length());
 
 	/* 打印数据封装信息 */
-	packetir.EchoPackMessage();
+	packet.EchoPackMessage();
 
-	std::string send_buf = packetir.GetPacket();
+	std::string send_buf = packet.GetPacket();
 
 	SendMessage(send_buf.c_str(), send_buf.length());
 
     free(rhub_up);
     free(rhub_down);
     free(t14_delay);
-
-    //free(rhup_delay);
-    //free(t14_delay);
-    free(dm_info);
     gpmc_mpi_close(mpi_fd);
-
-#if 0
-    rhub_port = 16
-    port = 0
-    rruid = 1
-    uport = 0
-    delay1 = 1175
-    delay2 = 24
-    delay3 = 24
-    delay4 = 24
-    delay5 = 24
-    delay6 = 24
-    delay7 = 24
-    delay8 = 24
-    delay9 = 1
-    rhub级联口的T14 = 1097088
-    rhub下联 0 号口的T14 = 153
-    rhub下联 1 号口的T14 = 1096878
-    rhub下联 2 号口的T14 = 1096878
-    rhub下联 3 号口的T14 = 1096878
-    rhub下联 4 号口的T14 = 1096878
-    rhub下联 5 号口的T14 = 1096878
-    rhub下联 6 号口的T14 = 1096878
-    rhub下联 7 号口的T14 = 1096878
-#endif
 }
 
 void HUB::RecvMessage(const char* buf, ssize_t size)

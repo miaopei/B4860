@@ -191,6 +191,7 @@ int main()
     std::cout << "enum2string: " << Source(RRU) << std::endl;
 #endif
 
+#if 0
     struct Test
     {
         int a;
@@ -221,7 +222,15 @@ int main()
 
     std::cout << "t2.a=" << t2->a << std::endl;
     std::cout << "t2.c=" << t2->c << std::endl;
-    
+#endif
+
+#if 1
+    std::string data = "delay1_up=24&delay2_up=25&delay1_down=26&delay2_down=27&t14_delay1=11456&t14_delay2=11457";
+
+
+#endif
+
+
     return 0;
 }
 

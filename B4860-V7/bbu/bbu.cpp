@@ -104,6 +104,12 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& pa
 		std::cout << "[Error: SetConnectionInfo Error]" << std::endl;
 		return;
 	}
+
+    /* 如果 source 是 RRU 需要更新上级 HUB 延时测量信息*/
+    if(cInfo.s_source == to_string(uv::PacketIR::RRU))
+    {
+        //UpdateHUBDelayInfo(packet);
+    }
 	
 	std::cout << "[SetConnectionInfo Success, Echo Message to " << packet.GetSource() << "]"<< std::endl;
 
@@ -116,6 +122,17 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& pa
 void BBU::DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
 {
 	std::cout << "packet.data=" << packet.GetData() << std::endl;
+    switch(std::stoi(packet.GetSource()))
+    {
+        case uv::PacketIR::HUB:
+            std::cout << "[hub_delay_measurement]" << std::endl;
+            break;
+        case uv::PacketIR::RRU:
+            std::cout << "[rru_delay_measurement]" << std::endl;
+            break;
+        default:
+            std::cout << "[Error: delay measurement source error]" << std::endl;
+    }
 }
 
 
