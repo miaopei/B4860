@@ -18,13 +18,17 @@
 
 
 
-- [x] BBU HUB 时延数据上报消息通道完成，BBU 记录 HUB 九个端口TBdelayUL，TBdelayDL，T14并进行维护，如果hub掉线需要对HUB 延时测量数据map进行对应删除。HUB 时延测量数据map key用 level+type+port（hub层级+延时类别(TBdelayUL,TBdelayDL,T14)+端口号） 作为索引。
-- [x] arraycomm接口获取 BBU T14 代码熟悉，目前代码基本实现，待测试。
-- [x] RRU 时延测量上报
-- [ ] BBU 侧时延补偿算法实现，提供最大时延配置接口。目前算法麻烦的地方是级联情况的补偿即计算，根据刘丙洋反馈，BBU 侧需要实现RRU接入后更新RRU上一级HUB的所有时延信息，RRU在收到BBU的connect success消息后需要 延迟500ms 再发送时延测量请求。
-- [ ] 查询 RRU 完整链路信息接口实现
+
+
+- [x] HUB 时延数据上报，消息封装，上报时延数据包括HUB 九个端口TBdelayUL，TBdelayDL，T14，通过一条消息全部上报。功能测试完成
+- [x] BBU解析处理HUB上报时延测量数据，数据解析接口封装，数据存储为map，key为level+type+port（hub层级+延时类别(TBdelayUL,TBdelayDL,T14)+端口号） 作为索引。功能测试完成。
+- [x] BBU 实现了HUB掉线删除对应HUB时延测量数据map。功能测试完成。
+- [x] BBU 实现 RRUconnect请求时更新上级HUB延时测量数据，接口实现，未测试验证。实现根据RRU rruid查询上一级hub相关信息接口。
+- [x] arraycomm接口获取 BBU T14 代码熟悉，目前代码基本实现，B4860 32位环境编译有些问题，还在处理环境编译问题。
+- [x] RRU 时延测量数据上报（张云松已经完成，目前BBU暂时无法提供测试接口，无法联调）
+- [ ] BBU 时延补偿算法实现(最大时延配置接口预留)，算法部分完整链路的时延计算需花些时间实现。需要实现根据接入的RRU查找整个链路上各个设备的相关延时数据。这部分框架结构还在整理中。
 - [ ] HUB RRU 升级消息定义 接口实现
-- [ ] OAM 适配层实现 
+- [ ] OAM 适配层接口实现，需要个给OAM提供操作的接口。已有初步规划，适配层实现oam操作接口，代码部分实现和OAM解耦，bbu hub rru oam适配层为独立的一个消息收发及处理单元，bbu为消息处理中心。
 - [ ] 项目概设文档更新
 
 
