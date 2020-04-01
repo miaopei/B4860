@@ -94,9 +94,9 @@ void HUB::SetRHUBInfo()
     gpmc_mpi_close(mpi_fd);
 #endif
     m_source = "0";
-    m_port = "2";
-    m_rruid = "3";
-    m_uport = "4";
+    m_port = "0";
+    m_rruid = "1";
+    m_uport = "2";
 }
 
 void HUB::SendRHUBDelayInfo()
@@ -236,6 +236,10 @@ void HUB::RecvMessage(const char* buf, ssize_t size)
             std::cout << "[RCV:msg_connect]" << std::endl;
             ConnectResultProcess(packet);
             break;
+        case uv::PacketIR::MSG_UPDATE_DELAY:
+            std::cout << "[RCV:msg_updata_delay]" << std::endl;
+            UpdataDelay(packet);
+            break;
         default:
             std::cout << "[Error: MessageID Error]" << std::endl;
     }
@@ -284,6 +288,29 @@ void HUB::ConnectResultProcess(uv::PacketIR& packet)
 {
     //SendRHUBDelayInfo();
     TestProcess(packet);
+}
+
+void HUB::UpdataDelay(uv::PacketIR& packet)
+{
+    //TestProcess(packet);
+    std::string data = "delay1_up=34&delay2_up=35&delay1_down=36&delay2_down=37&t14_delay1=11488&t14_delay2=11488";
+    
+    uv::PacketIR packetir;
+
+    packetir.SetHead(to_string(uv::PacketIR::HUB),
+                   to_string(uv::PacketIR::TO_BBU),
+                   to_string(uv::PacketIR::RESPONSE),
+                   to_string(uv::PacketIR::MSG_UPDATE_DELAY),
+                   m_rruid, m_port, m_uport); 
+
+	packetir.PackMessage(data, data.length());
+
+	/* 打印数据封装信息 */
+	packetir.EchoPackMessage();
+
+	std::string send_buf = packetir.GetPacket();
+
+	SendMessage(send_buf.c_str(), send_buf.length());
 }
 
 void HUB::TestProcess(uv::PacketIR& packet)

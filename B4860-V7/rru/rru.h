@@ -1,0 +1,45 @@
+/*************************************************************************
+	> File Name: RRU.h
+	> Author: miaopei
+	> Mail: miaopei@baicells.com 
+	> Created Time: 2020年02月12日 星期三 11时16分50秒
+ ************************************************************************/
+
+#pragma once
+
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <string>
+
+#include "uv11.h"
+
+class RRU :public uv::TcpClient
+{
+public:
+    RRU(uv::EventLoop* loop);
+
+    void onConnect(ConnectStatus status);
+    void reConnect();
+    void SendConnectMessage();
+    void connectToServer(uv::SocketAddr& addr);
+    void RecvMessage(const char* buf, ssize_t size);
+
+
+    void ConnectResultProcess(uv::PacketIR& packet);
+
+    void SetRRRUInfo();
+    void SendRRRUDelayInfo(uv::PacketIR& packet);
+
+    void SendMessage(const char* buf, ssize_t size);
+
+
+private:
+    std::shared_ptr<uv::SocketAddr> sockAddr;
+    std::shared_ptr<RRU> clientptr_;
+    std::string m_source;
+    std::string m_rruid;
+    std::string m_port;
+    std::string m_uport;
+};
+

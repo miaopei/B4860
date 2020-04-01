@@ -70,6 +70,10 @@ void BBU::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& pack
 			std::cout << "[msg_delay_measurement]" << std::endl;
 			DelayMeasurementProcess(connection, packet);
 			break;
+        case uv::PacketIR::MSG_UPDATE_DELAY:
+            std::cout << "[msg_update_delay]" << std::endl;
+            UpdateHUBDelayInfo(packet);
+            break;
 		default:
 			std::cout << "[Error: MessageID Error]" << std::endl;
 	}
@@ -108,7 +112,7 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& pa
     /* 如果 source 是 RRU 需要更新上级 HUB 延时测量信息*/
     if(cInfo.s_source == to_string(uv::PacketIR::RRU))
     {
-        //UpdateHUBDelayInfo(packet);
+        SendUpdateHUBDelayMessage(packet);
     }
 	
 	std::cout << "[SetConnectionInfo Success, Echo Message to " << packet.GetSource() << "]"<< std::endl;
@@ -167,7 +171,7 @@ void BBU::SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& 
 	SendMessage(connection, send_buf.c_str(), send_buf.length());
 }
 
-void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, Head head, std::string data, ssize_t size)
+void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, Head head, std::string& data, ssize_t size)
 {
     uv::PacketIR packetir;
     packetir.SetHead(head.s_source, 
@@ -196,7 +200,7 @@ void BBU::SendPackMessageToAllDevice(DeviceType device, Head head, std::string& 
         case ALL_HUB_DEVICE:
             std::cout << "[SendPackMessageToAllDevice: ALL_HUB_DEVICE]" << std::endl;
             break;
-        case ALL_HUB_DEVICE:
+        case ALL_RRU_DEVICE:
             std::cout << "[SendPackMessageToAllDevice: ALL_RRU_DEVICE]" << std::endl;
             break;
         default:
@@ -209,22 +213,55 @@ void BBU::CalculationDelayCompensation()
 
 }
 
-void BBU::UpdateHUBDelayInfo(uv::PacketIR& packet)
+void BBU::SendUpdateHUBDelayMessage(uv::PacketIR& packet)
 {
     shared_ptr<TcpConnection> connection;
-    if(!QueryUhub(packet.GetRRUID(), connection))
+    if(!QueryUhubConnection(packet.GetRRUID(), connection))
     {
-        std::cout << "[Error: UpdateHUBDelayInfo not find hub rruid]" << std::endl;
+        std::cout << "[Error: SendUpdateHUBDelayMessage not find hub rruid]" << std::endl;
         return;
     }
     
     /* 封装消息，指定 HUB 更新时延测量 */
     Head head;
+    head.s_source = packet.GetDestination();
+    head.s_destination = to_string(uv::PacketIR::TO_HUB);
+    head.s_state = to_string(uv::PacketIR::REQUEST);
+    head.s_msgID = to_string(uv::PacketIR::MSG_UPDATE_DELAY);
+    head.s_rruid = packet.GetRRUID();
+    head.s_port = packet.GetPort();
+    head.s_uport = packet.GetUPort();
+
+    std::string data = "updataDelayInfo=0";
+
+    SendPackMessage(connection, head, data, data.length());
+}
+
+void BBU::UpdateHUBDelayInfo(uv::PacketIR& packet)
+{
+    UpdateDelayInfo(packet.GetData(), packet.GetRRUID(), delay_map);
+
+    for(auto &it : delay_map)
+    {
+        std::cout << "key=" << it.first 
+                  << " key.key=" << it.second.key
+                  << " key.value=" << it.second.value << std::endl;
+    }
 }
 
 void BBU::HubDelayInfo(uv::PacketIR& packet)
 {
-#if 1
+	std::string data = packet.GetData();
+    SplitStrings2Map(data, packet.GetRRUID(), delay_map);
+    
+    for(auto &it : delay_map)
+    {
+        std::cout << "key=" << it.first 
+                  << " key.key=" << it.second.key
+                  << " key.value=" << it.second.value << std::endl;
+    }
+
+#if 0
 	/* 测试hubdelayinfo */ 
 	std::string data = packet.GetData();
 	std::string rruid = "1";
@@ -256,7 +293,7 @@ void BBU::HubDelayInfo(uv::PacketIR& packet)
 #endif
 }
 
-bool BBU::QueryUhubConnection(std::string rruid, shared_ptr<TcpConnection>& connection)
+bool BBU::QueryUhubConnection(std::string rruid, uv::TcpConnectionPtr& connection)
 {
     std::map<std::string, ClientInfo> netTopology;
     GetNetworkTopology(netTopology);

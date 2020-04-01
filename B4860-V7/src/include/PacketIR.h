@@ -71,6 +71,7 @@ public:
         MSG_CONNECT					= 1040,
         MSG_DELAY_MEASUREMENT 		= 1041,
         MSG_DELAY_COMPENSATION      = 1042,
+        MSG_UPDATE_DELAY            = 1043,
         MSG_END                     = 9999
     };
 

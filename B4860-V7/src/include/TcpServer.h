@@ -94,6 +94,7 @@ public:
 
 	void SplitStrings2Map(const std::string &input, std::string rruid, std::map<std::string, atom>& map);
 	void DeleteHubDelay(std::string rruid, std::map<std::string, atom>& map);
+    void UpdateDelayInfo(const std::string &input, std::string rruid, std::map<std::string, atom>& map);
 
     void setTimeout(unsigned int);
 private:

@@ -76,6 +76,7 @@ public:
     void SendRHUBDelayInfo();
 
     void ConnectResultProcess(uv::PacketIR& packet);
+    void UpdataDelay(uv::PacketIR& packet);
 
 
     void SendMessage(const char* buf, ssize_t size);

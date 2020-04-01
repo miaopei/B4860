@@ -245,6 +245,12 @@ void TcpServer::DeleteHubDelay(std::string rruid, std::map<std::string, atom>& m
     }
 }
 
+void TcpServer::UpdateDelayInfo(const std::string &input, std::string rruid, std::map<std::string, atom>& map)
+{
+    DeleteHubDelay(rruid, map);
+    SplitStrings2Map(input, rruid, map);
+}
+
 
 void TcpServer::closeConnection(string& name)
 {
