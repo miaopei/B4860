@@ -1,5 +1,9 @@
 PWD=`pwd`
 
+UNAME := $(shell uname -s)
+
+COMPILE_TIME = $(shell date +"%Y-%M-%d %H:%M:%S")
+
 WORK_ROOT = $(PWD)
 
 LIBUV = libuv-v1.9.1
@@ -12,6 +16,14 @@ BIN_DIR = $(BUILD_DIR)/bin
 LD_INCLUDE_PATH = $(INCLUDE_DIR)
 LD_LIBRARY_PATH = $(LIB_DIR)
 
+ifeq ($(UNAME), Linux)
+CPMPILE_LIBUV="cd $(BUILD_DIR)/$(LIBUV) && sh autogen.sh && ./configure --prefix=$(WORK_ROOT)/../ && make && make install"
+endif
+	
+ifeq ($(UNAME), Darwin)
+CPMPILE_LIBUV="cd $(BUILD_DIR)/$(LIBUV) && ./gyp_uv.py -f xcode && xcodebuild -ARCHS="x86_64" -project out/uv.xcodeproj -configuration Release -alltargets"
+endif
+
 all: before bbu
 	@echo "[build done ...]"
 	@make -C hub
@@ -21,14 +33,16 @@ all: before bbu
 	#@make -C oam
 
 before:
+	@echo "[compile time $(COMPILE_TIME)]"
 	@test -d $(BUILD_DIR) || mkdir -p $(BUILD_DIR)
 	@test -d $(BIN_DIR) || mkdir -p $(BIN_DIR)
 
 libuv:
 	@echo "[build libuv ...]"
 	@tar -zxf $(WORK_ROOT)/$(LIBUV).tar.gz -C $(BUILD_DIR)
+	#$(shell $(CPMPILE_LIBUV))
 	@cd $(BUILD_DIR)/$(LIBUV) && sh autogen.sh && ./configure --prefix=$(WORK_ROOT)/../ && make && make install
-
+	
 src: libuv
 	make -C $(WORK_ROOT)/src
 
