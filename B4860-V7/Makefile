@@ -16,14 +16,6 @@ BIN_DIR = $(BUILD_DIR)/bin
 LD_INCLUDE_PATH = $(INCLUDE_DIR)
 LD_LIBRARY_PATH = $(LIB_DIR)
 
-ifeq ($(UNAME), Linux)
-CPMPILE_LIBUV="cd $(BUILD_DIR)/$(LIBUV) && sh autogen.sh && ./configure --prefix=$(WORK_ROOT)/../ && make && make install"
-endif
-	
-ifeq ($(UNAME), Darwin)
-CPMPILE_LIBUV="cd $(BUILD_DIR)/$(LIBUV) && ./gyp_uv.py -f xcode && xcodebuild -ARCHS="x86_64" -project out/uv.xcodeproj -configuration Release -alltargets"
-endif
-
 all: before bbu
 	@echo "[build done ...]"
 	@make -C hub
@@ -40,9 +32,15 @@ before:
 libuv:
 	@echo "[build libuv ...]"
 	@tar -zxf $(WORK_ROOT)/$(LIBUV).tar.gz -C $(BUILD_DIR)
-	#$(shell $(CPMPILE_LIBUV))
+	#@cd $(BUILD_DIR)/$(LIBUV) && sh autogen.sh && ./configure --prefix=$(WORK_ROOT)/../ && make && make install
+ifeq ($(UNAME), Linux)
 	@cd $(BUILD_DIR)/$(LIBUV) && sh autogen.sh && ./configure --prefix=$(WORK_ROOT)/../ && make && make install
+endif
 	
+ifeq ($(UNAME), Darwin)
+	@cd $(BUILD_DIR)/$(LIBUV) && ./gyp_uv.py -f xcode && xcodebuild -ARCHS="x86_64" -project out/uv.xcodeproj -configuration Release -alltargets
+endif
+
 src: libuv
 	make -C $(WORK_ROOT)/src
 
