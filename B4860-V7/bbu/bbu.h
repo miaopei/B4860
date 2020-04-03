@@ -23,19 +23,12 @@
 #define RRUToffset      6
 #define TOFFSETCYCLE    8.013       
 
+#define BBUT14  580
+
 class BBU :public uv::TcpServer
 {
 public:
-    struct Head{
-        std::string s_source;
-        std::string s_destination;
-        std::string s_state;
-        std::string s_msgID;
-        std::string s_rruid;
-        std::string s_port;
-        std::string s_uport;
-    };
-
+    
     enum DeviceType{
         ALL_HUB_DEVICE    = 1,
         ALL_RRU_DEVICE    = 2
@@ -46,8 +39,8 @@ public:
     void SendMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
 	void SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
 
-    void SendPackMessage(uv::TcpConnectionPtr& connection, Head head, std::string& data, ssize_t size);
-    void SendPackMessageToAllDevice(DeviceType device, Head head, std::string& data, ssize_t size);
+    void SendPackMessage(uv::TcpConnectionPtr& connection, uv::PacketIR::Head head, std::string& data, ssize_t size);
+    void SendPackMessageToAllDevice(DeviceType device, uv::PacketIR::Head head, std::string& data, ssize_t size);
     
     //void SendAllClientMessage(const char* buf, ssize_t size);
 
@@ -71,6 +64,9 @@ public:
 
     /* HUB 时延信息存储map维护，设备掉电需要更新map RRU新接入需要更新 */
     void HubDelayInfo(uv::PacketIR& packet);
+
+    /* BBU 时延测量数据处理，返回最大时延补偿 */
+    void RruDelayProcess(uv::PacketIR& packet);
 
     /* 实现拓扑查询：
      * 1. 查 rru 的上一级 hub 信息 

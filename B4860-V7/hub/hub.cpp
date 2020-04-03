@@ -19,7 +19,7 @@ HUB::HUB(uv::EventLoop* loop)
 {
     setConnectStatusCallback(std::bind(&HUB::onConnect, this, std::placeholders::_1));
     setMessageCallback(std::bind(&HUB::RecvMessage, this, std::placeholders::_1, std::placeholders::_2));
-    //setMessageCallback(std::bind(&HUB::SendMessage, this, std::placeholders::_1, std::placeholders::_2));
+
     SetRHUBInfo();
 }
 
@@ -55,23 +55,17 @@ void HUB::reConnect()
 void HUB::SendConnectMessage()
 {
     std::string data = "Version=1.0";
-    uv::PacketIR packetir;
     
-    packetir.SetHead(m_source, 
-                     to_string(uv::PacketIR::TO_BBU),
-                     to_string(uv::PacketIR::REQUEST),
-                     to_string(uv::PacketIR::MSG_CONNECT), 
-                     m_rruid,
-                     m_port,
-                     m_uport);
+    uv::PacketIR::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::PacketIR::TO_BBU);
+    head.s_state = to_string(uv::PacketIR::REQUEST);
+    head.s_msgID = to_string(uv::PacketIR::MSG_CONNECT);
+    head.s_rruid = m_rruid;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
 
-    packetir.PackMessage(data, data.length());
-
-    /* 打印数据封装信息 */
-    packetir.EchoPackMessage();
-
-    std::string send_buf = packetir.GetPacket();
-	write(send_buf.c_str(), send_buf.length());
+    SendPackMessage(head, data, data.length());
 }
 
 void HUB::SetRHUBInfo()
@@ -245,9 +239,30 @@ void HUB::RecvMessage(const char* buf, ssize_t size)
     }
 }
 
+void HUB::SendPackMessage(uv::PacketIR::Head& head, std::string& data, ssize_t size)
+{
+    uv::PacketIR packetir;
+    packetir.SetHead(head.s_source,                                                                
+                     head.s_destination,
+                     head.s_state,
+                     head.s_msgID, 
+                     head.s_rruid,
+                     head.s_port,
+                     head.s_uport);
+
+    packetir.PackMessage(data, size);
+
+    /* 打印数据封装信息 */
+    //packetir.EchoPackMessage();
+    
+    std::string send_buf = packetir.GetPacket();
+    
+    SendMessage(send_buf.c_str(), send_buf.length());
+}
+
 void HUB::SendMessage(const char* buf, ssize_t size)
 {
-    std::cout << "Client::SendMesg" << std::endl;
+    std::cout << "[SendMessage: " << buf << "]" << std::endl;
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         //writeInLoop(buf, (unsigned int)size, nullptr);
@@ -264,24 +279,6 @@ void HUB::SendMessage(const char* buf, ssize_t size)
             }
         }
     }
-
-#if 0
-    if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
-    {
-        write(buf, (unsigned int)size);
-    } else {
-        auto packetbuf = getCurrentBuf();
-        if(nullptr != packetbuf)
-        {
-            packetbuf->append(buf, static_cast<int>(size));
-            uv::Packet packet;
-            while(0 == packetbuf->readPacket(packet))
-            {
-                write(packet.Buffer().c_str(), (unsigned)packet.PacketSize(), nullptr);
-            }
-        }
-    }
-#endif
 }
 
 void HUB::ConnectResultProcess(uv::PacketIR& packet)
@@ -292,36 +289,24 @@ void HUB::ConnectResultProcess(uv::PacketIR& packet)
 
 void HUB::UpdataDelay(uv::PacketIR& packet)
 {
+    uv::PacketIR::Head head;
+    head.s_source = to_string(uv::PacketIR::HUB);
+    head.s_destination = to_string(uv::PacketIR::TO_BBU);
+    head.s_state = to_string(uv::PacketIR::RESPONSE);
+    head.s_msgID = to_string(uv::PacketIR::MSG_UPDATE_DELAY);
+    head.s_rruid = m_rruid;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
+
     //TestProcess(packet);
     std::string data = "delay1_up=34&delay2_up=35&delay1_down=36&delay2_down=37&t14_delay1=11488&t14_delay2=11488";
     
-    uv::PacketIR packetir;
-
-    packetir.SetHead(to_string(uv::PacketIR::HUB),
-                   to_string(uv::PacketIR::TO_BBU),
-                   to_string(uv::PacketIR::RESPONSE),
-                   to_string(uv::PacketIR::MSG_UPDATE_DELAY),
-                   m_rruid, m_port, m_uport); 
-
-	packetir.PackMessage(data, data.length());
-
-	/* 打印数据封装信息 */
-	packetir.EchoPackMessage();
-
-	std::string send_buf = packetir.GetPacket();
-
-	SendMessage(send_buf.c_str(), send_buf.length());
+    SendPackMessage(head, data, data.length());
 }
 
 void HUB::TestProcess(uv::PacketIR& packet)
 {
-    uv::PacketIR packetir;
-
-    packetir.SetHead(to_string(uv::PacketIR::HUB),
-                   to_string(uv::PacketIR::TO_BBU),
-                   to_string(uv::PacketIR::RESPONSE),
-                   to_string(uv::PacketIR::MSG_DELAY_MEASUREMENT),
-                   m_rruid, m_port, m_uport); 
+    uv::PacketIR::Head head;
 
     struct rhub_data_delay* rhub_up = (struct rhub_data_delay*)malloc(sizeof(struct rhub_data_delay));
     TestGetRhubDelay(0, rhub_up);
@@ -337,15 +322,16 @@ void HUB::TestProcess(uv::PacketIR& packet)
     TestGetRhubT14Delay(t14_delay);
 	data += std::string("&t14_delay1=" + to_string(t14_delay->delay1) + 
 						"&t14_delay2=" + to_string(t14_delay->delay2));
+    
+    head.s_source = to_string(uv::PacketIR::HUB);
+    head.s_destination = to_string(uv::PacketIR::TO_BBU);
+    head.s_state = to_string(uv::PacketIR::RESPONSE);
+    head.s_msgID = to_string(uv::PacketIR::MSG_DELAY_MEASUREMENT);
+    head.s_rruid = m_rruid;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
 
-	packetir.PackMessage(data, data.length());
-
-	/* 打印数据封装信息 */
-	packetir.EchoPackMessage();
-
-	std::string send_buf = packetir.GetPacket();
-
-	SendMessage(send_buf.c_str(), send_buf.length());
+    SendPackMessage(head, data, data.length());
 
     free(rhub_up);
     free(rhub_down);

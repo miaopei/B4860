@@ -78,7 +78,7 @@ public:
     void ConnectResultProcess(uv::PacketIR& packet);
     void UpdataDelay(uv::PacketIR& packet);
 
-
+    void SendPackMessage(uv::PacketIR::Head& head, std::string& data, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
 
     void TestProcess(uv::PacketIR& packet);

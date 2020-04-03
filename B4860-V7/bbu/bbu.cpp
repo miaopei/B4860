@@ -114,8 +114,6 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& pa
     {
         SendUpdateHUBDelayMessage(packet);
     }
-	
-	std::cout << "[SetConnectionInfo Success, Echo Message to " << packet.GetSource() << "]"<< std::endl;
 
 	/* Version Check */
 	/* TODO*/
@@ -126,7 +124,6 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& pa
 
 void BBU::DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
 {
-	std::cout << "packet.data=" << packet.GetData() << std::endl;
     switch(std::stoi(packet.GetSource()))
     {
         case uv::PacketIR::HUB:
@@ -135,6 +132,7 @@ void BBU::DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::PacketIR
             break;
         case uv::PacketIR::RRU:
             std::cout << "[rru_delay_measurement]" << std::endl;
+            RruDelayProcess(packet);
             break;
         default:
             std::cout << "[Error: delay measurement source error]" << std::endl;
@@ -150,28 +148,21 @@ void BBU::UnPackData(uv::PacketIR& packet)
 
 void BBU::SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& packet)
 {
+    uv::PacketIR::Head head;
+    head.s_source       = packet.GetDestination();
+    head.s_destination  = packet.GetSource();
+    head.s_state        = to_string(uv::PacketIR::RESPONSE);
+    head.s_msgID        = packet.GetMsgID();
+    head.s_rruid        = packet.GetRRUID();
+    head.s_port         = packet.GetPort();
+    head.s_uport        = packet.GetUPort();
+
 	std::string data = "CheckResult=0";
-    uv::PacketIR packetir;
-    
-    packetir.SetHead(packet.GetDestination(), 
-                     packet.GetSource(),
-                     to_string(uv::PacketIR::RESPONSE),
-                     packet.GetMsgID(), 
-                     packet.GetRRUID(),
-                     packet.GetPort(),
-                     packet.GetUPort());
 
-    packetir.PackMessage(data, data.length());
-
-	/* 打印数据封装信息 */
-	packetir.EchoPackMessage();
-
-	std::string send_buf = packetir.GetPacket();
-
-	SendMessage(connection, send_buf.c_str(), send_buf.length());
+    SendPackMessage(connection, head, data, data.length());
 }
 
-void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, Head head, std::string& data, ssize_t size)
+void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, uv::PacketIR::Head head, std::string& data, ssize_t size)
 {
     uv::PacketIR packetir;
     packetir.SetHead(head.s_source, 
@@ -185,14 +176,14 @@ void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, Head head, std::stri
     packetir.PackMessage(data, size);
 
 	/* 打印数据封装信息 */
-	packetir.EchoPackMessage();
+	//packetir.EchoPackMessage();
 
 	std::string send_buf = packetir.GetPacket();
 
 	SendMessage(connection, send_buf.c_str(), send_buf.length());
 }
 
-void BBU::SendPackMessageToAllDevice(DeviceType device, Head head, std::string& data, ssize_t size)
+void BBU::SendPackMessageToAllDevice(DeviceType device, uv::PacketIR::Head head, std::string& data, ssize_t size)
 {
     if(device == ALL_HUB_DEVICE)
     switch(device)
@@ -223,7 +214,7 @@ void BBU::SendUpdateHUBDelayMessage(uv::PacketIR& packet)
     }
     
     /* 封装消息，指定 HUB 更新时延测量 */
-    Head head;
+    uv::PacketIR::Head head;
     head.s_source = packet.GetDestination();
     head.s_destination = to_string(uv::PacketIR::TO_HUB);
     head.s_state = to_string(uv::PacketIR::REQUEST);
@@ -232,7 +223,7 @@ void BBU::SendUpdateHUBDelayMessage(uv::PacketIR& packet)
     head.s_port = packet.GetPort();
     head.s_uport = packet.GetUPort();
 
-    std::string data = "updataDelayInfo=0";
+    std::string data = "updataDelayInfo";
 
     SendPackMessage(connection, head, data, data.length());
 }
@@ -254,36 +245,7 @@ void BBU::HubDelayInfo(uv::PacketIR& packet)
 	std::string data = packet.GetData();
     SplitStrings2Map(data, packet.GetRRUID(), delay_map);
     
-    for(auto &it : delay_map)
-    {
-        std::cout << "key=" << it.first 
-                  << " key.key=" << it.second.key
-                  << " key.value=" << it.second.value << std::endl;
-    }
-
-#if 0
-	/* 测试hubdelayinfo */ 
-	std::string data = packet.GetData();
-	std::string rruid = "1";
-    //std::map<std::string, atom> delay_map;
-    SplitStrings2Map(data, rruid, delay_map);
-
-    //rruid = "3";
-    SplitStrings2Map(data, packet.GetRRUID(), delay_map);
-
-	rruid = "4";
-    SplitStrings2Map(data, rruid, delay_map);
-
-    for(auto &it : delay_map)
-    {
-        std::cout << "key=" << it.first 
-                  << " key.key=" << it.second.key
-                  << " key.value=" << it.second.value << std::endl;
-    }
-
-    rruid = "1";
-    DeleteHubDelay(rruid, delay_map);
-    std::cout << "/t----------------------" << std::endl;
+#if 1
     for(auto &it : delay_map)
     {
         std::cout << "key=" << it.first 
@@ -291,6 +253,11 @@ void BBU::HubDelayInfo(uv::PacketIR& packet)
                   << " key.value=" << it.second.value << std::endl;
     }
 #endif
+}
+
+void BBU::RruDelayProcess(uv::PacketIR& packet)
+{
+    std::cout << "RruDelayProcess: packet.data=" << packet.GetData() << std::endl;
 }
 
 bool BBU::QueryUhubConnection(std::string rruid, uv::TcpConnectionPtr& connection)
@@ -337,6 +304,7 @@ void BBU::writeCallback(uv::WriteInfo& info)
 
 void BBU::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
+    std::cout << "[SendMessage: " << buf << "]" << std::endl;
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         connection->write(buf, size, nullptr);

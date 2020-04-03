@@ -42,8 +42,6 @@ clean:
 	@make clean -C src
 	@make clean -C bbu
 	@make clean -C hub
-	@make clean -C hub-2
 	@make clean -C rru
-	@make clean -C rru-2
 	@make clean -C oam
 

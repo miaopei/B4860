@@ -36,6 +36,15 @@ namespace uv
 class PacketIR
 {
 public:
+    struct Head{
+        std::string s_source;
+        std::string s_destination;
+        std::string s_state;
+        std::string s_msgID;
+        std::string s_rruid;
+        std::string s_port;
+        std::string s_uport;
+    };
 
     enum Source
     {

@@ -175,6 +175,7 @@ void TcpServer::GetNetworkTopology(std::map<std::string, ClientInfo>& netTopolog
 	netTopology = connectionInfo_;
 }
 
+#if 0
 std::vector<std::string> TcpServer::Split(const std::string& in, const std::string& delim)
 {
     vector<string> ret;
@@ -191,6 +192,28 @@ std::vector<std::string> TcpServer::Split(const std::string& in, const std::stri
         std::cout << "error:" << e.what() << std::endl;
     }
     return ret;
+}
+#endif
+
+std::vector<std::string> TcpServer::Split(const std::string& in, const std::string& delim)
+{
+    vector<string> res;
+    if("" == in) return res;
+
+    char *strs = new char[in.length() + 1];
+    strcpy(strs, in.c_str());
+
+    char *d = new char[delim.length() + 1];
+    strcpy(d, delim.c_str());
+
+    char *p = strtok(strs, d);
+    while(p) {
+        string s = p;
+        res.push_back(s);
+        p = strtok(NULL, d);
+    }
+
+    return res;
 }
 
 void TcpServer::SplitStrings2Map(const std::string &input, std::string rruid, std::map<std::string, atom>& map)
