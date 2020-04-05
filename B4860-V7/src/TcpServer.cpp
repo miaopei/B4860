@@ -141,7 +141,7 @@ void TcpServer::GetHUBsConnection(std::vector<TcpConnectionPtr>& hubsConnection)
 {
 	for(auto &it : connectionInfo_)
 	{
-		if(it.second.s_source == to_string(uv::PacketIR::HUB))
+		if(it.second.s_source == to_string(uv::Packet::HUB))
 		{
 			hubsConnection.push_back(it.second.s_connection);
 		}
@@ -152,7 +152,7 @@ void TcpServer::GetRRUsConnection(std::vector<TcpConnectionPtr>& rrusConnection)
 {
 	for(auto &it : connectionInfo_)
 	{
-		if(it.second.s_source == to_string(uv::PacketIR::RRU))
+		if(it.second.s_source == to_string(uv::Packet::RRU))
 		{
 			rrusConnection.push_back(it.second.s_connection);
 		}
@@ -163,7 +163,7 @@ void TcpServer::GetOAMConnection(std::vector<TcpConnectionPtr>& oamConnection)
 {
 	for(auto &it : connectionInfo_)
 	{
-		if(it.second.s_source == to_string(uv::PacketIR::OAM))
+		if(it.second.s_source == to_string(uv::Packet::OAM))
 		{
 			oamConnection.push_back(it.second.s_connection);
 		}
