@@ -24,12 +24,12 @@ public:
     void SendConnectMessage();
     void connectToServer(uv::SocketAddr& addr);
     void RecvMessage(const char* buf, ssize_t size);
+	void ProcessRecvMessage(uv::Packet& packet);
 
-
-    void ConnectResultProcess(uv::PacketIR& packet);
+    void ConnectResultProcess(uv::Packet& packet);
 
     void SetRRRUInfo();
-    void SendRRRUDelayInfo(uv::PacketIR& packet);
+    void SendRRRUDelayInfo();
 
     void SendMessage(const char* buf, ssize_t size);
 

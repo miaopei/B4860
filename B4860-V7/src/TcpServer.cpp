@@ -223,13 +223,16 @@ void TcpServer::SplitStrings2Map(const std::string &input, std::string rruid, st
     int cout = 0;
     vector<string>ret = Split(input.c_str(), "&");
     int ret_size = ret.size();
+	m_base = ret_size / 3;
+	std::cout << "m_base = " << m_base << std::endl;
     for(int i = 0; i < ret_size; i++)
     {
-        /* key = type + delay num  
+        /* key = rruid + type + port(delay num)  
          * type: rhub_delay_up(1) rhub_delay_down(2) t14_delay(3) 
          * delay num: 1-9
          */
         cout = (i % m_base) + 1;
+        //cout = i % m_base;
         if(i < m_base)
         {
             key = std::string(rruid + "1" + to_string(cout));
@@ -257,6 +260,12 @@ void TcpServer::SplitStrings2Map(const std::string &input, std::string rruid, st
 
 void TcpServer::DeleteHubDelay(std::string rruid, std::map<std::string, atom>& map)
 {
+	if(m_base == 0)
+	{
+		std::cout << "Error: m_base error" << std::endl;
+		return;
+	}
+	
     std::string key;
     int cout = 0;
     for(int i = 0; i < (m_base*3); i++)
@@ -271,6 +280,7 @@ void TcpServer::DeleteHubDelay(std::string rruid, std::map<std::string, atom>& m
 void TcpServer::UpdateDelayInfo(const std::string &input, std::string rruid, std::map<std::string, atom>& map)
 {
     DeleteHubDelay(rruid, map);
+	//std::this_thread::sleep_for(chrono::milliseconds(500)); // 延时 100ms 
     SplitStrings2Map(input, rruid, map);
 }
 

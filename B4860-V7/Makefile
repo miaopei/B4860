@@ -19,8 +19,8 @@ LD_LIBRARY_PATH = $(LIB_DIR)
 all: before bbu
 	@echo "[build done ...]"
 	@make -C hub
-	#@make -C hub-2
-	#@make -C rru
+	@make -C rru
+	@make -C hub-2
 	#@make -C rru-2
 	#@make -C oam
 

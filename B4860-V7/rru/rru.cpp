@@ -54,23 +54,24 @@ void RRU::reConnect()
 void RRU::SendConnectMessage()
 {
     std::string data = "Version=1.0";
-    uv::PacketIR packetir;
+    uv::Packet packet;
     
-    packetir.SetHead(m_source, 
-                     to_string(uv::PacketIR::TO_BBU),
-                     to_string(uv::PacketIR::REQUEST),
-                     to_string(uv::PacketIR::MSG_CONNECT), 
+    packet.SetHead(m_source, 
+                     to_string(uv::Packet::TO_BBU),
+                     to_string(uv::Packet::REQUEST),
+                     to_string(uv::Packet::MSG_CONNECT), 
                      m_rruid,
                      m_port,
                      m_uport);
 
-    packetir.PackMessage(data, data.length());
+    packet.PackMessage(data, data.length());
 
     /* 打印数据封装信息 */
-    packetir.EchoPackMessage();
+    packet.EchoPackMessage();
 
-    std::string send_buf = packetir.GetPacket();
-	write(send_buf.c_str(), send_buf.length());
+    std::string send_buf = packet.GetPacket();
+
+	SendMessage(send_buf.c_str(), send_buf.length());
 }
 
 void RRU::SetRRRUInfo()
@@ -85,17 +86,17 @@ void RRU::SetRRRUInfo()
     std::cout << "rruid = " << ((rRRU_port >> 4) & 0xf) << std::endl;
     std::cout << "uport = " << (rRRU_port & 0xf) << std::endl;
 
-    m_source = to_string(uv::PacketIR::RRU);
+    m_source = to_string(uv::Packet::RRU);
     m_port = to_string(((rRRU_port >> 8) & 0xf));
     m_rruid = to_string(((rRRU_port >> 4) & 0xf));
     m_uport = to_string((rRRU_port & 0xf));
 
     gpmc_mpi_close(mpi_fd);
 #endif
-    m_source = to_string(uv::PacketIR::RRU);
+    m_source = to_string(uv::Packet::RRU);
     m_port = "0";
-    m_rruid = "2";
-    m_uport = "1";
+    m_rruid = "3";
+    m_uport = "4";
 }
 
 void RRU::RecvMessage(const char* buf, ssize_t size)
@@ -107,16 +108,29 @@ void RRU::RecvMessage(const char* buf, ssize_t size)
     }
 
     /* 接收到的数据解析 */
-    std::string revb_buf = std::string(buf, size);
-    uv::PacketIR packet;
-    packet.UnPackMessage(revb_buf);
+	auto packetbuf = getCurrentBuf();
+	if (nullptr != packetbuf)
+	{
+		packetbuf->append(buf, static_cast<int>(size));
+		uv::Packet packet;
+		while (0 == packetbuf->readPacket(packet))
+		{
+			std::cout << "reserver data " << packet.DataSize() << ":" << packet.getData() << std::endl;
+			packet.UnPackMessage();
 
-    /* 打印解包信息 */
-    packet.EchoUnPackMessage();
+			/* 打印解包信息 */
+			packet.EchoUnPackMessage();
 
+			ProcessRecvMessage(packet);
+		}
+	}
+}
+
+void RRU::ProcessRecvMessage(uv::Packet& packet)
+{
     switch(std::stoi(packet.GetMsgID()))
     {
-        case uv::PacketIR::MSG_CONNECT:
+        case uv::Packet::MSG_CONNECT:
             std::cout << "[RCV:msg_connect]" << std::endl;
             ConnectResultProcess(packet);
             break;
@@ -127,72 +141,47 @@ void RRU::RecvMessage(const char* buf, ssize_t size)
 
 void RRU::SendMessage(const char* buf, ssize_t size)
 {
-    std::cout << "Client::SendMesg" << std::endl;
-    if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
-    {
-        //writeInLoop(buf, (unsigned int)size, nullptr);
-        write(buf, (unsigned int)size);
-    } else {
-        auto packetbuf = getCurrentBuf();
-        if(nullptr != packetbuf)
-        {
-            packetbuf->append(buf, static_cast<int>(size));
-            uv::Packet packet;
-            while(0 == packetbuf->readPacket(packet))
-            {
-                write(packet.Buffer().c_str(), (unsigned)packet.PacketSize(), nullptr);
-            }
-        }
-    }
-
-#if 0
+    std::cout << "[SendMessage: " << buf << "]" << std::endl;
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         write(buf, (unsigned int)size);
     } else {
-        auto packetbuf = getCurrentBuf();
-        if(nullptr != packetbuf)
-        {
-            packetbuf->append(buf, static_cast<int>(size));
-            uv::Packet packet;
-            while(0 == packetbuf->readPacket(packet))
-            {
-                write(packet.Buffer().c_str(), (unsigned)packet.PacketSize(), nullptr);
-            }
-        }
+        uv::Packet packet;
+        packet.pack(buf, size);
+        write(packet.Buffer().c_str(), packet.PacketSize());
     }
-#endif
 }
 
-void RRU::ConnectResultProcess(uv::PacketIR& packet)
+void RRU::ConnectResultProcess(uv::Packet& packet)
 {
     /* connect bbu success, process delay info and send to bbu */
     /* delay 500ms for update hub delay info */
-    std::this_thread::sleep_for(chrono::milliseconds(500)); // 延时 500 ms
-    SendRRRUDelayInfo(packet);
+    std::this_thread::sleep_for(chrono::milliseconds(500)); // 延时 500ms
+    SendRRRUDelayInfo();
     //TestProcess(packet);
 }
 
-void RRU::SendRRRUDelayInfo(uv::PacketIR& packet)
+void RRU::SendRRRUDelayInfo()
 {
     std::string data = "T2a=123&Ta3=456";
-    uv::PacketIR packetir;
+    uv::Packet packet;
     
-    packetir.SetHead(m_source, 
-                     to_string(uv::PacketIR::TO_BBU),
-                     to_string(uv::PacketIR::REQUEST),
-                     to_string(uv::PacketIR::MSG_DELAY_MEASUREMENT), 
+    packet.SetHead(m_source, 
+                     to_string(uv::Packet::TO_BBU),
+                     to_string(uv::Packet::REQUEST),
+                     to_string(uv::Packet::MSG_DELAY_MEASUREMENT), 
                      m_rruid,
                      m_port,
                      m_uport);
 
-    packetir.PackMessage(data, data.length());
+    packet.PackMessage(data, data.length());
 
     /* 打印数据封装信息 */
-    packetir.EchoPackMessage();
+    packet.EchoPackMessage();
 
-    std::string send_buf = packetir.GetPacket();
-	write(send_buf.c_str(), send_buf.length());
+    std::string send_buf = packet.GetPacket();
+	
+	SendMessage(send_buf.c_str(), send_buf.length());
 }
 
 

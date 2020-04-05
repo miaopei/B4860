@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 {
     EventLoop* loop = EventLoop::DefaultLoop();
 
-    //uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::CycleBuffer;
+    uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer;
     
     if(argc != 2)
     {

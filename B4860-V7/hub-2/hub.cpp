@@ -89,8 +89,8 @@ void HUB::SetRHUBInfo()
 #endif
     m_source = "0";
     m_port = "0";
-    m_rruid = "1";
-    m_uport = "2";
+    m_rruid = "2";
+    m_uport = "1";
 }
 
 void HUB::SendRHUBDelayInfo()
@@ -224,7 +224,7 @@ void HUB::RecvMessage(const char* buf, ssize_t size)
 		uv::Packet packet;
 		while (0 == packetbuf->readPacket(packet))
 		{
-			std::cout << "[ReceiveData: " << packet.DataSize() << ":" << packet.getData() << "]" << std::endl;
+			std::cout << "reserver data " << packet.DataSize() << ":" << packet.getData() << std::endl;
 			packet.UnPackMessage();
 
 			/* 打印解包信息 */
@@ -305,7 +305,7 @@ void HUB::UpdataDelay(uv::Packet& packet)
     head.s_uport = m_uport;
 
     //TestProcess(packet);
-    std::string data = "delay1_up=34&delay2_up=35&delay3_up=36&delay4_up=37&delay5_up=38&delay1_down=36&delay2_down=37&delay3_down=38&delay4_down=39&delay5_down=37&t14_delay1=11488&t14_delay2=11488&t14_delay3=11488&t14_delay4=11488&t14_delay5=11488";
+    std::string data = "delay1_up=10&delay2_up=10&delay3_up=10&delay4_up=10&delay5_up=10&delay1_down=10&delay2_down=10&delay3_down=10&delay4_down=10&delay5_down=10&t14_delay1=1000&t14_delay2=1000&t14_delay3=1000&t14_delay4=1000&t14_delay5=1000";
     
     SendPackMessage(head, data, data.length());
 }

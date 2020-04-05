@@ -15,7 +15,6 @@
 #include <map>
 #include <vector>
 #include <set>
-#include <regex>
 
 #include "uv11.h"
 
@@ -35,38 +34,40 @@ public:
     };
 
     BBU(uv::EventLoop* loop);
-    //static void writeCallback(uv::WriteInfo& info);
+    void ProcessRecvMessage(uv::TcpConnectionPtr connection, uv::Packet& packet);
+	
     void SendMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
-	void SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
+	void SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 
-    void SendPackMessage(uv::TcpConnectionPtr& connection, uv::PacketIR::Head head, std::string& data, ssize_t size);
-    void SendPackMessageToAllDevice(DeviceType device, uv::PacketIR::Head head, std::string& data, ssize_t size);
-    
-    //void SendAllClientMessage(const char* buf, ssize_t size);
+    void SendPackMessage(uv::TcpConnectionPtr& connection, uv::Packet::Head head, std::string& data, ssize_t size);
+    void SendPackMessageToAllDevice(DeviceType device, uv::Packet::Head head, std::string& data, ssize_t size);
 
-	void BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
-	void HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
-	void RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
-	void OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
+	void BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+	void HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+	void RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+	void OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 
-	void SetConnectionClient(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
-	void DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::PacketIR& packet);
+	void SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+	void DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 
-	void UnPackData(uv::PacketIR& packet);
+	void UnPackData(uv::Packet& packet, std::map<std::string, std::string>& map);
 	
     /* 时延测量需要实现的几个接口函数 */
     /* 更新HUB时延测量信息 */
-    void SendUpdateHUBDelayMessage(uv::PacketIR& packet);
-    void UpdateHUBDelayInfo(uv::PacketIR& packet);
+    void SendUpdateHUBDelayMessage(uv::Packet& packet);
+    void UpdateHUBDelayInfo(uv::Packet& packet);
     bool QueryUhubConnection(std::string rruid, uv::TcpConnectionPtr& connection);
     /* 时延补偿计算，整个链路如何实现自动计算？补偿计算值排序，最大时延支持可配置 */
-    void CalculationDelayCompensation();
+    bool CalculationDelayCompensation(uv::Packet& packet, double& delayCompensation);
+	bool FindDelayMapValue(std::string key, std::string& value);
+
+	bool FindDataMapValue(std::map<std::string, std::string>& map, std::string key, std::string& value);
 
     /* HUB 时延信息存储map维护，设备掉电需要更新map RRU新接入需要更新 */
-    void HubDelayInfo(uv::PacketIR& packet);
+    void HubDelayInfo(uv::Packet& packet);
 
     /* BBU 时延测量数据处理，返回最大时延补偿 */
-    void RruDelayProcess(uv::PacketIR& packet);
+    void RruDelayProcess(uv::Packet& packet);
 
     /* 实现拓扑查询：
      * 1. 查 rru 的上一级 hub 信息 

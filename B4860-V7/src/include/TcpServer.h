@@ -114,7 +114,7 @@ private:
     OnConnectionStatusCallback onConnectCloseCallback_;
     TimerWheel timerWheel_;
 
-	int m_base = 2;
+	int m_base = 0;
 };
 
 
