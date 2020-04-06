@@ -76,6 +76,10 @@ public:
      */
     std::string QueryCompleteLink(std::string rruid);
 
+	void RRUIndex(uv::Packet& packet);
+
+	/* 最大时延补偿 map，最大时延可配置               */
+	
 
     void NetworkTopology();
 

@@ -19,6 +19,12 @@
 
 [libuv 简单使用](https://www.cnblogs.com/lsgxeva/p/9999135.html)
 
+[map按键排序和按值排序](https://www.jianshu.com/p/809216c9240d)
+
+[C++ STL中Map的按Key排序和按Value排序](https://blog.csdn.net/iicy266/article/details/11906189)
+
+[C++中map按value排序](https://blog.csdn.net/theonegis/article/details/48549887)
+
 
 - [x] HUB 时延数据上报，消息封装，上报时延数据包括HUB 九个端口TBdelayUL，TBdelayDL，T14，通过一条消息全部上报。功能测试完成
 - [x] BBU解析处理HUB上报时延测量数据，数据解析接口封装，数据存储为map，key为level+type+port（hub层级+延时类别(TBdelayUL,TBdelayDL,T14)+端口号） 作为索引。功能测试完成。

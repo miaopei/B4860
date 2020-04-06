@@ -327,7 +327,6 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
 	std::cout << "T2a=" << T2a << " Ta3=" << Ta3 << std::endl;
 
 	level = std::stoi(packet.GetRRUID()) - 1;
-
 	if(level < 0)
 	{
 		std::cout << "Error: level error" << std::endl;
@@ -341,7 +340,7 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
 		return true;
 	}
 
-	/* have one HUB */
+	/* 计算 rru 上一级 hub delay */
 	/* TBdelay DL */
 	key = std::string(to_string(level) + "1" + packet.GetUPort());
 	std::cout << "key = " << key << std::endl;
@@ -374,7 +373,8 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
 
 	totalDLHUBDelay = atof(tbdelayDL.c_str()) + ((atof(t14.c_str()) - (RRUToffset * TOFFSETCYCLE) / 2));
 	totalULHUBDelay = atof(tbdelayUL.c_str()) + ((atof(t14.c_str()) - (RRUToffset * TOFFSETCYCLE) / 2));
-#if 1
+
+	/* 级联 hub delay 计算，级联的情况 hub port=0 uport=1 */
 	level = level - 1;
 	if(level >= 1)
 	{
@@ -417,10 +417,12 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
 			totalULHUBDelay += ((atof(t14.c_str()) - (RRUToffset * TOFFSETCYCLE) / 2));
 		}
 	}
-#endif
+
 	t12 = (BBUT14 - (HUBToffset * TOFFSETCYCLE)) / 2;
 	totalDL = t12 + totalDLHUBDelay + atof(T2a.c_str());
+	totalUL = t12 + totalULHUBDelay + atof(Ta3.c_str());
 	std::cout << "totalDL=" << to_string(totalDL) << std::endl;
+	std::cout << "totalUL=" << to_string(totalUL) << std::endl;
 	return true;
 }
 

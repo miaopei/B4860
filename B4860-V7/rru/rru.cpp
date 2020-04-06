@@ -95,7 +95,7 @@ void RRU::SetRRRUInfo()
 #endif
     m_source = to_string(uv::Packet::RRU);
     m_port = "0";
-    m_rruid = "3";
+    m_rruid = "4";
     m_uport = "4";
 }
 

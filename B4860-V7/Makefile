@@ -23,9 +23,9 @@ all: before bbu
 	@make -C hub-2
 	#@make -C rru-2
 	#@make -C oam
+	@echo "[compile time $(COMPILE_TIME)]"
 
 before:
-	@echo "[compile time $(COMPILE_TIME)]"
 	@test -d $(BUILD_DIR) || mkdir -p $(BUILD_DIR)
 	@test -d $(BIN_DIR) || mkdir -p $(BIN_DIR)
 
