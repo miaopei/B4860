@@ -327,18 +327,11 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
 	std::cout << "T2a=" << T2a << " Ta3=" << Ta3 << std::endl;
 
 	level = std::stoi(packet.GetRRUID()) - 1;
-	if(level < 0)
+	if(level <= 0)
 	{
 		std::cout << "Error: level error" << std::endl;
 		return false;
-	} else if(level == 0)
-	{
-		/* none HUB */
-		t12 = (BBUT14 - (HUBToffset * TOFFSETCYCLE)) / 2;
-		totalDL = t12 + atof(T2a.c_str());
-		totalUL = t12 + atof(Ta3.c_str());
-		return true;
-	}
+	} 
 
 	/* 计算 rru 上一级 hub delay */
 	/* TBdelay DL */
