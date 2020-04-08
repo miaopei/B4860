@@ -89,7 +89,15 @@ void TcpServer::removeConnnection(string& name)
 	auto rst = connectionInfo_.find(name);
     if(rst != connectionInfo_.end())
     {
-		DeleteHubDelay(rst->second.s_RRUID, delay_map);
+		DeleteHubDelay(rst->second.s_hop, delay_map);
+		if(!DeleteRouteIndex(rst->second.s_routeIndex, tVectorDL))
+		{
+			uv::LogWriter::Instance()->error("Error: DeleteRouteIndex tVectorDL error");
+		}
+		if(!DeleteRouteIndex(rst->second.s_routeIndex, tVectorUL))
+		{
+			uv::LogWriter::Instance()->error("Error: DeleteRouteIndex tVectorUL error");
+		}
     }
 
     connnections_.erase(name);
@@ -284,6 +292,80 @@ void TcpServer::UpdateDelayInfo(const std::string &input, std::string rruid, std
     SplitStrings2Map(input, rruid, map);
 }
 
+double TcpServer::cmp(const PAIR& x, const PAIR& y)
+{
+    return atof(x.second.c_str()) > atof(y.second.c_str());
+}
+
+void TcpServer::sortMapByValue(std::map<std::string, std::string>& map, vector<PAIR>& tVector)
+{
+    for(auto &it : map)
+        tVector.push_back(make_pair(it.first, it.second));
+
+    sort(tVector.begin(), tVector.end(), cmp);
+}
+
+std::string TcpServer::CreateRouteIndex(uv::Packet& packet)
+{
+    int level = 0;
+    std::string RouteIndex;
+    DeviceInfo dInfo;
+
+    level = std::stoi(packet.GetHop()) - 1;
+    if(level <= 0)
+	{
+		std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
+                  << "#Error: level error" << std::endl;
+		return "";
+	} 
+
+    RouteIndex = std::string(packet.GetPort() + "_" + packet.GetUPort());
+
+    if(level >= 1)
+    {
+        for(level = level; level > 0; level--)
+        {
+            if(!FindDeviceInfo(level, dInfo))
+            {
+                std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
+                    << "#Error: level error" << std::endl;
+                return "";
+            }
+            RouteIndex += "_" + dInfo.s_port + "_" + dInfo.s_uport;
+        }
+    }
+    return RouteIndex;
+}
+
+bool TcpServer::FindDeviceInfo(int level, DeviceInfo& dInfo)
+{
+    std::map<std::string, DeviceInfo> netTopology;
+    GetNetworkTopology(netTopology);
+
+    for(auto &it : netTopology)
+    {
+        if(it.second.s_hop == to_string(level))
+        {
+            dInfo = it.second;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TcpServer::DeleteRouteIndex(std::string routeIndex, vector<PAIR>& tVector)
+{
+	vector<PAIR>::iterator itor;
+	for(itor = tVector.begin(); itor != tVector.end(); itor++)
+	{
+		if(itor->first == routeIndex)
+		{
+			tVector.erase(itor);
+			return true;
+		}
+	}
+	return false;
+}
 
 void TcpServer::closeConnection(string& name)
 {
@@ -303,7 +385,15 @@ void TcpServer::closeConnection(string& name)
 				auto rst = connectionInfo_.find(name);
 			    if(rst != connectionInfo_.end())
 			    {
-					DeleteHubDelay(rst->second.s_RRUID, delay_map);
+					DeleteHubDelay(rst->second.s_hop, delay_map);
+					if(!DeleteRouteIndex(rst->second.s_routeIndex, tVectorDL))
+					{
+						uv::LogWriter::Instance()->error("Error: DeleteRouteIndex tVectorDL error");
+					}
+					if(!DeleteRouteIndex(rst->second.s_routeIndex, tVectorUL))
+					{
+						uv::LogWriter::Instance()->error("Error: DeleteRouteIndex tVectorUL error");
+					}
 			    }
 				
                 connnections_.erase(name);

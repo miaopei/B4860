@@ -59,7 +59,7 @@ public:
     /* 更新HUB时延测量信息 */
     void SendUpdateHUBDelayMessage(uv::Packet& packet);
     void UpdateHUBDelayInfo(uv::Packet& packet);
-    bool QueryUhubConnection(std::string rruid, uv::TcpConnectionPtr& connection);
+    bool QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection);
     /* 时延补偿计算，整个链路如何实现自动计算？补偿计算值排序，最大时延支持可配置 */
     bool CalculationDelayCompensation(uv::Packet& packet, double& delayCompensation);
 	bool FindDelayMapValue(std::string key, std::string& value);
@@ -78,18 +78,7 @@ public:
      * 3.  
      */
     std::string QueryCompleteLink(std::string rruid);
-
-    std::string CreateRouteIndex(uv::Packet& packet);
-    bool FindDeviceInfo(int level, DeviceInfo& dInfo);
-
-	/* 最大时延补偿 map，最大时延可配置 */
-    typedef pair<std::string, std::string> PAIR;
-    std::map<std::string, std::string> mDelayDL;
-    std::map<std::string, std::string> mDelayUL;
-    vector<PAIR> tVectorDL;
-    vector<PAIR> tVectorUL;
-    static double cmp(const PAIR& x, const PAIR& y);
-    void sortMapByValue(std::map<std::string, std::string>& map, vector<PAIR>& tVector);
+	
     void EchoSortResult(vector<PAIR>& tVector);
 
     void NetworkTopology();

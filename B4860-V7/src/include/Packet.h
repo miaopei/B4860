@@ -11,17 +11,24 @@
 #include <sstream>
 #include <iomanip>
 
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+
 #include "PacketBuffer.h"
 
 using namespace std;
 
-#define HEADLENGTH 		14
+#define HEADLENGTH 		26
+
+#define MAXINTERFACES 	11
+
 
 //PacketIR:
-//-------------------------------------------------------------------------------------------------------
-//  head  | source | destination | state  | msgID  | RRUID  |  port  | uPort  | length |  data  |  end   |
-// 1 Byte | 1 Byte |    1 Byte   | 1 Byte | 4 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
-//-------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------------
+//  head  | source | destination |   mac   | state  | msgID  | HOP  |  port  | uPort  | length |  data  |  end   |
+// 1 Byte | 1 Byte |    1 Byte   | 12 Byte | 1 Byte | 4 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
+//-----------------------------------------------------------------------------------------------------------------
 // head: 数据包头校验 (0x7e)
 // source：HUB、RRU、BBU、OAM (0,1,2,3)
 // destination: 消息目标发给谁 HUB、RRU、BBU、OAM 
@@ -47,9 +54,10 @@ public:
     struct Head{
         std::string s_source;
         std::string s_destination;
+		std::string s_mac;
         std::string s_state;
         std::string s_msgID;
-        std::string s_rruid;
+        std::string s_hop;
         std::string s_port;
         std::string s_uport;
     };
@@ -91,7 +99,7 @@ public:
         MSG_UPDATE_DELAY            = 1043,
         MSG_END                     = 9999
     };
-
+#if 0
 	enum RRUID
 	{
 		RRUID_0 	= 0,
@@ -101,7 +109,7 @@ public:
 		RRUID_4		= 4,
         RRUID_X     = 9
 	};
-
+#endif
 	enum Port
 	{
 		PORT_0	= 0,
@@ -137,7 +145,7 @@ public:
 
     void pack(const char* data, uint16_t size);
     
-    void SetHead(std::string sour, std::string dest, std::string state, std::string msgID, std::string rruid, std::string port, std::string uport);
+    void SetHead(Head& head);
 
     std::string num2str(int num);
     void PackMessage(std::string& data, size_t size);
@@ -148,9 +156,10 @@ public:
     std::string GetHead();
     std::string GetSource();
 	std::string GetDestination();
+	std::string GetMac();
 	std::string GetState();
     std::string GetMsgID();
-	std::string GetRRUID();
+	std::string GetHop();
 	std::string GetPort();
 	std::string GetUPort();
     int GetLength();
@@ -161,6 +170,8 @@ public:
 
 	std::vector<std::string> DataSplit(const std::string& in, const std::string& delim);
 	void SplitData2Map(std::map<std::string, std::string>& map);
+
+	bool GetDeviceMac(const char* inet, char* mac);
 
 	//int Source2Destination();
 	//int Destination2Source();
@@ -196,9 +207,10 @@ public:
 private:
     std::string m_source;
 	std::string m_destination;
+	std::string m_mac;
 	std::string m_state;
     std::string m_msgID;
-	std::string m_rruid;
+	std::string m_hop;
 	std::string m_port;
 	std::string m_uport;
     int m_length;

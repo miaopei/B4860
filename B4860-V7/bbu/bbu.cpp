@@ -121,7 +121,8 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 	dInfo.s_ip = GetCurrentName(connection);
 	dInfo.s_connection = connection;
 	dInfo.s_source = packet.GetSource();
-	dInfo.s_RRUID = packet.GetRRUID();
+	dInfo.s_mac = packet.GetMac();
+	dInfo.s_hop = packet.GetHop();
 	dInfo.s_port = packet.GetPort();
 	dInfo.s_uport = packet.GetUPort();
 
@@ -170,12 +171,21 @@ void BBU::UnPackData(uv::Packet& packet, std::map<std::string, std::string>& map
 
 void BBU::SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
+	char mac[32] = {0};
+	char inet[] = "enp1s0";
+	if(!packet.GetDeviceMac(inet, mac))
+    {
+        std::cout << "Error: GetMac error" << std::endl;
+        return ;
+    }
+
     uv::Packet::Head head;
     head.s_source       = packet.GetDestination();
     head.s_destination  = packet.GetSource();
+	head.s_mac			= mac;
     head.s_state        = to_string(uv::Packet::RESPONSE);
     head.s_msgID        = packet.GetMsgID();
-    head.s_rruid        = packet.GetRRUID();
+    head.s_hop        = packet.GetHop();
     head.s_port         = packet.GetPort();
     head.s_uport        = packet.GetUPort();
 
@@ -187,13 +197,7 @@ void BBU::SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::Packet& pa
 void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, uv::Packet::Head head, std::string& data, ssize_t size)
 {
     uv::Packet Packet;
-    Packet.SetHead(head.s_source, 
-                     head.s_destination,
-                     head.s_state,
-                     head.s_msgID, 
-                     head.s_rruid,
-                     head.s_port,
-                     head.s_uport);
+    Packet.SetHead(head);
 
     Packet.PackMessage(data, size);
 
@@ -224,7 +228,7 @@ void BBU::SendPackMessageToAllDevice(DeviceType device, uv::Packet::Head head, s
 void BBU::SendUpdateHUBDelayMessage(uv::Packet& packet)
 {
     shared_ptr<TcpConnection> connection;
-    if(!QueryUhubConnection(packet.GetRRUID(), connection))
+    if(!QueryUhubConnection(packet.GetHop(), connection))
     {
         std::cout << "[Error: SendUpdateHUBDelayMessage not find hub rruid]" << std::endl;
         return;
@@ -234,9 +238,10 @@ void BBU::SendUpdateHUBDelayMessage(uv::Packet& packet)
     uv::Packet::Head head;
     head.s_source = packet.GetDestination();
     head.s_destination = to_string(uv::Packet::TO_HUB);
+	head.s_mac = packet.GetMac();
     head.s_state = to_string(uv::Packet::REQUEST);
     head.s_msgID = to_string(uv::Packet::MSG_UPDATE_DELAY);
-    head.s_rruid = packet.GetRRUID();
+    head.s_hop = packet.GetHop();
     head.s_port = packet.GetPort();
     head.s_uport = packet.GetUPort();
 
@@ -247,7 +252,7 @@ void BBU::SendUpdateHUBDelayMessage(uv::Packet& packet)
 
 void BBU::UpdateHUBDelayInfo(uv::Packet& packet)
 {
-    UpdateDelayInfo(packet.GetData(), packet.GetRRUID(), delay_map);
+    UpdateDelayInfo(packet.GetData(), packet.GetHop(), delay_map);
 	
 #if 1
     for(auto &it : delay_map)
@@ -262,7 +267,7 @@ void BBU::UpdateHUBDelayInfo(uv::Packet& packet)
 void BBU::HubDelayInfo(uv::Packet& packet)
 {
 	std::string data = packet.GetData();
-    SplitStrings2Map(data, packet.GetRRUID(), delay_map);
+    SplitStrings2Map(data, packet.GetHop(), delay_map);
     
 #if 1
     for(auto &it : delay_map)
@@ -284,66 +289,18 @@ void BBU::RruDelayProcess(uv::Packet& packet)
 
 }
 
-bool BBU::QueryUhubConnection(std::string rruid, uv::TcpConnectionPtr& connection)
+bool BBU::QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection)
 {
     std::map<std::string, DeviceInfo> netTopology;
     GetNetworkTopology(netTopology);
 
-	int ruhub_rruid = std::stoi(rruid) - 1;
+	int ruhub_hop = std::stoi(hop) - 1;
 
     for(auto &it : netTopology)
     {
-        if(it.second.s_RRUID == to_string(ruhub_rruid))
+        if(it.second.s_hop == to_string(ruhub_hop))
         {
             connection = it.second.s_connection;
-            return true;
-        }
-    }
-    return false;
-}
-
-std::string BBU::CreateRouteIndex(uv::Packet& packet)
-{
-    int level = 0;
-    std::string RouteIndex;
-    DeviceInfo dInfo;
-
-    level = std::stoi(packet.GetRRUID()) - 1;
-    if(level <= 0)
-	{
-		std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
-                  << "#Error: level error" << std::endl;
-		return "";
-	} 
-
-    RouteIndex = std::string(packet.GetPort() + "_" + packet.GetUPort());
-
-    if(level >= 1)
-    {
-        for(level = level; level > 0; level--)
-        {
-            if(!FindDeviceInfo(level, dInfo))
-            {
-                std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
-                    << "#Error: level error" << std::endl;
-                return "";
-            }
-            RouteIndex += "_" + dInfo.s_port + "_" + dInfo.s_uport;
-        }
-    }
-    return RouteIndex;
-}
-
-bool BBU::FindDeviceInfo(int level, DeviceInfo& dInfo)
-{
-    std::map<std::string, DeviceInfo> netTopology;
-    GetNetworkTopology(netTopology);
-
-    for(auto &it : netTopology)
-    {
-        if(it.second.s_RRUID == to_string(level))
-        {
-            dInfo = it.second;
             return true;
         }
     }
@@ -365,8 +322,10 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
 	double totalULHUBDelay;
 	double t12;
 
-    mDelayDL.clear();
-    mDelayUL.clear();
+	std::map<std::string, std::string> mDelayDL;
+    std::map<std::string, std::string> mDelayUL;
+    //mDelayDL.clear();
+    //mDelayUL.clear();
     
     std::string RouteIndex = CreateRouteIndex(packet);
     if(RouteIndex.empty())
@@ -376,6 +335,20 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
     }
     std::cout << "RouteIndex=" << RouteIndex << std::endl;
 
+	/* 需要增加mac  来区分唯一device */
+	#if 0
+	std::map<std::string, DeviceInfo> netTopology;
+    GetNetworkTopology(netTopology);
+
+    for(auto &it : netTopology)
+    {
+        if(it.second.s_RRUID == to_string(packet.GetRRUID()))
+        {
+            it.second.s_routeIndex = RouteIndex;
+        }
+    }
+	#endif
+	
 	std::map<std::string, std::string> map;
 	packet.SplitData2Map(map);
 
@@ -393,7 +366,7 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
 	
 	std::cout << "T2a=" << T2a << " Ta3=" << Ta3 << std::endl;
 
-	level = std::stoi(packet.GetRRUID()) - 1;
+	level = std::stoi(packet.GetHop()) - 1;
 	if(level <= 0)
 	{
 		std::cout << "Error: level error" << std::endl;
@@ -560,19 +533,6 @@ void BBU::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssi
     }
 }
 
-double BBU::cmp(const PAIR& x, const PAIR& y)
-{
-    return atof(x.second.c_str()) > atof(y.second.c_str());
-}
-
-void BBU::sortMapByValue(std::map<std::string, std::string>& map, vector<PAIR>& tVector)
-{
-    for(auto &it : map)
-        tVector.push_back(make_pair(it.first, it.second));
-
-    sort(tVector.begin(), tVector.end(), cmp);
-}
-
 void BBU::EchoSortResult(vector<PAIR>& tVector)
 {
     for(int i = 0; i < static_cast<int>(tVector.size()); i++)
@@ -610,7 +570,8 @@ void BBU::NetworkTopology()
             << it.second.s_ip << " "
             << it.second.s_connection << " "
             << it.second.s_source << " "
-            << it.second.s_RRUID << " " 
+            << it.second.s_mac << " "
+            << it.second.s_hop << " " 
             << it.second.s_port << " "
             << it.second.s_uport << std::endl;
     }

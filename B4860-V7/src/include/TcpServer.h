@@ -39,9 +39,12 @@ public:
     	std::string s_ip;
     	TcpConnectionPtr s_connection;
         std::string s_source;
-        std::string s_RRUID;
+		std::string s_mac;
+        std::string s_hop;
         std::string s_port;
         std::string s_uport;
+		std::string s_routeIndex;
+		#if 0
         DeviceInfo(){};
         DeviceInfo(std::string ip, TcpConnectionPtr connect, std::string source, std::string rruid, std::string port, std::string uport)
         {
@@ -52,6 +55,7 @@ public:
             s_port = port;
             s_uport = uport;
         };
+		#endif
     };
 	
     TcpServer(EventLoop* loop, bool tcpNoDelay = true);
@@ -81,8 +85,8 @@ public:
 	void GetOAMConnection(std::vector<TcpConnectionPtr>& oamConnection);
 	void GetNetworkTopology(std::map<std::string, DeviceInfo>& netTopology);
 
-	std::vector<std::string> Split(const std::string& in, const std::string& delim);
 	/* 实现key-value数据插入及修改 */
+	std::vector<std::string> Split(const std::string& in, const std::string& delim);
 	typedef struct atom_node
 	{
 	    std::string key;
@@ -91,10 +95,20 @@ public:
 	} atom;
 	typedef std::pair <std::string, struct atom_node> _KV_ ;
 	std::map<std::string, atom> delay_map;
-
 	void SplitStrings2Map(const std::string &input, std::string rruid, std::map<std::string, atom>& map);
 	void DeleteHubDelay(std::string rruid, std::map<std::string, atom>& map);
     void UpdateDelayInfo(const std::string &input, std::string rruid, std::map<std::string, atom>& map);
+
+	/* 最大时延补偿 map，最大时延可配置 */
+    typedef std::pair<std::string, std::string> PAIR;	
+    vector<PAIR> tVectorDL;
+    vector<PAIR> tVectorUL;
+    static double cmp(const PAIR& x, const PAIR& y);
+    void sortMapByValue(std::map<std::string, std::string>& map, vector<PAIR>& tVector);
+
+	std::string CreateRouteIndex(uv::Packet& packet);
+    bool FindDeviceInfo(int level, DeviceInfo& dInfo);
+	bool DeleteRouteIndex(std::string routeIndex, vector<PAIR>& tVector);
 
     void setTimeout(unsigned int);
 private:

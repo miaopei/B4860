@@ -26,21 +26,16 @@ uv::Packet::~Packet()
 
 }
 
-void uv::Packet::SetHead(std::string sour, 
-							   std::string dest, 
-							   std::string state, 
-							   std::string msgID, 
-							   std::string rruid, 
-							   std::string port, 
-							   std::string uport)
+void uv::Packet::SetHead(Head& head)
 {
-	m_source = sour;
-	m_destination = dest;
-	m_state = state;
-	m_msgID = msgID;
-	m_rruid = rruid;
-	m_port = port;
-	m_uport = uport;
+	m_source = head.s_source;
+	m_destination = head.s_destination;
+	m_mac = head.s_mac;
+	m_state = head.s_state;
+	m_msgID = head.s_msgID;
+	m_hop = head.s_hop;
+	m_port = head.s_port;
+	m_uport = head.s_uport;
 }
 
 std::string uv::Packet::num2str(int num)
@@ -70,13 +65,14 @@ void uv::Packet::UnPackMessage()
 	m_packet = packet;
 	m_source = packet.substr(0, 1);
 	m_destination= packet.substr(1, 1);
-	m_state = packet.substr(2, 1);
-	m_msgID = packet.substr(3, 4);
-	m_rruid = packet.substr(7, 1);
-	m_port = packet.substr(8, 1);
-	m_uport = packet.substr(9, 1);
-    m_length = std::stoi(packet.substr(10, 4));
-	m_data = packet.substr(14);
+	m_mac = packet.substr(2, 12);
+	m_state = packet.substr(14, 1);
+	m_msgID = packet.substr(15, 4);
+	m_hop = packet.substr(19, 1);
+	m_port = packet.substr(20, 1);
+	m_uport = packet.substr(21, 1);
+    m_length = std::stoi(packet.substr(22, 4));
+	m_data = packet.substr(26);
 }
 
 std::string uv::Packet::GetPacket() 
@@ -86,7 +82,7 @@ std::string uv::Packet::GetPacket()
 
 std::string uv::Packet::GetHead() 
 { 
-	return std::string(m_source + m_destination + m_state + m_msgID + m_rruid + m_port + m_uport); 
+	return std::string(m_source + m_destination + m_mac + m_state + m_msgID + m_hop + m_port + m_uport); 
 }
 
 std::string uv::Packet::GetSource() 
@@ -99,6 +95,11 @@ std::string uv::Packet::GetDestination()
 	return m_destination;
 }
 
+std::string uv::Packet::GetMac()
+{
+	return m_mac;
+}
+
 std::string uv::Packet::GetState()
 {
 	return m_state;
@@ -109,9 +110,9 @@ std::string uv::Packet::GetMsgID()
 	return m_msgID; 
 }
 
-std::string uv::Packet::GetRRUID()
+std::string uv::Packet::GetHop()
 {
-	return m_rruid;
+	return m_hop;
 }
 
 std::string uv::Packet::GetPort()
@@ -140,9 +141,10 @@ void uv::Packet::EchoPackMessage()
 		<< "\n\tPacket: " << m_packet
 		<< "\n\tSource: " << m_source << " [HUB,RRU,BBU,OAM]"
 		<< "\n\tDestination: " << m_destination << " [HUB,RRU,BBU,OAM]"
+		<< "\n\tMac: " << m_mac 
 		<< "\n\tState: " << m_state << " [REQUEST,RESPONSE]"
 		<< "\n\tMsgID: " << m_msgID 
-		<< "\n\tRRUID: " << m_rruid
+		<< "\n\tRRUID: " << m_hop
 		<< "\n\tPort: " << m_port
 		<< "\n\tUPort: " << m_uport
 		<< "\n\tLength: " << m_length
@@ -156,9 +158,10 @@ void uv::Packet::EchoUnPackMessage()
 		<< "\n\tPacket: " << m_packet
 		<< "\n\tSource: " << m_source << " [HUB,RRU,BBU,OAM]"
 		<< "\n\tDestination: " << m_destination << " [HUB,RRU,BBU,OAM]"
+		<< "\n\tMac: " << m_mac
 		<< "\n\tState: " << m_state << " [REQUEST,RESPONSE]"
 		<< "\n\tMsgID: " << m_msgID 
-		<< "\n\tRRUID: " << m_rruid
+		<< "\n\tRRUID: " << m_hop
 		<< "\n\tPort: " << m_port
 		<< "\n\tUPort: " << m_uport
 		<< "\n\tLength: " << m_length
@@ -197,6 +200,46 @@ void uv::Packet::SplitData2Map(std::map<std::string, std::string>& map)
         vector<string>kv = DataSplit(ret[i].c_str(), "=");
 		map.insert(std::make_pair(kv[0].c_str(), kv[1].c_str()));
     }
+}
+
+bool uv::Packet::GetDeviceMac(const char* inet, char* mac)
+{
+    int fd, interface;
+    struct ifreq buf[MAXINTERFACES];
+    struct ifconf ifc;
+
+    if((fd = socket(AF_INET, SOCK_DGRAM, 0)) >= 0)
+    {
+        int i = 0;
+        ifc.ifc_len = sizeof(buf);
+        ifc.ifc_buf = (caddr_t)buf;
+        if (!ioctl(fd, SIOCGIFCONF, (char *)&ifc))
+        {
+            interface = ifc.ifc_len / sizeof(struct ifreq);
+            //printf("interface num is %d\n", interface);
+            while (i < interface)
+            {
+                //printf("net device %s\n", buf[i].ifr_name);
+                if(!strcmp(inet, buf[i].ifr_name))
+                {
+                    if (!(ioctl(fd, SIOCGIFHWADDR, (char *)&buf[i])))
+                    {
+                        sprintf(mac, "%02X%02X%02X%02X%02X%02X",
+                                (unsigned char)buf[i].ifr_hwaddr.sa_data[0],
+                                (unsigned char)buf[i].ifr_hwaddr.sa_data[1],
+                                (unsigned char)buf[i].ifr_hwaddr.sa_data[2],
+                                (unsigned char)buf[i].ifr_hwaddr.sa_data[3],
+                                (unsigned char)buf[i].ifr_hwaddr.sa_data[4],
+                                (unsigned char)buf[i].ifr_hwaddr.sa_data[5]);
+
+                        return true;
+                    }
+                }
+                i++;
+            }
+        }
+    }
+    return false;
 }
 
 int uv::Packet::readFromBuffer(PacketBuffer* packetbuf, Packet& out)

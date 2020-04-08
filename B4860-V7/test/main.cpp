@@ -83,12 +83,12 @@ void sortMapByValue(std::map<std::string, double>& map, vector<PAIR>& tVector)
 
 int main()
 {
-    char mac[32] = {0};
-    char inet[] = "enp0s31f6";
+    char mac[MAXINTERFACES] = {0};
+    char inet[] = "enp1s0";
     if(!getmac(inet, mac))
     {
         std::cout << "Error: GetMac error" << std::endl;
-        return 0;
+        //return 0;
     }
     std::cout << "Mac=" << mac << std::endl;
 
@@ -109,6 +109,21 @@ int main()
 
     std::cout << "Max Delay: " << tVector.begin()->second << std::endl;
     std::cout << "Min Delay: " << tVector.back().second << std::endl;
+
+    vector<PAIR>::iterator itor;
+    for(itor = tVector.begin(); itor != tVector.end(); itor++)
+    {
+        if(itor->first == "R_0_4")
+        {
+           tVector.erase(itor);
+        }
+    }
+
+    for(int i = 0; i < static_cast<int>(tVector.size()); i++)
+    {
+        std::cout << tVector[i].first << ":" << tVector[i].second << std::endl;
+    }
+
 #endif
 
     std::string RouteIndex = "";
