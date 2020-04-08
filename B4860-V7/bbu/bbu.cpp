@@ -24,7 +24,7 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
 	/* 数据包校验，数据粘包问题处理 */
 	if(size < HEADLENGTH)
 	{
-		std::cout << "Message length error." << std::endl;
+        uv::LogWriter::Instance()->error("Message length error.");
 		return ;
 	}
 
@@ -35,7 +35,15 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
 		uv::Packet packet;
         while (0 == packetbuf->readPacket(packet))
         {
-            std::cout << "[ReceiveData: " << packet.DataSize() << ":" << packet.getData() << "]" << std::endl;
+            //uv::LogWriter::Instance()->info(std::string("ReceiveData: " + packet.DataSize()) + std::string(":" + to_string(packet.getData())));
+            //uv::LogWriter::Instance()->info(std::string("ReceiveData: " + packet.DataSize()) + std::string(":") + std::string(packet.getData()));
+            
+            #if 1
+            std::cout << __FUNCTION__ << ":" << __LINE__ 
+                      << "[ReceiveData: " << packet.DataSize() << ":" 
+                      << std::string(packet.getData(), packet.DataSize())  << "]" << std::endl;
+            #endif
+
 			packet.UnPackMessage();
 
 			/* 打印解包信息 */
@@ -109,22 +117,22 @@ void BBU::OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 
 void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-	ClientInfo cInfo;
-	cInfo.s_ip = GetCurrentName(connection);
-	cInfo.s_connection = connection;
-	cInfo.s_source = packet.GetSource();
-	cInfo.s_RRUID = packet.GetRRUID();
-	cInfo.s_port = packet.GetPort();
-	cInfo.s_uport = packet.GetUPort();
+	DeviceInfo dInfo;
+	dInfo.s_ip = GetCurrentName(connection);
+	dInfo.s_connection = connection;
+	dInfo.s_source = packet.GetSource();
+	dInfo.s_RRUID = packet.GetRRUID();
+	dInfo.s_port = packet.GetPort();
+	dInfo.s_uport = packet.GetUPort();
 
-	if(!SetConnectionInfo(connection, cInfo))
+	if(!SetConnectionInfo(connection, dInfo))
 	{
 		std::cout << "[Error: SetConnectionInfo Error]" << std::endl;
 		return;
 	}
 
     /* 如果 source 是 RRU 需要更新上级 HUB 延时测量信息*/
-    if(cInfo.s_source == to_string(uv::Packet::RRU))
+    if(dInfo.s_source == to_string(uv::Packet::RRU))
     {
         SendUpdateHUBDelayMessage(packet);
     }
@@ -278,7 +286,7 @@ void BBU::RruDelayProcess(uv::Packet& packet)
 
 bool BBU::QueryUhubConnection(std::string rruid, uv::TcpConnectionPtr& connection)
 {
-    std::map<std::string, ClientInfo> netTopology;
+    std::map<std::string, DeviceInfo> netTopology;
     GetNetworkTopology(netTopology);
 
 	int ruhub_rruid = std::stoi(rruid) - 1;
@@ -288,6 +296,54 @@ bool BBU::QueryUhubConnection(std::string rruid, uv::TcpConnectionPtr& connectio
         if(it.second.s_RRUID == to_string(ruhub_rruid))
         {
             connection = it.second.s_connection;
+            return true;
+        }
+    }
+    return false;
+}
+
+std::string BBU::CreateRouteIndex(uv::Packet& packet)
+{
+    int level = 0;
+    std::string RouteIndex;
+    DeviceInfo dInfo;
+
+    level = std::stoi(packet.GetRRUID()) - 1;
+    if(level <= 0)
+	{
+		std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
+                  << "#Error: level error" << std::endl;
+		return "";
+	} 
+
+    RouteIndex = std::string(packet.GetPort() + "_" + packet.GetUPort());
+
+    if(level >= 1)
+    {
+        for(level = level; level > 0; level--)
+        {
+            if(!FindDeviceInfo(level, dInfo))
+            {
+                std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
+                    << "#Error: level error" << std::endl;
+                return "";
+            }
+            RouteIndex += "_" + dInfo.s_port + "_" + dInfo.s_uport;
+        }
+    }
+    return RouteIndex;
+}
+
+bool BBU::FindDeviceInfo(int level, DeviceInfo& dInfo)
+{
+    std::map<std::string, DeviceInfo> netTopology;
+    GetNetworkTopology(netTopology);
+
+    for(auto &it : netTopology)
+    {
+        if(it.second.s_RRUID == to_string(level))
+        {
+            dInfo = it.second;
             return true;
         }
     }
@@ -309,12 +365,23 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
 	double totalULHUBDelay;
 	double t12;
 
+    mDelayDL.clear();
+    mDelayUL.clear();
+    
+    std::string RouteIndex = CreateRouteIndex(packet);
+    if(RouteIndex.empty())
+    {
+        std::cout << "Error: CreateRouteIndex failure" << std::endl;
+        return false;
+    }
+    std::cout << "RouteIndex=" << RouteIndex << std::endl;
+
 	std::map<std::string, std::string> map;
 	packet.SplitData2Map(map);
 
 	if(!FindDataMapValue(map, "T2a", T2a))
 	{
-		std::cout << "Error: FindDataMapValue T2a error" << std::endl;
+		std::cout << __FUNCTION__ << "#Error: FindDataMapValue T2a error" << std::endl;
 		return false;
 	}
 
@@ -416,6 +483,19 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
 	totalUL = t12 + totalULHUBDelay + atof(Ta3.c_str());
 	std::cout << "totalDL=" << to_string(totalDL) << std::endl;
 	std::cout << "totalUL=" << to_string(totalUL) << std::endl;
+
+    mDelayDL.insert(make_pair(RouteIndex, to_string(totalDL)));
+    mDelayUL.insert(make_pair(RouteIndex, to_string(totalUL)));
+
+    sortMapByValue(mDelayDL, tVectorDL);
+    sortMapByValue(mDelayUL, tVectorUL);
+
+    std::cout << "Echo maxDelayDL Result: " << std::endl;
+    EchoSortResult(tVectorDL);
+
+    std::cout << "Echo maxDelayUL Result: " << std::endl;
+    EchoSortResult(tVectorUL);
+
 	return true;
 }
 
@@ -480,6 +560,29 @@ void BBU::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssi
     }
 }
 
+double BBU::cmp(const PAIR& x, const PAIR& y)
+{
+    return atof(x.second.c_str()) > atof(y.second.c_str());
+}
+
+void BBU::sortMapByValue(std::map<std::string, std::string>& map, vector<PAIR>& tVector)
+{
+    for(auto &it : map)
+        tVector.push_back(make_pair(it.first, it.second));
+
+    sort(tVector.begin(), tVector.end(), cmp);
+}
+
+void BBU::EchoSortResult(vector<PAIR>& tVector)
+{
+    for(int i = 0; i < static_cast<int>(tVector.size()); i++)
+    {
+        std::cout << tVector[i].first << ":" << tVector[i].second << std::endl;
+    }
+
+    std::cout << "Max Delay: " << tVector.begin()->second << std::endl;
+}
+
 #if 0
 void BBU::SendAllClientMessage(const char* msg, ssize_t size)
 {
@@ -497,7 +600,7 @@ void BBU::SendAllClientMessage(const char* msg, ssize_t size)
 
 void BBU::NetworkTopology()
 {
-    std::map<std::string, ClientInfo> netTopology;
+    std::map<std::string, DeviceInfo> netTopology;
     GetNetworkTopology(netTopology);
 
     for(auto &it : netTopology)

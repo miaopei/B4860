@@ -79,7 +79,7 @@ int TcpServer::bindAndListen(SocketAddr& addr)
 
 void TcpServer::addConnnection(std::string& name,TcpConnectionPtr connection)
 {
-	connectionInfo_.insert(pair<std::string, ClientInfo>(name, cInfo_));
+	connectionInfo_.insert(pair<std::string, DeviceInfo>(name, cInfo_));
     connnections_.insert(pair<string,shared_ptr<TcpConnection>>(std::move(name),connection));
 }
 
@@ -124,7 +124,7 @@ std::string TcpServer::GetCurrentName(TcpConnectionPtr connection)
 	return "";
 }
 
-bool TcpServer::SetConnectionInfo(TcpConnectionPtr connection, ClientInfo& cInfo)
+bool TcpServer::SetConnectionInfo(TcpConnectionPtr connection, DeviceInfo& cInfo)
 {
 	std::string cName = GetCurrentName(connection);
 	
@@ -170,7 +170,7 @@ void TcpServer::GetOAMConnection(std::vector<TcpConnectionPtr>& oamConnection)
 	}
 }
 
-void TcpServer::GetNetworkTopology(std::map<std::string, ClientInfo>& netTopology)
+void TcpServer::GetNetworkTopology(std::map<std::string, DeviceInfo>& netTopology)
 {
 	netTopology = connectionInfo_;
 }

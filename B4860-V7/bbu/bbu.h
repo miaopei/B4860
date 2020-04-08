@@ -16,6 +16,9 @@
 #include <vector>
 #include <set>
 
+#include <string>
+#include <algorithm>
+
 #include "uv11.h"
 
 #define HUBToffset      3
@@ -76,10 +79,18 @@ public:
      */
     std::string QueryCompleteLink(std::string rruid);
 
-	void RRUIndex(uv::Packet& packet);
+    std::string CreateRouteIndex(uv::Packet& packet);
+    bool FindDeviceInfo(int level, DeviceInfo& dInfo);
 
-	/* 最大时延补偿 map，最大时延可配置               */
-	
+	/* 最大时延补偿 map，最大时延可配置 */
+    typedef pair<std::string, std::string> PAIR;
+    std::map<std::string, std::string> mDelayDL;
+    std::map<std::string, std::string> mDelayUL;
+    vector<PAIR> tVectorDL;
+    vector<PAIR> tVectorUL;
+    static double cmp(const PAIR& x, const PAIR& y);
+    void sortMapByValue(std::map<std::string, std::string>& map, vector<PAIR>& tVector);
+    void EchoSortResult(vector<PAIR>& tVector);
 
     void NetworkTopology();
 

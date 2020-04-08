@@ -34,7 +34,7 @@ using OnConnectionStatusCallback =  std::function<void (std::weak_ptr<TcpConnect
 class TcpServer
 {
 public:
-	struct ClientInfo
+	struct DeviceInfo
     {
     	std::string s_ip;
     	TcpConnectionPtr s_connection;
@@ -42,8 +42,8 @@ public:
         std::string s_RRUID;
         std::string s_port;
         std::string s_uport;
-        ClientInfo(){};
-        ClientInfo(std::string ip, TcpConnectionPtr connect, std::string source, std::string rruid, std::string port, std::string uport)
+        DeviceInfo(){};
+        DeviceInfo(std::string ip, TcpConnectionPtr connect, std::string source, std::string rruid, std::string port, std::string uport)
         {
         	s_ip = ip;
 			s_connection = connect;
@@ -75,11 +75,11 @@ public:
     void writeInLoop(std::string& name,const char* buf,unsigned int size,AfterWriteCallback callback);
 
 	std::string GetCurrentName(TcpConnectionPtr connection);
-	bool SetConnectionInfo(TcpConnectionPtr connection, ClientInfo& cInfo);
+	bool SetConnectionInfo(TcpConnectionPtr connection, DeviceInfo& cInfo);
 	void GetHUBsConnection(std::vector<TcpConnectionPtr>& hubsConnection);
 	void GetRRUsConnection(std::vector<TcpConnectionPtr>& rrusConnection);
 	void GetOAMConnection(std::vector<TcpConnectionPtr>& oamConnection);
-	void GetNetworkTopology(std::map<std::string, ClientInfo>& netTopology);
+	void GetNetworkTopology(std::map<std::string, DeviceInfo>& netTopology);
 
 	std::vector<std::string> Split(const std::string& in, const std::string& delim);
 	/* 实现key-value数据插入及修改 */
@@ -106,8 +106,8 @@ private:
     SocketAddr::IPV ipv_;
     std::shared_ptr <TcpAccepter> accetper_;
     std::map<std::string ,TcpConnectionPtr>  connnections_;
-	ClientInfo cInfo_;
-	std::map<std::string, ClientInfo> connectionInfo_;
+	DeviceInfo cInfo_;
+	std::map<std::string, DeviceInfo> connectionInfo_;
 
     OnMessageCallback onMessageCallback_;
     OnConnectionStatusCallback onNewConnectCallback_;

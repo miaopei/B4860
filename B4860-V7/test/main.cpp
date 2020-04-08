@@ -13,6 +13,7 @@
 #include <string.h>
 
 #define MAXINTERFACES 16
+#define SORTMAP 1
 
 using namespace std;
 
@@ -56,14 +57,29 @@ bool getmac(const char* inet, char* mac)
     return false;
 }
 
+#if SORTMAP
+#include <map>
+#include <vector>
+#include <string>
+#include <algorithm>
+
 typedef pair<std::string, double> PAIR;
 
 std::map<std::string, double> maxDelay;
 
-void MaxDelaySort(const PAIR& p)
+double cmp(const PAIR& x, const PAIR& y)
 {
-    
+    return x.second > y.second;
 }
+
+void sortMapByValue(std::map<std::string, double>& map, vector<PAIR>& tVector)
+{
+    for(auto &it : map)
+        tVector.push_back(make_pair(it.first, it.second));
+
+    sort(tVector.begin(), tVector.end(), cmp);
+}
+#endif
 
 int main()
 {
@@ -75,6 +91,33 @@ int main()
         return 0;
     }
     std::cout << "Mac=" << mac << std::endl;
+
+#if SORTMAP
+    maxDelay.insert(make_pair("R_0_1", 11.032));
+    maxDelay.insert(make_pair("R_0_2", 21.032));
+    maxDelay.insert(make_pair("R_0_3", 41.032));
+    maxDelay.insert(make_pair("R_0_4", 71.032));
+    maxDelay.insert(make_pair("R_0_5", 31.032));
+
+    vector<PAIR> tVector;
+    sortMapByValue(maxDelay, tVector);
+
+    for(int i = 0; i < static_cast<int>(tVector.size()); i++)
+    {
+        std::cout << tVector[i].first << ":" << tVector[i].second << std::endl;
+    }
+
+    std::cout << "Max Delay: " << tVector.begin()->second << std::endl;
+    std::cout << "Min Delay: " << tVector.back().second << std::endl;
+#endif
+
+    std::string RouteIndex = "";
+    if(RouteIndex.empty())
+    {
+        std::cout << "string is empty" << std::endl;
+    } else {
+        std::cout << "RouteIndex=" << RouteIndex << std::endl;
+    }
 
     return 0;
 }

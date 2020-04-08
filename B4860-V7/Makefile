@@ -19,9 +19,11 @@ LD_LIBRARY_PATH = $(LIB_DIR)
 all: before bbu
 	@echo "[build done ...]"
 	@make -C hub
-	@make -C rru
 	@make -C hub-2
-	#@make -C rru-2
+	@make -C hub-3
+	@make -C rru
+	@make -C rru-2
+	@make -C rru-3
 	#@make -C oam
 	@echo "[compile time $(COMPILE_TIME)]"
 
@@ -54,6 +56,10 @@ clean:
 	@make clean -C src
 	@make clean -C bbu
 	@make clean -C hub
+	@make clean -C hub-2
+	@make clean -C hub-3
 	@make clean -C rru
+	@make clean -C rru-2
+	@make clean -C rru-3
 	@make clean -C oam
 
