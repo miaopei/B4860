@@ -54,24 +54,18 @@ void RRU::reConnect()
 void RRU::SendConnectMessage()
 {
     std::string data = "Version=1.0";
-    uv::Packet packet;
     
-    packet.SetHead(m_source, 
-                     to_string(uv::Packet::TO_BBU),
-                     to_string(uv::Packet::REQUEST),
-                     to_string(uv::Packet::MSG_CONNECT), 
-                     m_rruid,
-                     m_port,
-                     m_uport);
+    uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::REQUEST);
+    head.s_msgID = to_string(uv::Packet::MSG_CONNECT);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
 
-    packet.PackMessage(data, data.length());
-
-    /* 打印数据封装信息 */
-    packet.EchoPackMessage();
-
-    std::string send_buf = packet.GetPacket();
-
-	SendMessage(send_buf.c_str(), send_buf.length());
+    SendPackMessage(head, data, data.length());
 }
 
 void RRU::SetRRRUInfo()
@@ -93,9 +87,19 @@ void RRU::SetRRRUInfo()
 
     gpmc_mpi_close(mpi_fd);
 #endif
+	uv::Packet packet;
+	char mac[32] = {0};
+	char inet[] = "enp1s0";
+	if(!packet.GetDeviceMac(inet, mac))
+    {
+        std::cout << "Error: GetMac error" << std::endl;
+        return ;
+    }
+	
+	m_mac = mac;
     m_source = to_string(uv::Packet::RRU);
     m_port = "0";
-    m_rruid = "3";
+    m_hop = "3";
     m_uport = "3";
 }
 
@@ -115,7 +119,7 @@ void RRU::RecvMessage(const char* buf, ssize_t size)
 		uv::Packet packet;
 		while (0 == packetbuf->readPacket(packet))
 		{
-			std::cout << "reserver data " << packet.DataSize() << ":" << packet.getData() << std::endl;
+			std::cout << "[ReceiveData: " << packet.DataSize() << ":" << packet.getData() << "]" << std::endl;
 			packet.UnPackMessage();
 
 			/* 打印解包信息 */
@@ -139,6 +143,20 @@ void RRU::ProcessRecvMessage(uv::Packet& packet)
     }
 }
 
+void RRU::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size)
+{
+    uv::Packet packet;
+    packet.SetHead(head);
+
+    packet.PackMessage(data, size);
+
+    /* 打印数据封装信息 */
+    //packet.EchoPackMessage();
+    
+    std::string send_buf = packet.GetPacket();
+    
+    SendMessage(send_buf.c_str(), send_buf.length());
+}
 void RRU::SendMessage(const char* buf, ssize_t size)
 {
     std::cout << "[SendMessage: " << buf << "]" << std::endl;
@@ -163,25 +181,20 @@ void RRU::ConnectResultProcess(uv::Packet& packet)
 
 void RRU::SendRRRUDelayInfo()
 {
+	uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::REQUEST);
+    head.s_msgID = to_string(uv::Packet::MSG_DELAY_MEASUREMENT);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
+
+    //TestProcess(packet);
     std::string data = "T2a=123&Ta3=456";
-    uv::Packet packet;
     
-    packet.SetHead(m_source, 
-                     to_string(uv::Packet::TO_BBU),
-                     to_string(uv::Packet::REQUEST),
-                     to_string(uv::Packet::MSG_DELAY_MEASUREMENT), 
-                     m_rruid,
-                     m_port,
-                     m_uport);
-
-    packet.PackMessage(data, data.length());
-
-    /* 打印数据封装信息 */
-    packet.EchoPackMessage();
-
-    std::string send_buf = packet.GetPacket();
-	
-	SendMessage(send_buf.c_str(), send_buf.length());
+    SendPackMessage(head, data, data.length());
 }
 
 

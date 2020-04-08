@@ -54,7 +54,6 @@ void HUB::reConnect()
 
 void HUB::SendConnectMessage()
 {
-	std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
     std::string data = "Version=1.0";
     
     uv::Packet::Head head;
@@ -103,7 +102,6 @@ void HUB::SetRHUBInfo()
     m_port = "0";
     m_hop = "1";
     m_uport = "2";
-	std::cout << __FUNCTION__ << ":" << __LINE__ << std::endl;
 }
 
 void HUB::SendRHUBDelayInfo()

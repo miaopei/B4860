@@ -96,7 +96,8 @@ private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
     std::shared_ptr<HUB> clientptr_;
     std::string m_source;
-    std::string m_rruid;
+	std::string m_mac;
+    std::string m_hop;
     std::string m_port;
     std::string m_uport;
 };

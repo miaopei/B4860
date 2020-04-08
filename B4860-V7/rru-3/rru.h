@@ -31,6 +31,7 @@ public:
     void SetRRRUInfo();
     void SendRRRUDelayInfo();
 
+    void SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
 
 
@@ -38,7 +39,8 @@ private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
     std::shared_ptr<RRU> clientptr_;
     std::string m_source;
-    std::string m_rruid;
+	std::string m_mac;
+    std::string m_hop;
     std::string m_port;
     std::string m_uport;
 };

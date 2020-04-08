@@ -59,9 +59,10 @@ void HUB::SendConnectMessage()
     uv::Packet::Head head;
     head.s_source = m_source;
     head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
     head.s_state = to_string(uv::Packet::REQUEST);
     head.s_msgID = to_string(uv::Packet::MSG_CONNECT);
-    head.s_rruid = m_rruid;
+    head.s_hop = m_hop;
     head.s_port = m_port;
     head.s_uport = m_uport;
 
@@ -87,9 +88,19 @@ void HUB::SetRHUBInfo()
 
     gpmc_mpi_close(mpi_fd);
 #endif
+	uv::Packet packet;
+	char mac[32] = {0};
+	char inet[] = "enp1s0";
+	if(!packet.GetDeviceMac(inet, mac))
+    {
+        std::cout << "Error: GetMac error" << std::endl;
+        return ;
+    }
+	
+	m_mac = mac;
     m_source = "0";
     m_port = "0";
-    m_rruid = "3";
+    m_hop = "3";
     m_uport = "1";
 }
 
@@ -255,13 +266,7 @@ void HUB::ProcessRecvMessage(uv::Packet& packet)
 void HUB::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size)
 {
     uv::Packet packet;
-    packet.SetHead(head.s_source,                                                                
-                     head.s_destination,
-                     head.s_state,
-                     head.s_msgID, 
-                     head.s_rruid,
-                     head.s_port,
-                     head.s_uport);
+    packet.SetHead(head);
 
     packet.PackMessage(data, size);
 
@@ -294,13 +299,14 @@ void HUB::ConnectResultProcess(uv::Packet& packet)
 }
 
 void HUB::UpdataDelay(uv::Packet& packet)
-{
+{	
     uv::Packet::Head head;
     head.s_source = to_string(uv::Packet::HUB);
     head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
     head.s_state = to_string(uv::Packet::RESPONSE);
     head.s_msgID = to_string(uv::Packet::MSG_UPDATE_DELAY);
-    head.s_rruid = m_rruid;
+    head.s_hop = m_hop;
     head.s_port = m_port;
     head.s_uport = m_uport;
 
@@ -340,9 +346,10 @@ void HUB::TestProcess(uv::Packet& packet)
     
     head.s_source = to_string(uv::Packet::HUB);
     head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
     head.s_state = to_string(uv::Packet::RESPONSE);
     head.s_msgID = to_string(uv::Packet::MSG_DELAY_MEASUREMENT);
-    head.s_rruid = m_rruid;
+    head.s_hop = m_hop;
     head.s_port = m_port;
     head.s_uport = m_uport;
 

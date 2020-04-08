@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 {
     EventLoop* loop = new EventLoop();
 
-    uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer; 
+    uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer;
     
     if(argc != 2)
     {
