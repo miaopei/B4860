@@ -19,7 +19,7 @@ HUB::HUB(uv::EventLoop* loop)
 {
     setConnectStatusCallback(std::bind(&HUB::onConnect, this, std::placeholders::_1));
     setMessageCallback(std::bind(&HUB::RecvMessage, this, std::placeholders::_1, std::placeholders::_2));
-    //setMessageCallback(std::bind(&HUB::SendMessage, this, std::placeholders::_1, std::placeholders::_2));
+
     SetRHUBInfo();
 }
 
@@ -55,27 +55,33 @@ void HUB::reConnect()
 void HUB::SendConnectMessage()
 {
     std::string data = "Version=1.0";
-    uv::PacketIR packetir;
     
-    packetir.SetHead(m_source, 
-                     to_string(uv::PacketIR::TO_BBU),
-                     to_string(uv::PacketIR::REQUEST),
-                     to_string(uv::PacketIR::MSG_CONNECT), 
-                     m_rruid,
-                     m_port,
-                     m_uport);
+    uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::REQUEST);
+    head.s_msgID = to_string(uv::Packet::MSG_CONNECT);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
 
-    packetir.PackMessage(data, data.length());
-
-    /* 打印数据封装信息 */
-    packetir.EchoPackMessage();
-
-    std::string send_buf = packetir.GetPacket();
-	write(send_buf.c_str(), send_buf.length());
+    SendPackMessage(head, data, data.length());
 }
 
 void HUB::SetRHUBInfo()
 {
+	uv::Packet packet;
+	char mac[32] = {0};
+	char inet[] = "enp1s0";
+	if(!packet.GetDeviceMac(inet, mac))
+    {
+        std::cout << "Error: GetMac error" << std::endl;
+        return ;
+    }
+	
+	m_mac = mac;
+	
     int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
     /* 获取 rhub 的 port id 信息 */
     uint16_t rhub_port = get_rhup_port_id(mpi_fd, UP);
@@ -85,9 +91,9 @@ void HUB::SetRHUBInfo()
     std::cout << "rruid = " << ((rhub_port >> 4) & 0xf) << std::endl;
     std::cout << "uport = " << (rhub_port & 0xf) << std::endl;
 
-    m_source = to_string(uv::PacketIR::HUB);
+    m_source = to_string(uv::Packet::HUB);
     m_port = to_string(((rhub_port >> 8) & 0xf));
-    m_rruid = to_string(((rhub_port >> 4) & 0xf));
+    m_hop = to_string(((rhub_port >> 4) & 0xf));
     m_uport = to_string((rhub_port & 0xf));
 
     gpmc_mpi_close(mpi_fd);
@@ -169,64 +175,93 @@ void HUB::RecvMessage(const char* buf, ssize_t size)
     }
 
     /* 接收到的数据解析 */
-    std::string revb_buf = std::string(buf, size);
-    uv::PacketIR packet;
-    packet.UnPackMessage(revb_buf);
+	auto packetbuf = getCurrentBuf();
+	if (nullptr != packetbuf)
+	{
+		packetbuf->append(buf, static_cast<int>(size));
+		uv::Packet packet;
+		while (0 == packetbuf->readPacket(packet))
+		{
+			std::cout << "[ReceiveData: " << packet.DataSize() << ":" << packet.getData() << "]" << std::endl;
+			packet.UnPackMessage();
 
-    /* 打印解包信息 */
-    packet.EchoUnPackMessage();
+			/* 打印解包信息 */
+			packet.EchoUnPackMessage();
 
-    switch(std::stoi(packet.GetMsgID()))
+			ProcessRecvMessage(packet);
+		}
+	}
+}
+
+void HUB::ProcessRecvMessage(uv::Packet& packet)
+{
+	switch(std::stoi(packet.GetMsgID()))
     {
-        case uv::PacketIR::MSG_CONNECT:
+        case uv::Packet::MSG_CONNECT:
             std::cout << "[RCV:msg_connect]" << std::endl;
             ConnectResultProcess(packet);
+            break;
+        case uv::Packet::MSG_UPDATE_DELAY:
+            std::cout << "[RCV:msg_updata_delay]" << std::endl;
+            UpdataDelay(packet);
             break;
         default:
             std::cout << "[Error: MessageID Error]" << std::endl;
     }
 }
 
+void HUB::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size)
+{
+    uv::Packet packet;
+    packet.SetHead(head);
+
+    packet.PackMessage(data, size);
+
+    /* 打印数据封装信息 */
+    //packet.EchoPackMessage();
+    
+    std::string send_buf = packet.GetPacket();
+    
+    SendMessage(send_buf.c_str(), send_buf.length());
+}
+
 void HUB::SendMessage(const char* buf, ssize_t size)
 {
-    std::cout << "Client::SendMesg" << std::endl;
+    std::cout << "[SendMessage: " << buf << "]" << std::endl;
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
-        writeInLoop(buf, (unsigned int)size, nullptr);
-    } else {
-        auto packetbuf = getCurrentBuf();
-        if(nullptr != packetbuf)
-        {
-            packetbuf->append(buf, static_cast<int>(size));
-            uv::Packet packet;
-            while(0 == packetbuf->readPacket(packet))
-            {
-                write(packet.Buffer().c_str(), (unsigned)packet.PacketSize(), nullptr);
-            }
-        }
-    }
-
-#if 0
-    if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
-    {
+        //writeInLoop(buf, (unsigned int)size, nullptr);
         write(buf, (unsigned int)size);
     } else {
-        auto packetbuf = getCurrentBuf();
-        if(nullptr != packetbuf)
-        {
-            packetbuf->append(buf, static_cast<int>(size));
-            uv::Packet packet;
-            while(0 == packetbuf->readPacket(packet))
-            {
-                write(packet.Buffer().c_str(), (unsigned)packet.PacketSize(), nullptr);
-            }
-        }
+        uv::Packet packet;
+        packet.pack(buf, size);
+        write(packet.Buffer().c_str(), packet.PacketSize());
     }
-#endif
 }
 
-void HUB::ConnectResultProcess(uv::PacketIR& packet)
+void HUB::ConnectResultProcess(uv::Packet& packet)
 {
     SendRHUBDelayInfo();
+    //TestProcess(packet);
 }
+
+void HUB::UpdataDelay(uv::Packet& packet)
+{	
+    uv::Packet::Head head;
+    head.s_source = to_string(uv::Packet::HUB);
+    head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::RESPONSE);
+    head.s_msgID = to_string(uv::Packet::MSG_UPDATE_DELAY);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
+
+    //TestProcess(packet);
+    std::string data = "delay1_up=34&delay2_up=35&delay3_up=36&delay4_up=37&delay5_up=38&delay1_down=36&delay2_down=37&delay3_down=38&delay4_down=39&delay5_down=37&t14_delay1=11488&t14_delay2=11488&t14_delay3=11488&t14_delay4=11488&t14_delay5=11488";
+    
+    SendPackMessage(head, data, data.length());
+}
+
+
 

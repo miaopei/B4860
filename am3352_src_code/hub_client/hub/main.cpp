@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 {
     EventLoop* loop = new EventLoop();
 
-    //uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::CycleBuffer;
+    uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer;
     
     if(argc != 2)
     {
@@ -30,9 +30,9 @@ int main(int argc, char* argv[])
     serverIP = argv[1];
 
     SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
-    HUB bbu(loop);
+    HUB hub(loop);
 
-    bbu.connectToServer(addr);
+    hub.connectToServer(addr);
 
     loop->run();
 

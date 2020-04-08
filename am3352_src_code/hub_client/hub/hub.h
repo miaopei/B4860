@@ -51,20 +51,23 @@ public:
     void SendConnectMessage();
     void connectToServer(uv::SocketAddr& addr);
     void RecvMessage(const char* buf, ssize_t size);
+	void ProcessRecvMessage(uv::Packet& packet);
 
     void SetRHUBInfo();
     void SendRHUBDelayInfo();
 
-    void ConnectResultProcess(uv::PacketIR& packet);
+    void ConnectResultProcess(uv::Packet& packet);
+    void UpdataDelay(uv::Packet& packet);
 
-
+    void SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
 
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
     std::shared_ptr<HUB> clientptr_;
     std::string m_source;
-    std::string m_rruid;
+	std::string m_mac;
+    std::string m_hop;
     std::string m_port;
     std::string m_uport;
 };
