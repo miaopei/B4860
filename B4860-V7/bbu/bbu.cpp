@@ -17,6 +17,16 @@ BBU::BBU(EventLoop* loop)
     :TcpServer(loop)
 {
     setMessageCallback(std::bind(&BBU::OnMessage, this, placeholders::_1, placeholders::_2, placeholders::_3));
+    
+    /* 需要优化 把 GetDeviceMac 放到其他公共地方  */
+    uv::Packet packet;
+    char mac[32] = {0};
+	if(!packet.GetDeviceMac(IFRNAME, mac))
+    {
+        std::cout << "Error: GetMac error" << std::endl;
+        return ;
+    }
+    m_mac = mac;
 }
 
 void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
@@ -155,7 +165,7 @@ void BBU::DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::Packet& 
             break;
         case uv::Packet::RRU:
             std::cout << "[rru_delay_measurement]" << std::endl;
-            RruDelayProcess(packet);
+            RruDelayProcess(connection, packet);
             break;
         default:
             std::cout << "[Error: delay measurement source error]" << std::endl;
@@ -171,18 +181,10 @@ void BBU::UnPackData(uv::Packet& packet, std::map<std::string, std::string>& map
 
 void BBU::SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-	char mac[32] = {0};
-	char inet[] = "enp1s0";
-	if(!packet.GetDeviceMac(inet, mac))
-    {
-        std::cout << "Error: GetMac error" << std::endl;
-        return ;
-    }
-
     uv::Packet::Head head;
     head.s_source       = packet.GetDestination();
     head.s_destination  = packet.GetSource();
-	head.s_mac			= mac;
+	head.s_mac			= m_mac;
     head.s_state        = to_string(uv::Packet::RESPONSE);
     head.s_msgID        = packet.GetMsgID();
     head.s_hop        = packet.GetHop();
@@ -279,14 +281,26 @@ void BBU::HubDelayInfo(uv::Packet& packet)
 #endif
 }
 
-void BBU::RruDelayProcess(uv::Packet& packet)
+void BBU::RruDelayProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-    std::cout << "RruDelayProcess: packet.data=" << packet.GetData() << std::endl;
+    std::string delayULCompensation;
+    std::string delayDLCompensation;
 
-	double delayCompensation;
+	CalculationDelayCompensation(connection, packet, delayULCompensation, delayDLCompensation);
 
-	CalculationDelayCompensation(packet, delayCompensation);
+    uv::Packet::Head head;
+    head.s_source       = packet.GetDestination();
+    head.s_destination  = packet.GetSource();
+	head.s_mac			= m_mac;
+    head.s_state        = to_string(uv::Packet::RESPONSE);
+    head.s_msgID        = to_string(uv::Packet::MSG_DELAY_COMPENSATION);
+    head.s_hop        = packet.GetHop();
+    head.s_port         = packet.GetPort();
+    head.s_uport        = packet.GetUPort();
 
+	std::string data = "delayULCompensation=" + delayULCompensation + "&delayDLCompensation=" + delayDLCompensation;
+
+    SendPackMessage(connection, head, data, data.length());
 }
 
 bool BBU::QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection)
@@ -307,7 +321,7 @@ bool BBU::QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection)
     return false;
 }
 
-bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensation)
+bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packet& packet, std::string& delayiULCompensation, std::string& delayiDLCompensation)
 {
 	int level = 0;
 	std::string key;
@@ -327,7 +341,7 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
     //mDelayDL.clear();
     //mDelayUL.clear();
     
-    std::string RouteIndex = CreateRouteIndex(packet);
+    std::string RouteIndex = CreateRouteIndex(connection);
     if(RouteIndex.empty())
     {
         std::cout << "Error: CreateRouteIndex failure" << std::endl;
@@ -468,6 +482,9 @@ bool BBU::CalculationDelayCompensation(uv::Packet& packet, double& delayCompensa
 
     std::cout << "Echo maxDelayUL Result: " << std::endl;
     EchoSortResult(tVectorUL);
+
+    delayiDLCompensation = to_string(atof(tVectorDL.begin()->second.c_str()) - totalDL);
+    delayiULCompensation = to_string(atof(tVectorUL.begin()->second.c_str()) - totalUL);
 
 	return true;
 }

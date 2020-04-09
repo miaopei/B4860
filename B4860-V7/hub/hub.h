@@ -13,6 +13,8 @@
 
 #define TOFFSET 3
 
+#define IFRNAME     "enp0s31f6"
+
 #if 0
 #ifdef __cplusplus
 extern "C" {

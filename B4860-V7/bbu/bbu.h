@@ -27,6 +27,8 @@
 
 #define BBUT14  580
 
+#define IFRNAME     "enp0s31f6"
+
 class BBU :public uv::TcpServer
 {
 public:
@@ -61,7 +63,7 @@ public:
     void UpdateHUBDelayInfo(uv::Packet& packet);
     bool QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection);
     /* 时延补偿计算，整个链路如何实现自动计算？补偿计算值排序，最大时延支持可配置 */
-    bool CalculationDelayCompensation(uv::Packet& packet, double& delayCompensation);
+    bool CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packet& packet, std::string& delayiULCompensation, std::string& delayiDLCompensation);
 	bool FindDelayMapValue(std::string key, std::string& value);
 
 	bool FindDataMapValue(std::map<std::string, std::string>& map, std::string key, std::string& value);
@@ -70,7 +72,7 @@ public:
     void HubDelayInfo(uv::Packet& packet);
 
     /* BBU 时延测量数据处理，返回最大时延补偿 */
-    void RruDelayProcess(uv::Packet& packet);
+    void RruDelayProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 
     /* 实现拓扑查询：
      * 1. 查 rru 的上一级 hub 信息 
@@ -87,6 +89,7 @@ public:
 
 private:
     void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
+    std::string m_mac;
 };
 
 #endif // BBU_SERVER_H

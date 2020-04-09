@@ -89,14 +89,14 @@ void RRU::SetRRRUInfo()
 #endif
 	uv::Packet packet;
 	char mac[32] = {0};
-	char inet[] = "enp1s0";
-	if(!packet.GetDeviceMac(inet, mac))
+	if(!packet.GetDeviceMac(IFRNAME, mac))
     {
         std::cout << "Error: GetMac error" << std::endl;
         return ;
     }
 	
-	m_mac = mac;
+	//m_mac = mac;
+	m_mac = "F48E38DCD7CE";
     m_source = to_string(uv::Packet::RRU);
     m_port = "0";
     m_hop = "4";

@@ -13,12 +13,12 @@
 
 #include <iostream>
 #include <functional>
-#include <memory>
 #include <set>
 #include <map>
 #include <vector>
 #include <cstring>
 #include <regex>
+#include <memory>
 
 #include "TcpAccepter.h"
 #include "TcpConnection.h"
@@ -106,9 +106,9 @@ public:
     static double cmp(const PAIR& x, const PAIR& y);
     void sortMapByValue(std::map<std::string, std::string>& map, vector<PAIR>& tVector);
 
-	std::string CreateRouteIndex(uv::Packet& packet);
+	std::string CreateRouteIndex(uv::TcpConnectionPtr& connection);
     bool FindDeviceInfo(int level, DeviceInfo& dInfo);
-	bool DeleteRouteIndex(std::string routeIndex, vector<PAIR>& tVector);
+	bool DeleteRouteIndex(uv::TcpConnectionPtr& connection, vector<PAIR>& tVector);
 
     void setTimeout(unsigned int);
 private:

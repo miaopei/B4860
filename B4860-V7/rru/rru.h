@@ -14,6 +14,8 @@
 
 #include "uv11.h"
 
+#define IFRNAME     "enp0s31f6"
+
 class RRU :public uv::TcpClient
 {
 public:
