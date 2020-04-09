@@ -8,4 +8,6 @@ tar -zcvf ${1}.tar.gc.tar.gz ${1}.tar.gc
 
 rm ${1}.tar.gc
 
+mkdir tarFile
+
 mv ${1}.tar.gc.tar.gz tarFile
