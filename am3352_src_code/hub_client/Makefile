@@ -18,12 +18,13 @@ all:
 	@echo "[build libuv ...]"
 	#@tar -zxf $(WORK_ROOT)/$(LIBUV).tar.gz -C $(BUILD_DIR)
 	#@cd $(BUILD_DIR)/$(LIBUV) && sh autogen.sh && ./configure --host=powerpc64-fsl-linux --prefix=$(WORK_ROOT)/../ && make && make install
+	@tar -zxvf $(LIBUV).tar.gz
 	@cp -rf $(LIBUV)/* $(BUILD_DIR)
 	@cp libstdc++.so.6 ./build/lib
+	@tar -zxvf librhub.tar.gz
 	@cp -d librhub/*.so* ./build/lib
 	@cp librhub/*.h ./build/include
 	make -C $(WORK_ROOT)/src
-	#make -C $(WORK_ROOT)/bbu
 	@make -C $(WORK_ROOT)/hub
 
 install:
@@ -34,6 +35,7 @@ clean:
 	@echo "[Cleanning ...]"
 	@rm -rf $(BUILD_DIR)
 	@make clean -C src
-	#@make clean -C bbu
 	@make clean -C hub
+	@rm -rf librhub
+	@rm -rf $(LIBUV)
 
