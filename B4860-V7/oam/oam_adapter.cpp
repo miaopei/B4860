@@ -70,6 +70,7 @@ void OamAdapter::SendConnectMessage()
 
 void OamAdapter::SetROamAdapterInfo()
 {
+#if 0
 	uv::Packet packet;
 	char mac[32] = {0};
 	if(!packet.GetDeviceMac(IFRNAME, mac))
@@ -77,7 +78,7 @@ void OamAdapter::SetROamAdapterInfo()
         std::cout << "Error: GetMac error" << std::endl;
         return ;
     }
-	
+#endif
 	//m_mac = mac;
 	m_mac = "F48E38DCD7C1";
     m_source = to_string(uv::Packet::OAM);
@@ -102,11 +103,11 @@ void OamAdapter::RecvMessage(const char* buf, ssize_t size)
 		uv::Packet packet;
 		while (0 == packetbuf->readPacket(packet))
 		{
-			std::cout << "[ReceiveData: " << packet.DataSize() << ":" << packet.getData() << "]" << std::endl;
+			//std::cout << "[ReceiveData: " << packet.DataSize() << ":" << packet.getData() << "]" << std::endl;
 			packet.UnPackMessage();
 
 			/* 打印解包信息 */
-			packet.EchoUnPackMessage();
+			//packet.EchoUnPackMessage();
 
 			ProcessRecvMessage(packet);
 		}
@@ -118,7 +119,7 @@ void OamAdapter::ProcessRecvMessage(uv::Packet& packet)
     switch(std::stoi(packet.GetMsgID()))
     {
         case uv::Packet::MSG_CONNECT:
-            std::cout << "[RCV:msg_connect]" << std::endl;
+            //std::cout << "[RCV:msg_connect]" << std::endl;
             ConnectResultProcess(packet);
             break;
         default:
@@ -134,7 +135,7 @@ void OamAdapter::SendPackMessage(uv::Packet::Head& head, std::string& data, ssiz
     packet.PackMessage(data, size);
 
     /* 打印数据封装信息 */
-    //packet.EchoPackMessage();
+    packet.EchoPackMessage();
     
     std::string send_buf = packet.GetPacket();
     
@@ -143,7 +144,7 @@ void OamAdapter::SendPackMessage(uv::Packet::Head& head, std::string& data, ssiz
 
 void OamAdapter::SendMessage(const char* buf, ssize_t size)
 {
-    std::cout << "[SendMessage: " << buf << "]" << std::endl;
+    //std::cout << "[SendMessage: " << buf << "]" << std::endl;
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         write(buf, (unsigned int)size);
@@ -156,10 +157,10 @@ void OamAdapter::SendMessage(const char* buf, ssize_t size)
 
 void OamAdapter::ConnectResultProcess(uv::Packet& packet)
 {
-
+	std::cout << "[OamAdapter Connect BBU Success]" << std::endl;
 }
 
-void OamAdapter::SendUpgradeMessage(std::string& destination, std::string& fileName, std::string& md5)
+void OamAdapter::SendUpgradeMessage(std::string destination, std::string fileName, std::string md5)
 {
     std::string data = "fileName=" + fileName + "&md5=" + md5;
     
@@ -174,10 +175,5 @@ void OamAdapter::SendUpgradeMessage(std::string& destination, std::string& fileN
     head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
-}
-
-void OamAdapter::TestFunc()
-{
-    std::cout << "This is Test Function" << std::endl;
 }
 

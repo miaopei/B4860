@@ -40,11 +40,10 @@ public:
      * 0 - HUB 
      * 1 - RRU
      * */
-    void SendUpgradeMessage(std::string& destination, std::string& fileName, std::string& md5);
+    void SendUpgradeMessage(std::string destination, std::string fileName, std::string md5);
 
     void GetUpgradeResult();
 
-    void TestFunc();
 
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;

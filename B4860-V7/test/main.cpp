@@ -134,6 +134,14 @@ int main()
         std::cout << "RouteIndex=" << RouteIndex << std::endl;
     }
 
+    std::string str("   字符串   String    ");
+    std::cout << str << std::endl;
+    std::cout << str.size() << std::endl;
+    str.erase(str.find_first_of(' '), str.find_first_not_of(' '));
+    str.erase(str.find_last_not_of(' '));
+    std::cout << str << std::endl;
+    std::cout << str.size() << std::endl;
+
     return 0;
 }
 

@@ -24,7 +24,7 @@ all: before bbu
 	@make -C rru
 	@make -C rru-2
 	@make -C rru-3
-	#@make -C oam
+	@make -C oam
 	@echo "[compile time $(COMPILE_TIME)]"
 
 before:
