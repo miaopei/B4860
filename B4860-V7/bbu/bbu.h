@@ -21,13 +21,13 @@
 
 #include "uv11.h"
 
-#define HUBToffset      3
-#define RRUToffset      6
-#define TOFFSETCYCLE    8.013       
+#define HUBToffset          3
+#define HUBCascadeEToffset  3
+#define HUBDownToffset      53
+#define RRUToffset          6
+#define TOFFSETCYCLE        8.013       
 
 #define BBUT14  580
-
-#define IFRNAME     "enp0s31f6"
 
 class BBU :public uv::TcpServer
 {
@@ -90,6 +90,10 @@ public:
 private:
     void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
     std::string m_mac;
+    std::string m_source;
+    std::string m_hop;
+    std::string m_port;
+    std::string m_uport;
 };
 
 #endif // BBU_SERVER_H

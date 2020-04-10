@@ -13,6 +13,8 @@
 
 #define TOFFSET 3
 
+#define IFRNAME     "eth0"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

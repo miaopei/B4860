@@ -18,15 +18,11 @@ BBU::BBU(EventLoop* loop)
 {
     setMessageCallback(std::bind(&BBU::OnMessage, this, placeholders::_1, placeholders::_2, placeholders::_3));
     
-    /* 需要优化 把 GetDeviceMac 放到其他公共地方  */
-    uv::Packet packet;
-    char mac[32] = {0};
-	if(!packet.GetDeviceMac(IFRNAME, mac))
-    {
-        std::cout << "Error: GetMac error" << std::endl;
-        return ;
-    }
-    m_mac = mac;
+    m_mac = "FFFFFFFFFFFF";
+    m_source = to_string(uv::Packet::BBU);
+    m_hop = "0";
+    m_port = "0";
+    m_uport = "0";
 }
 
 void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
@@ -323,6 +319,18 @@ bool BBU::QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection)
 
 bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packet& packet, std::string& delayiULCompensation, std::string& delayiDLCompensation)
 {
+    /* TotalDL = T12 + TBdelayDL + T12' + T2a
+     * TotalUL = T12 + TBdelayUL + T12' + Ta3
+     *
+     * T12 = (T14 -Toffset) / 2  
+     * T14 为 BBU 到 HUB 一个回环的延时值，Toffset 为 HUB 内口时延
+     *
+     * TBdelay: hub 上联口到级联口，上联口到下联口的延时值
+     *
+     * T12' = (T14' - Toffset') / 2  
+     * T12' 为 HUB 到 RRU 一个回环的延时值，Toffset' 为 RRU 内口时延
+     * 
+     */
 	int level = 0;
 	std::string key;
 	std::string tbdelayDL;
@@ -465,7 +473,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Pac
 		}
 	}
 
-	t12 = (BBUT14 - (HUBToffset * TOFFSETCYCLE)) / 2;
+	t12 = (BBUT14 - (HUBDownToffset * TOFFSETCYCLE)) / 2;
 	totalDL = t12 + totalDLHUBDelay + atof(T2a.c_str());
 	totalUL = t12 + totalULHUBDelay + atof(Ta3.c_str());
 	std::cout << "totalDL=" << to_string(totalDL) << std::endl;

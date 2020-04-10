@@ -111,7 +111,7 @@ public:
 		RRUID_4		= 4,
         RRUID_X     = 9
 	};
-#endif
+
 	enum Port
 	{
 		PORT_0	= 0,
@@ -139,6 +139,7 @@ public:
 		UPORT_8	    = 8,
         UPORT_X     = 9
 	};
+#endif
 
     Packet();
     ~Packet();

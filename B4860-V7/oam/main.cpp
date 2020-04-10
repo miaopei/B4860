@@ -6,33 +6,65 @@
  ************************************************************************/
 
 #include <iostream>
-#include <thread>
-#include <memory>
-#include <mutex>
-#include <condition_variable>
-#include <cstdio>
-#include <cstring>
-#include <vector>
+//#include <cstdio>
+//#include <cstring>
 
-#include "oam.h"
+#include "oam_adapter.h"
 
 using namespace uv;
 using namespace std;
+
+std::string serverIP;
+
+void InitializeOamAdapterConnect(void *arg)
+{
+    EventLoop* loop = (EventLoop*)arg;
+
+    uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer;
+    
+    SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
+    OamAdapter OamAdapter(loop);
+
+    OamAdapter.connectToServer(addr);
+
+    loop->run();
+}
+
+void testThread(void *arg)
+{
+    EventLoop* loop = (EventLoop*)arg;
+
+    std::this_thread::sleep_for(chrono::milliseconds(500)); // 延时 500ms
+    std::string args;
+    std::cout << "This is Test Thread" << std::endl;
+    while(1)
+    {
+        std::cout << "OamAdapter > ";
+        getline(cin, args);
+        std::cout << args << std::endl;
+        loop->runInThisLoop(TestFunc);
+    }
+}
 
 int main(int argc, char* argv[])
 {
     EventLoop* loop = new EventLoop();
 
-    //uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::CycleBuffer;
+    if(argc != 2)
+    {
+        fprintf(stdout, "usage: %s server_ip_address\neg.%s 192.168.1.1\n", argv[0], argv[0]);
+        return 0;
+    }
+    serverIP = argv[1];
 
-    SocketAddr addr("127.0.0.1", 30000, SocketAddr::Ipv4);
-    Client client(loop);
+    uv_thread_t t1;
+    uv_thread_t t2;
+    
+    uv_thread_create(&t1, InitializeOamAdapterConnect, loop);
+    uv_thread_create(&t2, testThread, loop);
 
-    client.connectToServer(addr);
-
-    loop->run();
-
-    /* 实现数据接收线程和数据发送线程 */
+    uv_thread_join(&t1);
+    uv_thread_join(&t2);
 
     return 0;
 }

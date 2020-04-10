@@ -73,13 +73,11 @@ void HUB::SetRHUBInfo()
 {
 	uv::Packet packet;
 	char mac[32] = {0};
-	char inet[] = "enp1s0";
-	if(!packet.GetDeviceMac(inet, mac))
+	if(!packet.GetDeviceMac(IFRNAME, mac))
     {
         std::cout << "Error: GetMac error" << std::endl;
         return ;
     }
-	
 	m_mac = mac;
 	
     int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
@@ -103,13 +101,6 @@ void HUB::SendRHUBDelayInfo()
 {
     int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
     
-    uv::PacketIR packet;
-    packet.SetHead(to_string(uv::PacketIR::HUB),
-                   to_string(uv::PacketIR::TO_BBU),
-                   to_string(uv::PacketIR::RESPONSE),
-                   to_string(uv::PacketIR::MSG_DELAY_MEASUREMENT),
-                   m_rruid, m_port, m_uport);
-
     /* 获取 rhub 的处理时延  */
     struct rhup_data_delay* rhub_up = (struct rhup_data_delay*)malloc(sizeof(struct rhup_data_delay));
     get_rhup_delay(mpi_fd, UP, rhub_up);
@@ -150,15 +141,17 @@ void HUB::SendRHUBDelayInfo()
 
     data += std::string("&toffset=" + to_string(TOFFSET));
 
-    /* 封装时延测量数据并发送到 BBU */ 
-    packet.PackMessage(data, data.length());
+    uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::RESPONSE);
+    head.s_msgID = to_string(uv::Packet::MSG_DELAY_MEASUREMENT);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
 
-	/* 打印数据封装信息 */
-	packet.EchoPackMessage();
-
-	std::string send_buf = packet.GetPacket();
-
-	SendMessage(send_buf.c_str(), send_buf.length());
+    SendPackMessage(head, data, data.length());
 
     free(rhub_up);
     free(rhub_down);
