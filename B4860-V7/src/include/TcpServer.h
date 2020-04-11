@@ -1,14 +1,4 @@
-﻿/*
-   Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-   Author: orcaer@yeah.net
-
-   Last modified: 2019-12-31
-
-   Description: https://github.com/wlgq2/uv-cpp
-*/
-
-#ifndef UV_TCP_SERVER_H
+﻿#ifndef UV_TCP_SERVER_H
 #define UV_TCP_SERVER_H
 
 #include <iostream>
@@ -34,6 +24,12 @@ using OnConnectionStatusCallback =  std::function<void (std::weak_ptr<TcpConnect
 class TcpServer
 {
 public:
+	typedef struct RRUDelayInfo_S
+	{
+		std::string T2a;
+		std::string Ta3;
+	}RRUDelayInfo_T;
+	
 	struct DeviceInfo
     {
     	std::string s_ip;
@@ -44,6 +40,7 @@ public:
         std::string s_port;
         std::string s_uport;
 		std::string s_routeIndex;
+		RRUDelayInfo_T s_rruDelayInfo;
 		#if 0
         DeviceInfo(){};
         DeviceInfo(std::string ip, TcpConnectionPtr connect, std::string source, std::string rruid, std::string port, std::string uport)
@@ -56,7 +53,7 @@ public:
             s_uport = uport;
         };
 		#endif
-    };
+    };	
 	
     TcpServer(EventLoop* loop, bool tcpNoDelay = true);
     virtual ~TcpServer();
@@ -107,8 +104,13 @@ public:
     void sortMapByValue(std::map<std::string, std::string>& map, vector<PAIR>& tVector);
 
 	std::string CreateRouteIndex(uv::TcpConnectionPtr& connection);
-    bool FindDeviceInfo(int level, DeviceInfo& dInfo);
-	bool DeleteRouteIndex(uv::TcpConnectionPtr& connection, vector<PAIR>& tVector);
+    bool FindNextDeviceInfo(int level, DeviceInfo& next_dInfo);
+	bool DeleteRRUTotalDelay(uv::TcpConnectionPtr& connection, vector<PAIR>& tVector);
+
+	bool SetDeviceRouteIndex(uv::TcpConnectionPtr& connection);
+	bool GetDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& dInfo);
+
+	bool SetRRUDeviceDelayInfo(uv::TcpConnectionPtr& connection, RRUDelayInfo_T& rruDelayInfo);
 
     void setTimeout(unsigned int);
 private:

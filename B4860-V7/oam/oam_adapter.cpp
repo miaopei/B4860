@@ -53,7 +53,8 @@ void OamAdapter::reConnect()
 
 void OamAdapter::SendConnectMessage()
 {
-    std::string data = "Version=1.0";
+#if 1
+    std::string data = "";
     
     uv::Packet::Head head;
     head.s_source = m_source;
@@ -66,6 +67,20 @@ void OamAdapter::SendConnectMessage()
     head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
+#endif
+#if 0
+	std::string data = "This is test socket send structs";
+	Message_T message;
+	strcpy(message.source, "1");
+	//message.destination = "2";
+	strcpy(message.destination, "2");
+	//strcpy(message.len, data.length())
+	message.len = data.length();
+	strcpy(message.data, data.c_str());
+	//message.data = (char*)data.c_str();
+
+	SendMessage((char*)&message, sizeof(Message_T)+1);
+#endif
 }
 
 void OamAdapter::SetROamAdapterInfo()
@@ -144,7 +159,7 @@ void OamAdapter::SendPackMessage(uv::Packet::Head& head, std::string& data, ssiz
 
 void OamAdapter::SendMessage(const char* buf, ssize_t size)
 {
-    //std::cout << "[SendMessage: " << buf << "]" << std::endl;
+    std::cout << "[SendMessage: " << buf << "]" << std::endl;
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         write(buf, (unsigned int)size);

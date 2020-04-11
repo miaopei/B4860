@@ -87,6 +87,7 @@ void RRU::SetRRRUInfo()
 
     gpmc_mpi_close(mpi_fd);
 #endif
+#if 0
 	uv::Packet packet;
 	char mac[32] = {0};
 	if(!packet.GetDeviceMac(IFRNAME, mac))
@@ -94,13 +95,13 @@ void RRU::SetRRRUInfo()
         std::cout << "Error: GetMac error" << std::endl;
         return ;
     }
-	
+#endif
 	//m_mac = mac;
 	m_mac = "F48E38DCD7CD";
     m_source = to_string(uv::Packet::RRU);
     m_port = "0";
-    m_hop = "4";
-    m_uport = "4";
+    m_hop = "2";
+    m_uport = "2";
 }
 
 void RRU::RecvMessage(const char* buf, ssize_t size)

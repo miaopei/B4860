@@ -49,7 +49,15 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
                       << "[ReceiveData: " << packet.DataSize() << ":" 
                       << std::string(packet.getData(), packet.DataSize())  << "]" << std::endl;
             #endif
-
+#if 0			
+			Message_T message;
+			memcpy(&message, packet.getData(), size);
+			std::cout << "source=" << message.source 
+					  << " des=" << message.destination
+					  << " len=" << message.len
+					  << " data=" << message.data
+					  << std::endl;
+#endif
 			packet.UnPackMessage();
 
 			/* 打印解包信息 */
@@ -109,13 +117,40 @@ void BBU::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 
 void BBU::HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-
+	std::vector<TcpConnectionPtr> hubsConnection;
+	GetHUBsConnection(hubsConnection);
+	std::string send_buf;
+	for(auto it : hubsConnection)
+	{	
+		send_buf = packet.GetPacket();
+		SendMessage(it, send_buf.c_str(), send_buf.length());
+	}
 }
 
 void BBU::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
+	std::vector<TcpConnectionPtr> rrusConnection;
+	GetRRUsConnection(rrusConnection);
+	std::string send_buf;
+	for(auto it : rrusConnection)
+	{	
+		send_buf = packet.GetPacket();
+		SendMessage(it, send_buf.c_str(), send_buf.length());
+	}
 
+#if 0
+	std::map<std::string, std::string> map;
+	packet.SplitData2Map(map);
+
+	if(!FindDataMapValue(map, "T2a", T2a))
+	{
+		std::cout << __FUNCTION__ << "#Error: FindDataMapValue T2a error" << std::endl;
+		return false;
+	}
+#endif
+	
 }
+
 void BBU::OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
 
@@ -153,6 +188,12 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 
 void BBU::DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
+	if(!SetDeviceRouteIndex(connection))
+	{
+		std::cout << "Error: Set Device RouteIndex error" << std::endl;
+		return ;
+	}
+
     switch(std::stoi(packet.GetSource()))
     {
         case uv::Packet::HUB:
@@ -187,7 +228,7 @@ void BBU::SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::Packet& pa
     head.s_port         = packet.GetPort();
     head.s_uport        = packet.GetUPort();
 
-	std::string data = "CheckResult=0";
+	std::string data = "ConnectResult=0";
 
     SendPackMessage(connection, head, data, data.length());
 }
@@ -282,7 +323,19 @@ void BBU::RruDelayProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
     std::string delayULCompensation;
     std::string delayDLCompensation;
 
-	CalculationDelayCompensation(connection, packet, delayULCompensation, delayDLCompensation);
+	if(!SaveRRUDelayInfo(connection, packet))
+	{
+		std::cout << "Error: Save RRU Delay Info error" << std::endl;
+		return ;
+	}
+	
+	NetworkTopology();
+	
+	CalculationDelayCompensation(connection, delayULCompensation, delayDLCompensation);
+	
+	/* TODO：RRU 接入后其他的 RRU 时延补偿需要更新，有可能新接入的 RRU 时延是最大的 */
+	/* 疑问：一个 loop */
+	//UpdataRRUDelayCompensation(connection, packet);
 
     uv::Packet::Head head;
     head.s_source       = packet.GetDestination();
@@ -299,25 +352,85 @@ void BBU::RruDelayProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
     SendPackMessage(connection, head, data, data.length());
 }
 
-bool BBU::QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection)
+bool BBU::SaveRRUDelayInfo(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-    std::map<std::string, DeviceInfo> netTopology;
-    GetNetworkTopology(netTopology);
+	RRUDelayInfo_T rruDelayInfo;
+	std::map<std::string, std::string> map;
+	packet.SplitData2Map(map);
 
-	int ruhub_hop = std::stoi(hop) - 1;
+	if(!FindDataMapValue(map, "T2a", rruDelayInfo.T2a))
+	{
+		std::cout << __FUNCTION__ << "#Error: FindDataMapValue T2a error" << std::endl;
+		return false;
+	}
 
-    for(auto &it : netTopology)
-    {
-        if(it.second.s_hop == to_string(ruhub_hop))
-        {
-            connection = it.second.s_connection;
-            return true;
-        }
-    }
-    return false;
+	if(!FindDataMapValue(map, "Ta3", rruDelayInfo.Ta3))
+	{
+		std::cout << "Error: FindDataMapValue Ta3 error" << std::endl;
+		return false;
+	}
+	
+	if(!SetRRUDeviceDelayInfo(connection, rruDelayInfo))
+	{
+		std::cout << "Error: Set RRU Device Delay Info error" << std::endl;
+		return false;
+	}
+	return true;
 }
 
-bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packet& packet, std::string& delayiULCompensation, std::string& delayiDLCompensation)
+bool BBU::QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection)
+{
+	DeviceInfo next_dInfo;
+	int ruhub_hop = std::stoi(hop) - 1;
+
+	if(!FindNextDeviceInfo(ruhub_hop, next_dInfo))
+	{
+		std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
+                  << " > Error: Get Next Device Info error" << std::endl;
+		return false;
+	}
+	connection = next_dInfo.s_connection;
+    return true;
+}
+
+void BBU::UpdataRRUDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packet& packet)
+{
+	std::string delayULCompensation;
+    std::string delayDLCompensation;
+	std::string data;
+	std::vector<TcpConnectionPtr> rrusConnection;
+	std::string send_buf;
+
+	uv::Packet::Head head;
+    head.s_source       = packet.GetDestination();
+    head.s_destination  = packet.GetSource();
+	head.s_mac			= m_mac;
+    head.s_state        = to_string(uv::Packet::RESPONSE);
+    head.s_msgID        = to_string(uv::Packet::MSG_DELAY_COMPENSATION);
+    head.s_hop        	= packet.GetHop();
+    head.s_port         = packet.GetPort();
+    head.s_uport        = packet.GetUPort();
+
+	GetRRUsConnection(rrusConnection);
+
+	for(auto it : rrusConnection)
+	{	
+		if(it == connection)
+		{
+			std::cout << "conntion=" << connection << std::endl;
+			continue;
+		}
+		
+		std::cout << __FUNCTION__ << ":" << __LINE__ << ":"
+		  		  << " > it=" << it << " connection=" << connection << std::endl;
+		
+		CalculationDelayCompensation(it, delayULCompensation, delayDLCompensation);
+	    data = "delayULCompensation=" + delayULCompensation + "&delayDLCompensation=" + delayDLCompensation;
+		SendPackMessage(it, head, data, data.length());
+	}
+}
+
+bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::string& delayiULCompensation, std::string& delayiDLCompensation)
 {
     /* TotalDL = T12 + TBdelayDL + T12' + T2a
      * TotalUL = T12 + TBdelayUL + T12' + Ta3
@@ -336,59 +449,25 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Pac
 	std::string tbdelayDL;
 	std::string tbdelayUL;
 	std::string t14;
-	std::string T2a;
-	std::string Ta3;
-	double totalDL;
-	double totalUL;
-	double totalDLHUBDelay;
-	double totalULHUBDelay;
-	double t12;
+	int totalDL;
+	int totalUL;
+	int totalDLHUBDelay;
+	int totalULHUBDelay;
+	int t12;
+	DeviceInfo dInfo;
 
 	std::map<std::string, std::string> mDelayDL;
     std::map<std::string, std::string> mDelayUL;
-    //mDelayDL.clear();
-    //mDelayUL.clear();
-    
-    std::string RouteIndex = CreateRouteIndex(connection);
-    if(RouteIndex.empty())
-    {
-        std::cout << "Error: CreateRouteIndex failure" << std::endl;
-        return false;
-    }
-    std::cout << "RouteIndex=" << RouteIndex << std::endl;
 
-	/* 需要增加mac  来区分唯一device */
-	#if 0
-	std::map<std::string, DeviceInfo> netTopology;
-    GetNetworkTopology(netTopology);
-
-    for(auto &it : netTopology)
-    {
-        if(it.second.s_RRUID == to_string(packet.GetRRUID()))
-        {
-            it.second.s_routeIndex = RouteIndex;
-        }
-    }
-	#endif
-	
-	std::map<std::string, std::string> map;
-	packet.SplitData2Map(map);
-
-	if(!FindDataMapValue(map, "T2a", T2a))
+	if(!GetDeviceInfo(connection, dInfo))
 	{
-		std::cout << __FUNCTION__ << "#Error: FindDataMapValue T2a error" << std::endl;
+		std::cout << "Error: Get Device Info error" << std::endl;
 		return false;
 	}
+	std::cout << __FUNCTION__ << ":" << __LINE__ << ":"
+			  << " > RouteIndex=" << dInfo.s_routeIndex << std::endl;
 
-	if(!FindDataMapValue(map, "Ta3", Ta3))
-	{
-		std::cout << "Error: FindDataMapValue Ta3 error" << std::endl;
-		return false;
-	}
-	
-	std::cout << "T2a=" << T2a << " Ta3=" << Ta3 << std::endl;
-
-	level = std::stoi(packet.GetHop()) - 1;
+	level = std::stoi(dInfo.s_hop) - 1;
 	if(level <= 0)
 	{
 		std::cout << "Error: level error" << std::endl;
@@ -397,7 +476,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Pac
 
 	/* 计算 rru 上一级 hub delay */
 	/* TBdelay DL */
-	key = std::string(to_string(level) + "1" + packet.GetUPort());
+	key = std::string(to_string(level) + "1" + dInfo.s_uport);
 	std::cout << "key = " << key << std::endl;
 	if(!FindDelayMapValue(key, tbdelayDL))
 	{
@@ -407,7 +486,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Pac
 	std::cout << "tbdelayDL = " << tbdelayDL << std::endl;
 
 	/* TBdelay UL */
-	key = std::string(to_string(level) + "2" + packet.GetUPort());
+	key = std::string(to_string(level) + "2" + dInfo.s_uport);
 	std::cout << "key = " << key << std::endl;
 	if(!FindDelayMapValue(key, tbdelayUL))
 	{
@@ -417,7 +496,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Pac
 	std::cout << "tbdelayUL = " << tbdelayUL << std::endl;
 
 	/* T14 */
-	key = std::string(to_string(level) + "3" + packet.GetUPort());
+	key = std::string(to_string(level) + "3" + dInfo.s_uport);
 	std::cout << "key = " << key << std::endl;
 	if(!FindDelayMapValue(key, t14))
 	{
@@ -426,8 +505,8 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Pac
 	}
 	std::cout << "t14 = " << t14 << std::endl;
 
-	totalDLHUBDelay = atof(tbdelayDL.c_str()) + ((atof(t14.c_str()) - (RRUToffset * TOFFSETCYCLE) / 2));
-	totalULHUBDelay = atof(tbdelayUL.c_str()) + ((atof(t14.c_str()) - (RRUToffset * TOFFSETCYCLE) / 2));
+	totalDLHUBDelay = stoi(tbdelayDL.c_str()) + ((stoi(t14.c_str()) - (RRUToffset)) / 2);
+	totalULHUBDelay = stoi(tbdelayUL.c_str()) + ((stoi(t14.c_str()) - (RRUToffset)) / 2);
 
 	/* 级联 hub delay 计算，级联的情况 hub port=0 uport=1 */
 	level = level - 1;
@@ -446,7 +525,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Pac
 				return false;
 			}
 			std::cout << "tbdelayDL = " << tbdelayDL << std::endl;
-			totalDLHUBDelay += atof(tbdelayDL.c_str());
+			totalDLHUBDelay += stoi(tbdelayDL.c_str());
 
 			/* TBdelay UL */
 			key = std::string(to_string(level) + "2" + "1");
@@ -457,7 +536,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Pac
 				return false;
 			}
 			std::cout << "tbdelayUL = " << tbdelayUL << std::endl;
-			totalULHUBDelay += atof(tbdelayUL.c_str());
+			totalULHUBDelay += stoi(tbdelayUL.c_str());
 
 			/* T14 */
 			key = std::string(to_string(level) + "3" + "1");
@@ -468,19 +547,22 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Pac
 				return false;
 			}
 			std::cout << "t14 = " << t14 << std::endl;
-			totalDLHUBDelay += ((atof(t14.c_str()) - (RRUToffset * TOFFSETCYCLE) / 2));
-			totalULHUBDelay += ((atof(t14.c_str()) - (RRUToffset * TOFFSETCYCLE) / 2));
+			totalDLHUBDelay += ((stoi(t14.c_str()) - (RRUToffset)) / 2);
+			totalULHUBDelay += ((stoi(t14.c_str()) - (RRUToffset)) / 2);
 		}
 	}
 
-	t12 = (BBUT14 - (HUBDownToffset * TOFFSETCYCLE)) / 2;
-	totalDL = t12 + totalDLHUBDelay + atof(T2a.c_str());
-	totalUL = t12 + totalULHUBDelay + atof(Ta3.c_str());
+	t12 = ((BBUT14 - (HUBCascadeEToffset * TOFFSETCYCLE)) / 2) / TOFFSETCYCLE;
+	totalDL = t12 + totalDLHUBDelay + stoi(dInfo.s_rruDelayInfo.T2a.c_str());
+	totalUL = t12 + totalULHUBDelay + stoi(dInfo.s_rruDelayInfo.Ta3.c_str());
 	std::cout << "totalDL=" << to_string(totalDL) << std::endl;
 	std::cout << "totalUL=" << to_string(totalUL) << std::endl;
 
-    mDelayDL.insert(make_pair(RouteIndex, to_string(totalDL)));
-    mDelayUL.insert(make_pair(RouteIndex, to_string(totalUL)));
+	DeleteRRUTotalDelay(connection, tVectorDL);
+	DeleteRRUTotalDelay(connection, tVectorDL);
+	
+    mDelayDL.insert(make_pair(dInfo.s_routeIndex, to_string(totalDL)));
+    mDelayUL.insert(make_pair(dInfo.s_routeIndex, to_string(totalUL)));
 
     sortMapByValue(mDelayDL, tVectorDL);
     sortMapByValue(mDelayUL, tVectorUL);
@@ -491,8 +573,12 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Pac
     std::cout << "Echo maxDelayUL Result: " << std::endl;
     EchoSortResult(tVectorUL);
 
-    delayiDLCompensation = to_string(atof(tVectorDL.begin()->second.c_str()) - totalDL);
-    delayiULCompensation = to_string(atof(tVectorUL.begin()->second.c_str()) - totalUL);
+	int maxDLDelay = stoi(tVectorDL.begin()->second.c_str());
+	int maxULDelay = stoi(tVectorUL.begin()->second.c_str());
+	std::cout << "maxDLDelay=" << maxDLDelay << " maxULDelay=" << maxULDelay << std::endl;
+
+    delayiDLCompensation = to_string(stoi(tVectorDL.begin()->second.c_str()) - totalDL);
+    delayiULCompensation = to_string(stoi(tVectorUL.begin()->second.c_str()) - totalUL);
 
 	return true;
 }
@@ -598,7 +684,11 @@ void BBU::NetworkTopology()
             << it.second.s_mac << " "
             << it.second.s_hop << " " 
             << it.second.s_port << " "
-            << it.second.s_uport << std::endl;
+            << it.second.s_uport << " "
+            << it.second.s_routeIndex << " "
+            << it.second.s_rruDelayInfo.T2a << " "
+            << it.second.s_rruDelayInfo.Ta3 << " "
+            << std::endl;
     }
 }
 

@@ -29,6 +29,13 @@
 
 #define BBUT14  580
 
+typedef struct Message_S {
+	char source[1];
+	char destination[1];
+	uint32_t len;
+	char data[100];
+} Message_T;
+
 class BBU :public uv::TcpServer
 {
 public:
@@ -63,7 +70,11 @@ public:
     void UpdateHUBDelayInfo(uv::Packet& packet);
     bool QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection);
     /* 时延补偿计算，整个链路如何实现自动计算？补偿计算值排序，最大时延支持可配置 */
-    bool CalculationDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packet& packet, std::string& delayiULCompensation, std::string& delayiDLCompensation);
+    bool CalculationDelayCompensation(uv::TcpConnectionPtr& connection,     std::string& delayiULCompensation, std::string& delayiDLCompensation);
+
+	/* RRU 接入后其他的 RRU 时延补偿需要更新，有可能新接入的 RRU 时延是最大的 */
+	void UpdataRRUDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+	
 	bool FindDelayMapValue(std::string key, std::string& value);
 
 	bool FindDataMapValue(std::map<std::string, std::string>& map, std::string key, std::string& value);
@@ -80,6 +91,8 @@ public:
      * 3.  
      */
     std::string QueryCompleteLink(std::string rruid);
+
+	bool SaveRRUDelayInfo(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 	
     void EchoSortResult(vector<PAIR>& tVector);
 

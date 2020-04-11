@@ -16,6 +16,13 @@
 
 #define IFRNAME     "enp0s31f6"
 
+typedef struct Message_S {
+	char source[1];
+	char destination[1];
+	uint32_t len;
+	char data[100];
+} Message_T;
+
 class OamAdapter :public uv::TcpClient
 {
 public:

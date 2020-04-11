@@ -88,6 +88,7 @@ void HUB::SetRHUBInfo()
 
     gpmc_mpi_close(mpi_fd);
 #endif
+#if 0
 	uv::Packet packet;
 	char mac[32] = {0};
 	if(!packet.GetDeviceMac(IFRNAME, mac))
@@ -95,7 +96,7 @@ void HUB::SetRHUBInfo()
         std::cout << "Error: GetMac error" << std::endl;
         return ;
     }
-	
+#endif
 	//m_mac = mac;
 	m_mac = "F48E38DCD7CB";
     m_source = "0";
