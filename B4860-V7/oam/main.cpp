@@ -79,6 +79,7 @@ void CliUsage()
 			  << "\n\t device: 0 - ALL HUB, 1 - ALL RRU"
 			  << "\n\t fileName: upgrade file name, include path"
 			  << "\n\t md5: file md5"
+			  << "\n  [c]: get network topology"
 			  << "\n  [exit]: exit program"
 			  << std::endl;
 }
@@ -127,14 +128,24 @@ void CliProcess(ThreadArg& threadArg)
 	            break;
 	        }
 	        case "upgrade"_HASH:{
-	            if(args.size() != 4)
+	            if(args.size() < 4)
 				{
 					std::cout << "upgrade command error" << std::endl;
 					continue;
 				}
-				threadArg.oam_adapter->SendUpgradeMessage(args[1], args[2], args[3]);
+				if(args.size() == 4){
+					threadArg.oam_adapter->SendUpgradeMessage(args[1], args[2], args[3]);
+				} else if(args.size() == 5){
+					threadArg.oam_adapter->SendUpgradeMessage(args[1], args[2], args[3], args[4]);
+				} else {
+					std::cout << "upgrade command error" << sed::endl;
+					continue;
+				}
 	            break;
 	        }
+			case "get_topo"_HASH:{
+				threadArg.oam_adapter->GetNetworkTopology();
+			}
 	        case "exit"_HASH:{
 	            exit(0);
 	        }

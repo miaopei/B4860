@@ -192,3 +192,39 @@ void OamAdapter::SendUpgradeMessage(std::string destination, std::string fileNam
     SendPackMessage(head, data, data.length());
 }
 
+void OamAdapter::SendUpgradeMessage(std::string destination, std::string routeIndex, std::string fileName, std::string md5)
+{
+    std::string data = "routeIndex=" + routeIndex + "&fileName=" + fileName + "&md5=" + md5;
+    
+    uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = destination;
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::REQUEST);
+    head.s_msgID = to_string(uv::Packet::MSG_UPGRADE);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
+
+    SendPackMessage(head, data, data.length());
+
+}
+
+void OamAdapter::GetNetworkTopology()
+{
+	std::string data = "";
+    
+    uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::REQUEST);
+    head.s_msgID = to_string(uv::Packet::MSG_GET_NETWORK_TOPOLOGY);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
+
+    SendPackMessage(head, data, data.length());
+}
+
+
