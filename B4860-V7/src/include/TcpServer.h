@@ -110,6 +110,8 @@ public:
 	bool SetDeviceRouteIndex(uv::TcpConnectionPtr& connection);
 	bool GetDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& dInfo);
 
+    bool GetConnectByRouteIndex(std::string& routeIndex, uv::TcpConnectionPtr& connection);
+
 	bool SetRRUDeviceDelayInfo(uv::TcpConnectionPtr& connection, RRUDelayInfo_T& rruDelayInfo);
 
     void setTimeout(unsigned int);

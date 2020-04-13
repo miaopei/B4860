@@ -368,6 +368,19 @@ bool TcpServer::FindNextDeviceInfo(int level, DeviceInfo& next_dInfo)
     return false;
 }
 
+bool TcpServer::GetConnectByRouteIndex(std::string& routeIndex, uv::TcpConnectionPtr& connection)
+{
+    for(auto &it : connectionInfo_)
+    {
+        if(it.second.s_routeIndex == routeIndex)
+        {
+            connection = it.second.s_connection;
+            return true;
+        }
+    }
+    return false;
+}
+
 bool TcpServer::DeleteRRUTotalDelay(uv::TcpConnectionPtr& connection, vector<PAIR>& tVector)
 {
     std::string routeIndex = CreateRouteIndex(connection);

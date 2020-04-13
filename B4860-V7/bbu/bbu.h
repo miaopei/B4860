@@ -93,6 +93,8 @@ public:
     std::string QueryCompleteLink(std::string rruid);
 
 	bool SaveRRUDelayInfo(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+
+    void NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 	
     void EchoSortResult(vector<PAIR>& tVector);
 

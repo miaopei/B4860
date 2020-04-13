@@ -79,7 +79,10 @@ void CliUsage()
 			  << "\n\t device: 0 - ALL HUB, 1 - ALL RRU"
 			  << "\n\t fileName: upgrade file name, include path"
 			  << "\n\t md5: file md5"
-			  << "\n  [c]: get network topology"
+			  << "\n  [upgrade device routeIndex fileName md5]: upgrade device"
+			  << "\n\t routeIndex: Obtained through get_topo command"
+			  << "\n  [get_topo]: get network topology"
+			  << "\n\t source: 0 - HUB, 1 - RRU"
 			  << "\n  [exit]: exit program"
 			  << std::endl;
 }
@@ -111,7 +114,7 @@ void CliProcess(ThreadArg& threadArg)
 	std::this_thread::sleep_for(chrono::milliseconds(500)); // 延时 500ms
 
     std::string cli_args;
-	vector<string> args;
+    std::vector<std::string> args;
     while(1)
     {
     	args.clear();
@@ -133,18 +136,26 @@ void CliProcess(ThreadArg& threadArg)
 					std::cout << "upgrade command error" << std::endl;
 					continue;
 				}
-				if(args.size() == 4){
-					threadArg.oam_adapter->SendUpgradeMessage(args[1], args[2], args[3]);
-				} else if(args.size() == 5){
-					threadArg.oam_adapter->SendUpgradeMessage(args[1], args[2], args[3], args[4]);
-				} else {
-					std::cout << "upgrade command error" << sed::endl;
-					continue;
-				}
-	            break;
-	        }
-			case "get_topo"_HASH:{
+                if(args[1] == "0" || args[1] == "1")
+                {
+                    if(args.size() == 4){
+                        threadArg.oam_adapter->SendUpgradeMessage(args[1], args[2], args[3]);
+                    } else if(args.size() == 5){
+                        threadArg.oam_adapter->SendUpgradeMessage(args[1], args[2], args[3], args[4]);
+                    } else {
+                        std::cout << "upgrade command error" << std::endl;
+                        continue;
+                    }
+
+                } else {
+                    std::cout << "upgrade device number error" << std::endl;
+                    continue;
+                }
+                break;
+            }
+            case "get_topo"_HASH:{
 				threadArg.oam_adapter->GetNetworkTopology();
+                break;
 			}
 	        case "exit"_HASH:{
 	            exit(0);

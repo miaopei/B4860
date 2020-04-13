@@ -102,6 +102,10 @@ void BBU::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 			std::cout << "[msg_connect]" << std::endl;
 			SetConnectionClient(connection, packet);
             break;
+        case uv::Packet::MSG_GET_NETWORK_TOPOLOGY:
+            std::cout << "[msg_get_network_topology]" << std::endl;
+            NetworkTopologyMessageProcess(connection, packet);
+            break;
 		case uv::Packet::MSG_DELAY_MEASUREMENT:
 			std::cout << "[msg_delay_measurement]" << std::endl;
 			DelayMeasurementProcess(connection, packet);
@@ -117,43 +121,153 @@ void BBU::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 
 void BBU::HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-	std::vector<TcpConnectionPtr> hubsConnection;
-	GetHUBsConnection(hubsConnection);
-	std::string send_buf;
-	for(auto it : hubsConnection)
-	{	
-		send_buf = packet.GetPacket();
-		SendMessage(it, send_buf.c_str(), send_buf.length());
+    std::string routeIndex;
+    uv::TcpConnectionPtr to_connect;
+    std::string send_buf;
+    std::string data;
+
+    std::map<std::string, std::string> map;
+	packet.SplitData2Map(map);
+	if(!FindDataMapValue(map, "routeIndex", routeIndex))
+    {
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+            << " > Info: not find dataMapValue routeIndex, upgrade all hub devices" << std::endl;
+
+        std::vector<TcpConnectionPtr> hubsConnection;
+        GetHUBsConnection(hubsConnection);
+        for(auto it : hubsConnection)
+        {	
+            send_buf = packet.GetPacket();
+            SendMessage(it, send_buf.c_str(), send_buf.length());
+        }
+        return ;
+    }
+
+    if(!GetConnectByRouteIndex(routeIndex, to_connect))
+    {
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+            << " > Error: Get Connect by routeIndex error" << std::endl;
+        return ;
+    }
+    std::string fileName;
+    std::string md5;
+    if(!FindDataMapValue(map, "fileName", fileName))
+	{
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+            << " > Error: not find dataMapValue fileName" << std::endl;
+		return ;
 	}
+
+    if(!FindDataMapValue(map, "md5", md5))
+	{
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+            << " > Error: not find dataMapValue fileName" << std::endl;
+		return ;
+	}
+
+    data = "fileName=" + fileName + "&md5=" + md5;
+    packet.PackMessage(data, data.length());
+    send_buf = packet.GetPacket();
+    SendMessage(to_connect, send_buf.c_str(), send_buf.length());
 }
 
 void BBU::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-	std::vector<TcpConnectionPtr> rrusConnection;
-	GetRRUsConnection(rrusConnection);
-	std::string send_buf;
-	for(auto it : rrusConnection)
-	{	
-		send_buf = packet.GetPacket();
-		SendMessage(it, send_buf.c_str(), send_buf.length());
-	}
+    std::string routeIndex;
+    uv::TcpConnectionPtr to_connect;
+    std::string send_buf;
+    std::string data;
 
-#if 0
-	std::map<std::string, std::string> map;
+    std::map<std::string, std::string> map;
 	packet.SplitData2Map(map);
+	if(!FindDataMapValue(map, "routeIndex", routeIndex))
+    {
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+            << " > Info: not find dataMapValue routeIndex" << std::endl;
 
-	if(!FindDataMapValue(map, "T2a", T2a))
+        std::vector<TcpConnectionPtr> rrusConnection;
+        GetRRUsConnection(rrusConnection);
+        for(auto it : rrusConnection)
+        {	
+            send_buf = packet.GetPacket();
+            SendMessage(it, send_buf.c_str(), send_buf.length());
+        }
+        return ;
+    }
+
+    if(!GetConnectByRouteIndex(routeIndex, to_connect))
+    {
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+            << " > Error: Get Connect by routeIndex error" << std::endl;
+        return ;
+    }
+    std::string fileName;
+    std::string md5;
+    if(!FindDataMapValue(map, "fileName", fileName))
 	{
-		std::cout << __FUNCTION__ << "#Error: FindDataMapValue T2a error" << std::endl;
-		return false;
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+            << " > Error: not find dataMapValue fileName" << std::endl;
+		return ;
 	}
-#endif
-	
+
+    if(!FindDataMapValue(map, "md5", md5))
+	{
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+            << " > Error: not find dataMapValue fileName" << std::endl;
+		return ;
+	}
+
+    data = "fileName=" + fileName + "&md5=" + md5;
+    packet.PackMessage(data, data.length());
+    send_buf = packet.GetPacket();
+    SendMessage(to_connect, send_buf.c_str(), send_buf.length());
 }
 
 void BBU::OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
 
+}
+
+void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
+{
+    uv::Packet::Head head;
+    head.s_source       = packet.GetDestination();
+    head.s_destination  = packet.GetSource();
+	head.s_mac			= m_mac;
+    head.s_state        = to_string(uv::Packet::RESPONSE);
+    head.s_msgID        = packet.GetMsgID();
+    head.s_hop          = packet.GetHop();
+    head.s_port         = packet.GetPort();
+    head.s_uport        = packet.GetUPort();
+	
+    std::string data = "";
+
+    std::map<std::string, DeviceInfo> netTopology;
+    GetNetworkTopology(netTopology);
+
+    for(auto &it : netTopology)
+    { 
+        std::cout << "netTopology: " 
+            << it.first << " - > " 
+            << it.second.s_ip << " "
+            << it.second.s_connection << " "
+            << it.second.s_source << " "
+            << it.second.s_mac << " "
+            << it.second.s_hop << " " 
+            << it.second.s_port << " "
+            << it.second.s_uport << " "
+            << it.second.s_routeIndex << " "
+            << it.second.s_rruDelayInfo.T2a << " "
+            << it.second.s_rruDelayInfo.Ta3 << " "
+            << std::endl;
+
+        if(it.second.s_source == to_string(uv::Packet::OAM))
+            continue;
+
+        data += "ip=" + it.second.s_ip + "&mac=" + it.second.s_mac + "&source=" + it.second.s_source + "&routeIndex=" + it.second.s_routeIndex + "#";
+    } 
+
+    SendPackMessage(connection, head, data, data.length());
 }
 
 void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& packet)
@@ -241,7 +355,7 @@ void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, uv::Packet::Head hea
     Packet.PackMessage(data, size);
 
 	/* 打印数据封装信息 */
-	//Packet.EchoPackMessage();
+	Packet.EchoPackMessage();
 
 	std::string send_buf = Packet.GetPacket();
 

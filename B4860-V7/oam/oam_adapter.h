@@ -37,6 +37,8 @@ public:
 
     void ConnectResultProcess(uv::Packet& packet);
 
+    void NetworkTopologyMessageProcess(uv::Packet& packet);
+
     void SetROamAdapterInfo();
     void SendROamAdapterDelayInfo();
 
