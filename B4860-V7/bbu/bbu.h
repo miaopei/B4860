@@ -66,9 +66,9 @@ public:
 	
     /* 时延测量需要实现的几个接口函数 */
     /* 更新HUB时延测量信息 */
-    void SendUpdateHUBDelayMessage(uv::Packet& packet);
+    void SendUpdateHUBDelayMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet);
     void UpdateHUBDelayInfo(uv::Packet& packet);
-    bool QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection);
+    bool QueryUhubConnection(uv::TcpConnectionPtr& connection, uv::TcpConnectionPtr& reconnection);
     /* 时延补偿计算，整个链路如何实现自动计算？补偿计算值排序，最大时延支持可配置 */
     bool CalculationDelayCompensation(uv::TcpConnectionPtr& connection,     std::string& delayiULCompensation, std::string& delayiDLCompensation);
 

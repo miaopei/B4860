@@ -264,7 +264,7 @@ void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Pa
         if(it.second.s_source == to_string(uv::Packet::OAM))
             continue;
 
-        data += "ip=" + it.second.s_ip + "&mac=" + it.second.s_mac + "&source=" + it.second.s_source + "&routeIndex=" + it.second.s_routeIndex + "#";
+        data += "ip=" + it.second.s_ip + "&mac=" + it.second.s_mac + "&source=" + it.second.s_source + "&hop=" + it.second.s_hop + "&routeIndex=" + it.second.s_routeIndex + "#";
     } 
 
     SendPackMessage(connection, head, data, data.length());
@@ -290,7 +290,7 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
     /* 如果 source 是 RRU 需要更新上级 HUB 延时测量信息*/
     if(dInfo.s_source == to_string(uv::Packet::RRU))
     {
-        SendUpdateHUBDelayMessage(packet);
+        SendUpdateHUBDelayMessage(connection, packet);
     }
 
 	/* Version Check */
@@ -378,10 +378,10 @@ void BBU::SendPackMessageToAllDevice(DeviceType device, uv::Packet::Head head, s
     }
 }
 
-void BBU::SendUpdateHUBDelayMessage(uv::Packet& packet)
+void BBU::SendUpdateHUBDelayMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-    shared_ptr<TcpConnection> connection;
-    if(!QueryUhubConnection(packet.GetHop(), connection))
+    shared_ptr<TcpConnection> reconnection;
+    if(!QueryUhubConnection(connection, reconnection))
     {
         std::cout << "[Error: SendUpdateHUBDelayMessage not find hub rruid]" << std::endl;
         return;
@@ -400,7 +400,7 @@ void BBU::SendUpdateHUBDelayMessage(uv::Packet& packet)
 
     std::string data = "updataDelayInfo";
 
-    SendPackMessage(connection, head, data, data.length());
+    SendPackMessage(reconnection, head, data, data.length());
 }
 
 void BBU::UpdateHUBDelayInfo(uv::Packet& packet)
@@ -492,18 +492,17 @@ bool BBU::SaveRRUDelayInfo(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 	return true;
 }
 
-bool BBU::QueryUhubConnection(std::string hop, uv::TcpConnectionPtr& connection)
+bool BBU::QueryUhubConnection(uv::TcpConnectionPtr& connection, uv::TcpConnectionPtr& reconnection)
 {
-	DeviceInfo next_dInfo;
-	int ruhub_hop = std::stoi(hop) - 1;
+	DeviceInfo upHubDInfo;
 
-	if(!FindNextDeviceInfo(ruhub_hop, next_dInfo))
+	if(!FindUpHubDeviceInfo(connection, upHubDInfo))
 	{
 		std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
                   << " > Error: Get Next Device Info error" << std::endl;
 		return false;
 	}
-	connection = next_dInfo.s_connection;
+	reconnection = upHubDInfo.s_connection;
     return true;
 }
 

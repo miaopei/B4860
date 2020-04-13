@@ -185,7 +185,7 @@ void OamAdapter::NetworkTopologyMessageProcess(uv::Packet& packet)
     std::vector<std::string> value;
 
     std::cout << "\n" 
-              << " \tIP" << "\t\t\tMAC" << "\t\tSource" << "\tRouteIndex"
+              << " \tIP" << "\t\t\tMAC" << "\t\tSource" << "\tHOP" << "\tRouteIndex"
               << std::endl;
     for(auto it : topos)
     {

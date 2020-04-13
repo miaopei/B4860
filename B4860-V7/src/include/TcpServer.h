@@ -114,6 +114,8 @@ public:
 
 	bool SetRRUDeviceDelayInfo(uv::TcpConnectionPtr& connection, RRUDelayInfo_T& rruDelayInfo);
 
+    bool FindUpHubDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& upHubDInfo);
+
     void setTimeout(unsigned int);
 private:
     void onAccept(EventLoop* loop, UVTcpPtr client);

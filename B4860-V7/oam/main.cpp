@@ -82,7 +82,8 @@ void CliUsage()
 			  << "\n  [upgrade device routeIndex fileName md5]: upgrade device"
 			  << "\n\t routeIndex: Obtained through get_topo command"
 			  << "\n  [get_topo]: get network topology"
-			  << "\n\t source: 0 - HUB, 1 - RRU"
+			  << "\n\t Source: 0 - HUB, 1 - RRU"
+			  << "\n\t HOP: Device level"
 			  << "\n  [exit]: exit program"
 			  << std::endl;
 }

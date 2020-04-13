@@ -444,6 +444,39 @@ bool TcpServer::GetDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& dInf
 	return true;
 }
 
+bool TcpServer::FindUpHubDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& upHubDInfo)
+{
+    int uphub_level;
+	std::string cName = GetCurrentName(connection);
+		
+	if(cName.empty())
+	{
+		uv::LogWriter::Instance()->error("Error: not find connection name");
+		return false;
+	}
+	
+    auto rst = connectionInfo_.find(cName);
+    if(rst == connectionInfo_.end())
+    {
+    	uv::LogWriter::Instance()->error("Error: not find connection");
+        return false;
+    }
+	uphub_level = stoi(rst->second.s_hop) - 1;
+    
+    for(auto &it : connectionInfo_)
+    {
+        if(it.second.s_source == to_string(uv::Packet::HUB))
+        {
+            if(it.second.s_hop == to_string(uphub_level))
+            {
+                upHubDInfo = it.second;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool TcpServer::SetRRUDeviceDelayInfo(uv::TcpConnectionPtr& connection, RRUDelayInfo_T& rruDelayInfo)
 {
 	std::string cName = GetCurrentName(connection);
