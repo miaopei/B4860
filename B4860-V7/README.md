@@ -40,6 +40,23 @@ bitbake -c patch <package-name>
 
 
 
+脚本位置：
+
+```shell
+$ ..../poky/meta/recipes-core/initscripts/initscripts-1.0/rrumngr_start
+```
+
+软件包存放位置：
+
+```shell
+$ ..../poky/meta/recipes-core/base-files/base-files/
+# bb 文件要加入 软件包的存放位置
+```
+
+
+
+
+
 
 
 软件包的添加

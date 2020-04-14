@@ -40,6 +40,7 @@ public:
         std::string s_port;
         std::string s_uport;
 		std::string s_routeIndex;
+        int s_upgradeState;
 		RRUDelayInfo_T s_rruDelayInfo;
 		#if 0
         DeviceInfo(){};
@@ -109,6 +110,7 @@ public:
 
 	bool SetDeviceRouteIndex(uv::TcpConnectionPtr& connection);
 	bool GetDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& dInfo);
+	bool SetDeviceInfo(uv::TcpConnectionPtr& connection, std::string key, std::string value);
 
     bool GetConnectByRouteIndex(std::string& routeIndex, uv::TcpConnectionPtr& connection);
 

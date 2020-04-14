@@ -255,6 +255,10 @@ void HUB::ProcessRecvMessage(uv::Packet& packet)
             std::cout << "[RCV:msg_connect]" << std::endl;
             ConnectResultProcess(packet);
             break;
+        case uv::Packet::MSG_UPGRADE:
+            std::cout << "[RCV:msg_upgrade]" << std::endl;
+            UpgradeProcess(packet);            
+            break;
         case uv::Packet::MSG_UPDATE_DELAY:
             std::cout << "[RCV:msg_updata_delay]" << std::endl;
             UpdataDelay(packet);
@@ -315,6 +319,41 @@ void HUB::UpdataDelay(uv::Packet& packet)
     std::string data = "delay1_up=34&delay2_up=35&delay3_up=36&delay4_up=37&delay5_up=38&delay1_down=36&delay2_down=37&delay3_down=38&delay4_down=39&delay5_down=37&t14_delay1=11488&t14_delay2=11488&t14_delay3=11488&t14_delay4=11488&t14_delay5=11488";
     
     SendPackMessage(head, data, data.length());
+}
+
+void HUB::UpgradeProcess(uv::Packet& packet)
+{
+    std::string fileName;
+    std::string md5;
+    std::map<std::string, std::string> map;
+    packet.SplitData2Map(map);
+    if(!FindDataMapValue(map, "fileName", fileName))
+    {
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+                  << " > Error: not find fileName" << std::endl;
+        return ;
+    }
+    
+    if(!FindDataMapValue(map, "md5", md5))
+    {
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+                  << " > Error: not find md5" << std::endl;
+        return ;
+    }
+    std::cout << "system scripty commend" << std::endl;
+}
+
+bool HUB::FindDataMapValue(std::map<std::string, std::string>& map, std::string key, std::string& value)
+{
+    auto rst = map.find(key);
+    if(rst == map.end())
+    {       
+        std::cout << "Error: not find dataMap key" << std::endl;
+        return false;
+
+    }   
+    value = rst->second;
+    return true;
 }
 
 void HUB::TestProcess(uv::Packet& packet)

@@ -185,15 +185,21 @@ void OamAdapter::NetworkTopologyMessageProcess(uv::Packet& packet)
     std::vector<std::string> value;
 
     std::cout << "\n" 
-              << " \tIP" << "\t\t\tMAC" << "\t\tSource" << "\tHOP" << "\tRouteIndex"
+              << " \tIP" << "\t\t\tMAC" << "\t\tSource" << "\tHOP" << "\tUpgradeState" << "\tRouteIndex" 
               << std::endl;
     for(auto it : topos)
     {
+        int i = 0;
         topo = packet.DataSplit(it, "&");
         for(auto res : topo)
         {
             value = packet.DataSplit(res, "="); 
-            std::cout << " \t" << value[1];
+            if(i == 5){
+                std::cout << " \t\t" << value[1];
+            }else{
+                std::cout << " \t" << value[1];
+            }
+            i++;
         }
         std::cout << std::endl;
         //std::cout << "\t " << topo[0] << " \t" << topo[1] << " \t" << topo[2] << " \t" << topo[3] << std::endl;

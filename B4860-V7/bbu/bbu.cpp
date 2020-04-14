@@ -137,6 +137,18 @@ void BBU::HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
         GetHUBsConnection(hubsConnection);
         for(auto it : hubsConnection)
         {	
+            /* 设置升级标志为真正升级 
+             * 0 - 非升级状态
+             * 1 - 升级成功状态
+             * 2 - 升级失败状态
+             * 3 - 正在升级状态
+             * */
+            if(!SetDeviceInfo(it, "upgradeState", "3"))
+            {
+                std::cout << "Error: Set Device upgradeState error" << std::endl;
+                return ;
+            }
+
             send_buf = packet.GetPacket();
             SendMessage(it, send_buf.c_str(), send_buf.length());
         }
@@ -164,6 +176,18 @@ void BBU::HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
             << " > Error: not find dataMapValue fileName" << std::endl;
 		return ;
 	}
+
+    /* 设置升级标志为真正升级 
+     * 0 - 非升级状态
+     * 1 - 升级成功状态
+     * 2 - 升级失败状态
+     * 3 - 正在升级状态
+     * */
+    if(!SetDeviceInfo(to_connect, "upgradeState", "3"))
+    {
+        std::cout << "Error: Set Device upgradeState error" << std::endl;
+        return ;
+    }
 
     data = "fileName=" + fileName + "&md5=" + md5;
     packet.PackMessage(data, data.length());
@@ -189,6 +213,18 @@ void BBU::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
         GetRRUsConnection(rrusConnection);
         for(auto it : rrusConnection)
         {	
+            /* 设置升级标志为真正升级 
+             * 0 - 非升级状态
+             * 1 - 升级成功状态
+             * 2 - 升级失败状态
+             * 3 - 正在升级状态
+             * */
+            if(!SetDeviceInfo(it, "upgradeState", "3"))
+            {
+                std::cout << "Error: Set Device upgradeState error" << std::endl;
+                return ;
+            }
+
             send_buf = packet.GetPacket();
             SendMessage(it, send_buf.c_str(), send_buf.length());
         }
@@ -216,6 +252,18 @@ void BBU::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
             << " > Error: not find dataMapValue fileName" << std::endl;
 		return ;
 	}
+
+    /* 设置升级标志为真正升级 
+     * 0 - 非升级状态
+     * 1 - 升级成功状态
+     * 2 - 升级失败状态
+     * 3 - 正在升级状态
+     * */
+    if(!SetDeviceInfo(to_connect, "upgradeState", "3"))
+    {
+        std::cout << "Error: Set Device upgradeState error" << std::endl;
+        return ;
+    }
 
     data = "fileName=" + fileName + "&md5=" + md5;
     packet.PackMessage(data, data.length());
@@ -259,12 +307,13 @@ void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Pa
             << it.second.s_routeIndex << " "
             << it.second.s_rruDelayInfo.T2a << " "
             << it.second.s_rruDelayInfo.Ta3 << " "
+            << it.second.s_upgradeState << " "
             << std::endl;
 
         if(it.second.s_source == to_string(uv::Packet::OAM))
             continue;
 
-        data += "ip=" + it.second.s_ip + "&mac=" + it.second.s_mac + "&source=" + it.second.s_source + "&hop=" + it.second.s_hop + "&routeIndex=" + it.second.s_routeIndex + "#";
+        data += "ip=" + it.second.s_ip + "&mac=" + it.second.s_mac + "&source=" + it.second.s_source + "&hop=" + it.second.s_hop + "&upgradeState=" + to_string(it.second.s_upgradeState) + "&routeIndex=" + it.second.s_routeIndex + "#";
     } 
 
     SendPackMessage(connection, head, data, data.length());
@@ -280,6 +329,7 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 	dInfo.s_hop = packet.GetHop();
 	dInfo.s_port = packet.GetPort();
 	dInfo.s_uport = packet.GetUPort();
+	dInfo.s_upgradeState = 0;
 
 	if(!SetConnectionInfo(connection, dInfo))
 	{
@@ -801,6 +851,7 @@ void BBU::NetworkTopology()
             << it.second.s_routeIndex << " "
             << it.second.s_rruDelayInfo.T2a << " "
             << it.second.s_rruDelayInfo.Ta3 << " "
+            << it.second.s_upgradeState << " "
             << std::endl;
     }
 }

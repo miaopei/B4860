@@ -8,6 +8,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 #include "uv11.h"
 
@@ -89,6 +90,9 @@ public:
 
     void SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
+
+    void UpgradeProcess(uv::Packet& packet);
+    bool FindDataMapValue(std::map<std::string, std::string>& map, std::string key, std::string& value);
 
     void TestProcess(uv::Packet& packet);
     void TestGetRhubDelay(uint8_t dir, struct rhub_data_delay* rhub_delay);

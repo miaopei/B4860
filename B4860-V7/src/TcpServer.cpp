@@ -444,6 +444,33 @@ bool TcpServer::GetDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& dInf
 	return true;
 }
 
+bool TcpServer::SetDeviceInfo(uv::TcpConnectionPtr& connection, std::string key, std::string value)
+{
+    std::string cName = GetCurrentName(connection);
+		
+	if(cName.empty())
+	{
+		uv::LogWriter::Instance()->error("Error: not find connection name");
+		return false;
+	}
+	
+	auto rst = connectionInfo_.find(cName);
+    if(rst == connectionInfo_.end())
+    {
+    	uv::LogWriter::Instance()->error("Error: not find connection");
+        return false;
+    }
+
+    if(key == "upgradeState")
+    {
+	    rst->second.s_upgradeState = stoi(value);
+	    return true;
+    }else{
+        std::cout << "Error: key error" << std::endl;
+        return false;
+    }
+}
+
 bool TcpServer::FindUpHubDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& upHubDInfo)
 {
     int uphub_level;
