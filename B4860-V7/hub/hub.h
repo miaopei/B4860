@@ -11,7 +11,10 @@
 #include <map>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <iostream>
+#include <fstream>
 
+#include "ftplib.h"
 #include "uv11.h"
 
 #define TOFFSET 3
@@ -71,7 +74,6 @@ struct delay_measurement_info {
     struct rhub_t14_delay* rhub_t14;
 };
 
-
 class HUB :public uv::TcpClient
 {
 public:
@@ -96,6 +98,10 @@ public:
     void UpgradeProcess(uv::Packet& packet);
     bool FindDataMapValue(std::map<std::string, std::string>& map, std::string key, std::string& value);
     int _system(std::string command);
+
+	bool write_file(std::string file, const std::string& data);
+	bool read_file(std::string file, char* data, ssize_t size);
+
 
     void TestProcess(uv::Packet& packet);
     void TestGetRhubDelay(uint8_t dir, struct rhub_data_delay* rhub_delay);

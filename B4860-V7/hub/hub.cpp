@@ -395,6 +395,37 @@ int HUB::_system(std::string command)
     return 0;
 }
 
+
+bool HUB::write_file(std::string file, const std::string& data)
+{
+	std::ofstream fout;
+	fout.open(file);
+	if(!fout.is_open())
+	{
+		std::cout << "Error: open file error" << std::endl;
+		return false;
+	}
+	fout << data;
+	fout.close();
+	return true;
+}
+
+bool HUB::read_file(std::string file, char* data, ssize_t size)
+{
+	std::ifstream fin;	
+	
+	fin.open(file);
+	if(!fin.is_open())
+	{
+		std::cout << "Error: open file error" << std::endl;
+		return false;
+	}
+	fin.getline(data, size);
+	fin.close();
+	return true;
+}
+
+
 void HUB::TestProcess(uv::Packet& packet)
 {
     uv::Packet::Head head;

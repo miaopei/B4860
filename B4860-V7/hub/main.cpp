@@ -9,6 +9,11 @@
 #include <cstdio>
 #include <cstring>
 
+#include <assert.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+
 #include "hub.h"
 
 using namespace uv;
@@ -29,8 +34,23 @@ int main(int argc, char* argv[])
     }
     serverIP = argv[1];
 
-    SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
+	SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
     HUB hub(loop);
+
+#if 1
+	ftplib *ftp = new ftplib();
+	ftp->Connect("ftp.gwdg.de:21");
+	ftp->Login("anonymous", "");
+	ftp->Dir(NULL, "/pub/linux/apache");
+	ftp->Quit();
+#endif
+#if 0
+	char data[80];
+	hub.read_file("./test.txt", data, sizeof(data));
+	std::cout << "data=" << data << std::endl;
+
+	hub.write_file("./test.txt", "test");
+#endif   
 
     hub.bbu_addr = serverIP;
 

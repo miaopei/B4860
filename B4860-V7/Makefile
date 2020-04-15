@@ -18,6 +18,8 @@ LD_LIBRARY_PATH = $(LIB_DIR)
 
 all: before bbu
 	@echo "[build done ...]"
+	@make -C ftplibpp
+	@make -C ftplibpp install
 	@make -C hub
 	@make -C hub-2
 	@make -C hub-3
@@ -55,6 +57,7 @@ clean:
 	@rm -rf $(BUILD_DIR)
 	@make clean -C src
 	@make clean -C bbu
+	@make -C ftplibpp clean
 	@make clean -C hub
 	@make clean -C hub-2
 	@make clean -C hub-3
