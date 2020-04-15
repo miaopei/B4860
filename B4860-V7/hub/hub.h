@@ -9,6 +9,8 @@
 
 #include <string>
 #include <map>
+#include <sys/wait.h>
+#include <sys/types.h>
 
 #include "uv11.h"
 
@@ -93,10 +95,13 @@ public:
 
     void UpgradeProcess(uv::Packet& packet);
     bool FindDataMapValue(std::map<std::string, std::string>& map, std::string key, std::string& value);
+    int _system(std::string command);
 
     void TestProcess(uv::Packet& packet);
     void TestGetRhubDelay(uint8_t dir, struct rhub_data_delay* rhub_delay);
     void TestGetRhubT14Delay(struct rhub_t14_delay* t14_delay);
+
+    std::string bbu_addr;
 
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
@@ -106,5 +111,9 @@ private:
     std::string m_hop;
     std::string m_port;
     std::string m_uport;
+
+protected:
+    uv::EventLoop* _loop;
+
 };
 

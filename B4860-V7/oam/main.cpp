@@ -84,6 +84,11 @@ void CliUsage()
 			  << "\n  [get_topo]: get network topology"
 			  << "\n\t Source: 0 - HUB, 1 - RRU"
 			  << "\n\t HOP: Device level"
+			  << "\n\t UpgradeState: "
+              << "\n\t\t 0 - normal"
+              << "\n\t\t 1 - upgrade success"
+              << "\n\t\t 2 - upgrade failure"
+              << "\n\t\t 3 - upgrade ing..."
 			  << "\n  [exit]: exit program"
 			  << std::endl;
 }

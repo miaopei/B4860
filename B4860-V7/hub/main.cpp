@@ -32,6 +32,8 @@ int main(int argc, char* argv[])
     SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
     HUB hub(loop);
 
+    hub.bbu_addr = serverIP;
+
     hub.connectToServer(addr);
 
     loop->run();

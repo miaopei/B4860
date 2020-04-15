@@ -15,7 +15,8 @@ using namespace std;
 
 HUB::HUB(uv::EventLoop* loop)
     :TcpClient(loop),
-    sockAddr(nullptr)
+    sockAddr(nullptr),
+    _loop(loop)
 {
     setConnectStatusCallback(std::bind(&HUB::onConnect, this, std::placeholders::_1));
     setMessageCallback(std::bind(&HUB::RecvMessage, this, std::placeholders::_1, std::placeholders::_2));
@@ -340,7 +341,21 @@ void HUB::UpgradeProcess(uv::Packet& packet)
                   << " > Error: not find md5" << std::endl;
         return ;
     }
-    std::cout << "system scripty commend" << std::endl;
+
+    if(_system(std::string("ftpget " + bbu_addr + " " + fileName)) < 0)
+    {
+        std::cout << "Error: ftp get file failed!" << std::endl;
+        return ;
+    } else {
+        std::cout << "Ftp get file success" << std::endl;
+    }
+
+#if 0
+    if(_system("./etc/user/user_update_sh"))
+    {
+
+    }
+#endif
 }
 
 bool HUB::FindDataMapValue(std::map<std::string, std::string>& map, std::string key, std::string& value)
@@ -354,6 +369,30 @@ bool HUB::FindDataMapValue(std::map<std::string, std::string>& map, std::string 
     }   
     value = rst->second;
     return true;
+}
+
+int HUB::_system(std::string command)
+{
+    pid_t status;
+    status = system(command.c_str());
+
+    if(-1 == status){
+        std::cout << "Error: system error!" << std::endl;
+        return -1;
+    } else {
+        if(WIFEXITED(status)){
+            if(0 == WEXITSTATUS(status)){
+                return 0;
+            } else {
+                std::cout << "Error: run shell script fail, script exit code: " << WEXITSTATUS(status) << std::endl;
+                return -2;
+            }
+        } else {
+            std::cout << "Error: exit status: " << WEXITSTATUS(status) << std::endl;
+            return -3;
+        }
+    }
+    return 0;
 }
 
 void HUB::TestProcess(uv::Packet& packet)
