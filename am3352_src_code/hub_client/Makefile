@@ -20,12 +20,14 @@ all:
 	#@cd $(BUILD_DIR)/$(LIBUV) && sh autogen.sh && ./configure --host=powerpc64-fsl-linux --prefix=$(WORK_ROOT)/../ && make && make install
 	@tar -zxvf $(LIBUV).tar.gz
 	@cp -rf $(LIBUV)/* $(BUILD_DIR)
-	@cp libstdc++.so.6 ./build/lib
 	@tar -zxvf librhub.tar.gz
 	@cp -d librhub/*.so* ./build/lib
 	@cp librhub/*.h ./build/include
-	make -C $(WORK_ROOT)/src
+	@make -C $(WORK_ROOT)/ftplibpp
+	@make -C $(WORK_ROOT)/ftplibpp install
+	@make -C $(WORK_ROOT)/src
 	@make -C $(WORK_ROOT)/hub
+	@./tar.sh
 
 install:
 
@@ -38,4 +40,6 @@ clean:
 	@make clean -C hub
 	@rm -rf librhub
 	@rm -rf $(LIBUV)
+	@make -C $(WORK_ROOT)/ftplibpp clean
+	@rm -rf tarFile
 

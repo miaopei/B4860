@@ -32,6 +32,7 @@ using namespace std;
 // head: 数据包头校验 (0x7e)
 // source：HUB、RRU、BBU、OAM (0,1,2,3)
 // destination: 消息目标发给谁 HUB、RRU、BBU、OAM 
+// mac: 设备连接的网口 mac 地址
 // state: 请求、响应 (0,1)
 // msgID：消息编号 (1001)
 // RRUID: rruid为4 (4)   
@@ -40,6 +41,7 @@ using namespace std;
 // length: 0021 (data 数据长度)
 // data: 用户数据
 // end: 数据包结尾校验 (0xe7)
+//
 // eg: (head 14 Byte)
 //      HUB MSG_CONNECT REQUEST TO_BBU RRUID_2 PORT_1 UPORT_4 length data
 //      0   1040        0       2      2       1      4       0023   key0=value0&key1=value1
@@ -109,7 +111,7 @@ public:
 		RRUID_4		= 4,
         RRUID_X     = 9
 	};
-#endif
+
 	enum Port
 	{
 		PORT_0	= 0,
@@ -137,6 +139,7 @@ public:
 		UPORT_8	    = 8,
         UPORT_X     = 9
 	};
+#endif
 
     Packet();
     ~Packet();

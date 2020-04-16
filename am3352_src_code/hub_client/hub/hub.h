@@ -8,7 +8,14 @@
 #pragma once
 
 #include <string>
+#include <map>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <iostream>
+#include <fstream>
 
+#include "ftplib.h"
+#include "md5.h"
 #include "uv11.h"
 
 #define TOFFSET 3
@@ -64,6 +71,16 @@ public:
     void SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
 
+    void UpgradeProcess(uv::Packet& packet);
+    bool FindDataMapValue(std::map<std::string, std::string>& map, std::string key, std::string& value);
+    int _system(std::string command);
+
+	bool write_file(std::string file, const std::string& data);
+	bool read_file(std::string file, char* data, ssize_t size);
+
+    bool FtpDownloadFile(uv::Packet& packet);
+    void SendUpgradeFailure(uv::Packet& packet, const std::string errorno);
+    std::string bbu_addr;
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
     std::shared_ptr<HUB> clientptr_;

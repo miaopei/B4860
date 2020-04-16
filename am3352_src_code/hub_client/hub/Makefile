@@ -12,7 +12,7 @@ TARGET = hub
 CC = arm-linux-gnueabihf-g++
 CFLAGS = -Wall -std=c++11 
 USER_LINK_INC = -I$(INCLUDE_DIR)
-USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -lrhub -Wl,-rpath,$(LIB_DIR)
+USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -lrhub -lftp -Wl,-rpath,$(LIB_DIR)
 
 SOURCE = $(wildcard *.cpp)
 OBJECTS = $(SOURCE:.cpp=.o)

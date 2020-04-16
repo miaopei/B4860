@@ -54,7 +54,7 @@ void HUB::reConnect()
 
 void HUB::SendConnectMessage()
 {
-    std::string data = "Version=1.0";
+    std::string data = "ResultID=0";
     
     uv::Packet::Head head;
     head.s_source = m_source;
@@ -194,6 +194,10 @@ void HUB::ProcessRecvMessage(uv::Packet& packet)
             std::cout << "[RCV:msg_connect]" << std::endl;
             ConnectResultProcess(packet);
             break;
+        case uv::Packet::MSG_UPGRADE:
+            std::cout << "[RCV:msg_upgrade]" << std::endl;
+            UpgradeProcess(packet);            
+            break;
         case uv::Packet::MSG_UPDATE_DELAY:
             std::cout << "[RCV:msg_updata_delay]" << std::endl;
             UpdataDelay(packet);
@@ -256,5 +260,163 @@ void HUB::UpdataDelay(uv::Packet& packet)
     SendPackMessage(head, data, data.length());
 }
 
+void HUB::UpgradeProcess(uv::Packet& packet)
+{
+    if(!FtpDownloadFile(packet))
+    {
+        std::cout << "Error: FtpDownloadFile error" << std::endl;
+        /* 给BBU 发送 ftp download 失败消息 */
+        SendUpgradeFailure(packet, "4");
+    } else {
+        std::cout << "Info: FtpDownloadFile success" << std::endl;
+        /* 执行升级命令 */
+        if(_system("./etc/user/user_update_sh") < 0)
+        {
+            std::cout << "Error: system user_update_sh execute error" << std::endl;
+            if(_system("./etc/user/user_update_error_sh") < 0)
+            {
+                std::cout << "Error: system user_update_error_sh execute error" << std::endl;
+            }
+            /* 给BBU 发送 调用升级命令 失败消息 */
+            SendUpgradeFailure(packet, "5");
+        }
+        /* 重启设备操作 */
+
+    }
+}
+
+void HUB::SendUpgradeFailure(uv::Packet& packet, const std::string errorno)
+{
+    uv::Packet::Head head;
+    head.s_source = packet.GetSource();
+    head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = packet.GetMac();
+    head.s_state = to_string(uv::Packet::RESPONSE);
+    head.s_msgID = packet.GetMsgID();
+    head.s_hop = packet.GetHop();
+    head.s_port = packet.GetPort();
+    head.s_uport = packet.GetUPort();
+
+    std::string data = std::string("ResultID=" + errorno);
+    
+    SendPackMessage(head, data, data.length());
+}
+
+bool HUB::FtpDownloadFile(uv::Packet& packet)
+{
+    std::string fileName;
+    std::string md5;
+    std::map<std::string, std::string> map;
+    packet.SplitData2Map(map);
+    if(!FindDataMapValue(map, "fileName", fileName))
+    {
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+                  << " > Error: not find fileName" << std::endl;
+        return false;
+    }
+    
+    if(!FindDataMapValue(map, "md5", md5))
+    {
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+                  << " > Error: not find md5" << std::endl;
+        return false;
+    }
+
+    std::string ftpServerAddr = std::string(bbu_addr + ":21");
+    ftplib *ftp = new ftplib();
+	if(!ftp->Connect(ftpServerAddr.c_str()))
+    {
+        std::cout << "Error: ftp connect error" << std::endl;
+        return false;
+    }
+
+	if(!ftp->Login("anonymous", ""))
+    {
+        std::cout << "Error: ftp login error" << std::endl;
+        return false;
+    }
+
+    std::string outfile = std::string("./etc/user/" + fileName);
+    if(!ftp->Get(outfile.c_str(), fileName.c_str(), ftplib::image))
+    {
+        std::cout << "Error: ftp get file error" << std::endl;
+        return false;
+    }
+
+    std::cout << "file md5=" << md5file(fileName.c_str()) << std::endl;
+    if(md5 != md5file(fileName.c_str()))
+    {
+        std::cout << "Error: md5 check error" << std::endl;
+        return false;
+    }
+
+	ftp->Quit();
+    return true;
+}
+
+bool HUB::FindDataMapValue(std::map<std::string, std::string>& map, std::string key, std::string& value)
+{
+    auto rst = map.find(key);
+    if(rst == map.end())
+    {       
+        std::cout << "Error: not find dataMap key" << std::endl;
+        return false;
+
+    }   
+    value = rst->second;
+    return true;
+}
+
+int HUB::_system(std::string command)
+{
+    pid_t status;
+    status = system(command.c_str());
+
+    if(-1 == status){
+        std::cout << "Error: system error!" << std::endl;
+        return -1;
+    } else {
+        if(WIFEXITED(status)){
+            if(0 == WEXITSTATUS(status)){
+                return 0;
+            } else {
+                std::cout << "Error: run shell script fail, script exit code: " << WEXITSTATUS(status) << std::endl;
+                return -2;
+            }
+        } else {
+            std::cout << "Error: exit status: " << WEXITSTATUS(status) << std::endl;
+            return -3;
+        }
+    }
+    return 0;
+}
 
 
+bool HUB::write_file(std::string file, const std::string& data)
+{
+	std::ofstream fout;
+	fout.open(file);
+	if(!fout.is_open())
+	{
+		std::cout << "Error: open file error" << std::endl;
+		return false;
+	}
+	fout << data << std::endl; 
+	fout.close();
+	return true;
+}
+
+bool HUB::read_file(std::string file, char* data, ssize_t size)
+{
+	std::ifstream fin;	
+	
+	fin.open(file);
+	if(!fin.is_open())
+	{
+		std::cout << "Error: open file error" << std::endl;
+		return false;
+	}
+	fin.getline(data, size);
+	fin.close();
+	return true;
+}

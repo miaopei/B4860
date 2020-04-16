@@ -9,6 +9,11 @@
 #include <cstdio>
 #include <cstring>
 
+#include <assert.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+
 #include "hub.h"
 
 using namespace uv;
@@ -29,8 +34,11 @@ int main(int argc, char* argv[])
     }
     serverIP = argv[1];
 
-    SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
+	SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
     HUB hub(loop);
+
+
+    hub.bbu_addr = serverIP;
 
     hub.connectToServer(addr);
 
