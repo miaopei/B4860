@@ -887,6 +887,59 @@ bool BBU::FindDataMapValue(std::map<std::string, std::string>& map, std::string 
 	return true;
 }
 
+int BBU::_system(std::string command)
+{
+    pid_t status;
+    status = system(command.c_str());
+
+    if(-1 == status){
+        std::cout << "Error: system error!" << std::endl;
+        return -1;
+    } else {
+        if(WIFEXITED(status)){
+            if(0 == WEXITSTATUS(status)){
+                return 0;
+            } else {
+                std::cout << "Error: run shell script fail, script exit code: " << WEXITSTATUS(status) << std::endl;
+                return -2;
+            }
+        } else {
+            std::cout << "Error: exit status: " << WEXITSTATUS(status) << std::endl;
+            return -3;
+        }
+    }
+    return 0;
+}
+
+bool BBU::write_file(std::string file, const std::string& data)
+{
+	std::ofstream fout;
+	fout.open(file);
+	if(!fout.is_open())
+	{
+		std::cout << "Error: open file error" << std::endl;
+		return false;
+	}
+	fout << data << std::endl; 
+	fout.close();
+	return true;
+}
+
+bool BBU::read_file(std::string file, char* data, ssize_t size)
+{
+	std::ifstream fin;	
+	
+	fin.open(file);
+	if(!fin.is_open())
+	{
+		std::cout << "Error: open file error" << std::endl;
+		return false;
+	}
+	fin.getline(data, size);
+	fin.close();
+	return true;
+}
+
 
 
 
