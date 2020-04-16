@@ -54,7 +54,7 @@ void OamAdapter::reConnect()
 void OamAdapter::SendConnectMessage()
 {
 #if 1
-    std::string data = "";
+    std::string data = "ResultID=0";
     
     uv::Packet::Head head;
     head.s_source = m_source;
@@ -239,6 +239,40 @@ void OamAdapter::SendUpgradeMessage(std::string destination, std::string routeIn
 
     SendPackMessage(head, data, data.length());
 
+}
+
+void OamAdapter::SendRFTxMessage(std::string RFTxStatus)
+{
+    std::string data = "RFTxStatus=" + RFTxStatus;
+    
+    uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::Packet::TO_RRU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::REQUEST);
+    head.s_msgID = to_string(uv::Packet::MSG_RFTxStatus_SET);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
+
+    SendPackMessage(head, data, data.length());
+}
+
+void OamAdapter::SendRFTxMessage(std::string routeIndex, std::string RFTxStatus)
+{
+    std::string data = "routeIndex=" + routeIndex + "&RFTxStatus=" + RFTxStatus;
+    
+    uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::Packet::TO_RRU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::REQUEST);
+    head.s_msgID = to_string(uv::Packet::MSG_RFTxStatus_SET);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
+
+    SendPackMessage(head, data, data.length());
 }
 
 void OamAdapter::GetNetworkTopology()

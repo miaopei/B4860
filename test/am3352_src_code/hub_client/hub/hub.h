@@ -20,9 +20,8 @@
 
 #define TOFFSET 3
 
-#define IFRNAME     "enp0s31f6"
+#define IFRNAME     "eth0"
 
-#if 0
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,30 +48,6 @@ unsigned int gpmc_mpi_read_device(int fd,unsigned int module_addr, unsigned int 
 struct delay_measurement_info {
     struct rhup_data_delay* rhup_delay;
     struct rhup_t14_delay* t14_delay;
-};
-#endif
-
-struct rhub_data_delay{
-    uint16_t delay1;
-    uint16_t delay2;
-    uint16_t delay3;
-    uint16_t delay4;
-    uint16_t delay5;
-};
-
-struct rhub_t14_delay{
-    uint32_t delay1;
-    uint32_t delay2;
-    uint32_t delay3;
-    uint32_t delay4;
-    uint32_t delay5;
-};
-
-struct delay_measurement_info {
-    char head[HEADLENGTH+1];
-    struct rhub_data_delay* rhub_delay_up;
-    struct rhub_data_delay* rhub_delay_down;
-    struct rhub_t14_delay* rhub_t14;
 };
 
 class HUB :public uv::TcpClient
@@ -105,14 +80,7 @@ public:
 
     bool FtpDownloadFile(uv::Packet& packet);
     void SendUpgradeFailure(uv::Packet& packet, const std::string errorno);
-
-
-    void TestProcess(uv::Packet& packet);
-    void TestGetRhubDelay(uint8_t dir, struct rhub_data_delay* rhub_delay);
-    void TestGetRhubT14Delay(struct rhub_t14_delay* t14_delay);
-
     std::string bbu_addr;
-
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
     std::shared_ptr<HUB> clientptr_;
@@ -121,6 +89,5 @@ private:
     std::string m_hop;
     std::string m_port;
     std::string m_uport;
-
 };
 

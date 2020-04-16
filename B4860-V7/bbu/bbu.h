@@ -95,6 +95,14 @@ public:
 	bool SaveRRUDelayInfo(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 
     void NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+
+    void UpgradeResultProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+
+    bool WriteUpgradeResultToDevice(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+
+    void HUBUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+    void RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+    void RRURFTxStatusProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 	
     void EchoSortResult(vector<PAIR>& tVector);
 

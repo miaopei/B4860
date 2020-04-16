@@ -95,7 +95,6 @@ public:
         MSG_UPGRADE 				= 1004,
         MSG_GET_LOG					= 1005,
         MSG_GET_NETWORK_TOPOLOGY	= 1006,
-        MSG_RFTxStatus_SET          = 1007,
         MSG_CONNECT					= 1040,
         MSG_DELAY_MEASUREMENT 		= 1041,
         MSG_DELAY_COMPENSATION      = 1042,

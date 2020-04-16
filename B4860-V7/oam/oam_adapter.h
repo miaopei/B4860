@@ -50,8 +50,10 @@ public:
      * 1 - RRU
      * */
     void SendUpgradeMessage(std::string destination, std::string fileName, std::string md5);
-
 	void SendUpgradeMessage(std::string destination, std::string routeIndex, std::string fileName, std::string md5);
+
+    void SendRFTxMessage(std::string RFTxStatus);
+    void SendRFTxMessage(std::string routeIndex, std::string RFTxStatus);
 
     void GetUpgradeResult();
 

@@ -86,9 +86,16 @@ void CliUsage()
 			  << "\n\t HOP: Device level"
 			  << "\n\t UpgradeState: "
               << "\n\t\t 0 - normal"
-              << "\n\t\t 1 - upgrade success"
-              << "\n\t\t 2 - upgrade failure"
+              << "\n\t\t 1 - upgrade success connect"
+              << "\n\t\t 2 - upgrade failure connect"
               << "\n\t\t 3 - upgrade ing..."
+              << "\n\t\t 4 - ftp download failure"
+              << "\n\t\t 5 - upgrade command failure"
+			  << "\n  [RFTxStatus_set RFTxStatus]: Power amplifier, antenna power Settings"
+			  << "\n\t RFTxStatus: 0 - OFF, 1 - ON"
+			  << "\n  [RFTxStatus_set routeIndex RFTxStatus]: Power amplifier, antenna power Settings"
+			  << "\n\t routeIndex: Obtained through get_topo command"
+			  << "\n\t RFTxStatus: 0 - OFF, 1 - ON"
 			  << "\n  [exit]: exit program"
 			  << std::endl;
 }
@@ -152,7 +159,6 @@ void CliProcess(ThreadArg& threadArg)
                         std::cout << "upgrade command error" << std::endl;
                         continue;
                     }
-
                 } else {
                     std::cout << "upgrade device number error" << std::endl;
                     continue;
@@ -163,6 +169,22 @@ void CliProcess(ThreadArg& threadArg)
 				threadArg.oam_adapter->GetNetworkTopology();
                 break;
 			}
+            case "RFTxStatus_set"_HASH:{
+                if(args.size() < 2)
+                {
+                    std::cout << "RFTxStatus_set command error" << std::endl;
+					continue;
+                }
+                if(args.size() == 2){
+                    threadArg.oam_adapter->SendRFTxMessage(args[1]);
+                } else if(args.size() == 3){
+                    threadArg.oam_adapter->SendRFTxMessage(args[1], args[2]);
+                } else {
+                    std::cout << "RFTxStatus_set command error" << std::endl;
+                    continue;
+                }
+                break;
+            }
 	        case "exit"_HASH:{
 	            exit(0);
 	        }

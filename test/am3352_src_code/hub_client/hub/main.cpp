@@ -37,12 +37,6 @@ int main(int argc, char* argv[])
 	SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
     HUB hub(loop);
 
-#if 0
-	char data[80];
-	hub.read_file("./test.txt", data, sizeof(data));
-	std::cout << "data=" << data << std::endl;
-	hub.write_file("./test.txt", "test");
-#endif   
 
     hub.bbu_addr = serverIP;
 
