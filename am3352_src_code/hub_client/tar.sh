@@ -15,5 +15,7 @@ cp -d build/lib/librhub.so* ${TARGET_LIB}
 cp -d build/lib/libbbu.so ${TARGET_LIB}
 cp -d build/lib/libftp.so* ${TARGET_LIB}
 
+cp -rf rhup tarFile/hub
+
 cd tarFile && tar -cvf hub.tar hub 
 

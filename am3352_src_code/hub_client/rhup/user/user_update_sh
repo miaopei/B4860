@@ -1,0 +1,9 @@
+#!/bin/sh
+
+echo "user update img............"
+tar -xvf /etc/user/rHUP.tar
+cp /root/jinsha_fpga_top.bit /etc/user/jinsha_fpga_top_bak.bit
+cp /etc/user/jinsha_fpga_top.bit /root
+./root/fpga_load_file /root/jinsha_fpga_top.bit
+./root/system_init 0
+

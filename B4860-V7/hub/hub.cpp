@@ -328,6 +328,7 @@ void HUB::UpgradeProcess(uv::Packet& packet)
         std::cout << "Error: FtpDownloadFile error" << std::endl;
         /* 给BBU 发送 ftp download 失败消息 */
         SendUpgradeFailure(packet, "4");
+        return ;
     } else {
         std::cout << "Info: FtpDownloadFile success" << std::endl;
         /* 执行升级命令 */
@@ -340,9 +341,14 @@ void HUB::UpgradeProcess(uv::Packet& packet)
             }
             /* 给BBU 发送 调用升级命令 失败消息 */
             SendUpgradeFailure(packet, "5");
+            return ;
         }
         /* 重启设备操作 */
-
+        if(_system("/sbin/reboot") < 0)
+        {
+            std::cout << "Error: system reboot execute error" << std::endl;
+            return ;
+        }
     }
 }
 
@@ -397,8 +403,7 @@ bool HUB::FtpDownloadFile(uv::Packet& packet)
         return false;
     }
 
-    std::string outfile = std::string("./etc/user/" + fileName);
-    if(!ftp->Get(outfile.c_str(), fileName.c_str(), ftplib::image))
+    if(!ftp->Get("/etc/user/rHUP.tar", fileName.c_str(), ftplib::image))
     {
         std::cout << "Error: ftp get file error" << std::endl;
         return false;

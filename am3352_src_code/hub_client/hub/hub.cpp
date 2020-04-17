@@ -99,12 +99,30 @@ void HUB::SetRHUBInfo()
 
 void HUB::SendRHUBDelayInfo()
 {
+    std::string data;
+    RHUBDelayInfoCalculate(data);
+
+    uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::RESPONSE);
+    head.s_msgID = to_string(uv::Packet::MSG_DELAY_MEASUREMENT);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
+
+    SendPackMessage(head, data, data.length());
+}
+
+void HUB::RHUBDelayInfoCalculate(std::string& data)
+{
     int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
     
     /* 获取 rhub 的处理时延  */
     struct rhup_data_delay* rhub_up = (struct rhup_data_delay*)malloc(sizeof(struct rhup_data_delay));
     get_rhup_delay(mpi_fd, UP, rhub_up);
-    std::string data = std::string("delay1_up=" + to_string(rhub_up->delay1) + 
+    data = std::string("delay1_up=" + to_string(rhub_up->delay1) + 
 								   "&delay2_up=" + to_string(rhub_up->delay2) +
 								   "&delay3_up=" + to_string(rhub_up->delay3) +
 								   "&delay4_up=" + to_string(rhub_up->delay4) +
@@ -139,20 +157,8 @@ void HUB::SendRHUBDelayInfo()
 						"&t14_delay8=" + to_string(t14_delay->delay8) +
 						"&t14_delay9=" + to_string(t14_delay->delay9));
 
-    data += std::string("&toffset=" + to_string(TOFFSET));
-
-    uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::RESPONSE);
-    head.s_msgID = to_string(uv::Packet::MSG_DELAY_MEASUREMENT);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
-
-    SendPackMessage(head, data, data.length());
-
+    //data += std::string("&toffset=" + to_string(TOFFSET));
+    
     free(rhub_up);
     free(rhub_down);
     free(t14_delay);
@@ -239,11 +245,13 @@ void HUB::SendMessage(const char* buf, ssize_t size)
 void HUB::ConnectResultProcess(uv::Packet& packet)
 {
     SendRHUBDelayInfo();
-    //TestProcess(packet);
 }
 
 void HUB::UpdataDelay(uv::Packet& packet)
 {	
+    std::string data;
+    RHUBDelayInfoCalculate(data);
+
     uv::Packet::Head head;
     head.s_source = to_string(uv::Packet::HUB);
     head.s_destination = to_string(uv::Packet::TO_BBU);
@@ -254,9 +262,6 @@ void HUB::UpdataDelay(uv::Packet& packet)
     head.s_port = m_port;
     head.s_uport = m_uport;
 
-    //TestProcess(packet);
-    std::string data = "delay1_up=34&delay2_up=35&delay3_up=36&delay4_up=37&delay5_up=38&delay1_down=36&delay2_down=37&delay3_down=38&delay4_down=39&delay5_down=37&t14_delay1=11488&t14_delay2=11488&t14_delay3=11488&t14_delay4=11488&t14_delay5=11488";
-    
     SendPackMessage(head, data, data.length());
 }
 
@@ -267,21 +272,27 @@ void HUB::UpgradeProcess(uv::Packet& packet)
         std::cout << "Error: FtpDownloadFile error" << std::endl;
         /* 给BBU 发送 ftp download 失败消息 */
         SendUpgradeFailure(packet, "4");
+        return ;
     } else {
         std::cout << "Info: FtpDownloadFile success" << std::endl;
         /* 执行升级命令 */
-        if(_system("./etc/user/user_update_sh") < 0)
+        if(_system("/etc/user/user_update_sh") < 0)
         {
             std::cout << "Error: system user_update_sh execute error" << std::endl;
-            if(_system("./etc/user/user_update_error_sh") < 0)
+            if(_system("/etc/user/user_update_error_sh") < 0)
             {
                 std::cout << "Error: system user_update_error_sh execute error" << std::endl;
             }
             /* 给BBU 发送 调用升级命令 失败消息 */
             SendUpgradeFailure(packet, "5");
+            return ;
         }
         /* 重启设备操作 */
-
+        if(_system("/sbin/reboot") < 0)
+        {
+            std::cout << "Error: system reboot execute error" << std::endl;
+            return ;
+        }
     }
 }
 
@@ -336,15 +347,14 @@ bool HUB::FtpDownloadFile(uv::Packet& packet)
         return false;
     }
 
-    std::string outfile = std::string("./etc/user/" + fileName);
-    if(!ftp->Get(outfile.c_str(), fileName.c_str(), ftplib::image))
+    if(!ftp->Get("/etc/user/rHUP.tar", fileName.c_str(), ftplib::image))
     {
         std::cout << "Error: ftp get file error" << std::endl;
         return false;
     }
 
-    std::cout << "file md5=" << md5file(fileName.c_str()) << std::endl;
-    if(md5 != md5file(fileName.c_str()))
+    std::cout << "file md5=" << md5file("/etc/user/rHUP.tar") << std::endl;
+    if(md5 != md5file("/etc/user/rHUP.tar"))
     {
         std::cout << "Error: md5 check error" << std::endl;
         return false;

@@ -256,7 +256,6 @@ string md5file(const char* filename){
 }
 
 string md5file(std::FILE* file){
-
 	MD5_CTX c;
     MD5_Init(&c);
 

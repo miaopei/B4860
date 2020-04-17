@@ -53,7 +53,7 @@ void RRU::reConnect()
 
 void RRU::SendConnectMessage()
 {
-    std::string data = "Version=1.0";
+    std::string data = "ResultID=0";
     
     uv::Packet::Head head;
     head.s_source = m_source;

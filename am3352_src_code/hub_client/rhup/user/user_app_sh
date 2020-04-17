@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "user app running......"
+gw_addr=`route -n | grep eth0 | grep UG | awk '{print $2}'`
+/usr/sbin/hub ${gw_addr} &

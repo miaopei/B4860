@@ -240,9 +240,25 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
     uv::TcpConnectionPtr to_connect;
     std::string send_buf;
     std::string data;
-
+    std::string fileName;
     std::map<std::string, std::string> map;
+    
 	packet.SplitData2Map(map);
+    if(!FindDataMapValue(map, "fileName", fileName))
+	{
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
+            << " > Error: not find dataMapValue fileName" << std::endl;
+		return ;
+	}
+
+    std::vector<std::string> files = GetFiles(fileName);
+    if(static_cast<int>(files.size()) != 2)
+    {
+        std::cout << "Error: RRU upgrade Directory" << std::endl;
+        return ;
+    }
+    data = "fileName=" + files[0] + "&md5=" + md5file(std::string(fileName + "/" + files[0]).c_str()) + "&fileName=" + files[1] + "&md5=" + md5file(std::string(fileName + "/" + files[1]).c_str());
+
 	if(!FindDataMapValue(map, "routeIndex", routeIndex))
     {
         std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
@@ -264,6 +280,7 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
                 return ;
             }
 
+            packet.PackMessage(data, data.length());
             send_buf = packet.GetPacket();
             SendMessage(it, send_buf.c_str(), send_buf.length());
         }
@@ -276,22 +293,7 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
             << " > Error: Get Connect by routeIndex error" << std::endl;
         return ;
     }
-    std::string fileName;
-    std::string md5;
-    if(!FindDataMapValue(map, "fileName", fileName))
-	{
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: not find dataMapValue fileName" << std::endl;
-		return ;
-	}
-
-    if(!FindDataMapValue(map, "md5", md5))
-	{
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: not find dataMapValue fileName" << std::endl;
-		return ;
-	}
-
+    
     /* 设置升级标志为真正升级 
      * 0 - 非升级状态
      * 1 - 升级成功状态
@@ -304,7 +306,6 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
         return ;
     }
 
-    data = "fileName=" + fileName + "&md5=" + md5;
     packet.PackMessage(data, data.length());
     send_buf = packet.GetPacket();
     SendMessage(to_connect, send_buf.c_str(), send_buf.length());
@@ -938,6 +939,46 @@ bool BBU::read_file(std::string file, char* data, ssize_t size)
 	fin.getline(data, size);
 	fin.close();
 	return true;
+}
+
+std::vector<std::string> BBU::GetFiles(std::string cate_dir)
+{
+    std::vector<std::string> files;
+    DIR *dir;
+    struct dirent *ptr;
+
+    if ((dir = opendir(cate_dir.c_str())) == NULL)
+    {
+        std::cout << "Error: open dir error" << std::endl;
+        return files;
+    }
+
+    while ((ptr = readdir(dir)) != NULL)
+    {
+        if(strcmp(ptr->d_name,".") == 0 || strcmp(ptr->d_name,"..") == 0){    ///current dir OR parrent dir
+            continue;
+        } else if(ptr->d_type == 8){    ///file
+            //printf("d_name:%s/%s\n",basePath,ptr->d_name);
+            files.push_back(ptr->d_name);
+        } else if(ptr->d_type == 10){    ///link file
+            //printf("d_name:%s/%s\n",basePath,ptr->d_name);
+            continue;
+        } else if(ptr->d_type == 4){    ///dir
+            files.push_back(ptr->d_name);
+            /*
+            memset(base,'\0',sizeof(base));
+            strcpy(base,basePath);
+            strcat(base,"/");
+            strcat(base,ptr->d_nSame);
+            readFileList(base);
+            */
+        }
+    }
+    closedir(dir);
+
+    //排序，按从小到大排序
+    sort(files.begin(), files.end());
+    return files;
 }
 
 

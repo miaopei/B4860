@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo "user update error recovery............"
+cp /etc/user/jinsha_fpga_top_bak.bit /root/jinsha_fpga_top.bit
+./root/fpga_load_file /root/jinsha_fpga_top.bit
+./root/system_init 0
+

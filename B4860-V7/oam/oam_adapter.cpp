@@ -238,7 +238,6 @@ void OamAdapter::SendUpgradeMessage(std::string destination, std::string routeIn
     head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
-
 }
 
 void OamAdapter::SendRFTxMessage(std::string RFTxStatus)

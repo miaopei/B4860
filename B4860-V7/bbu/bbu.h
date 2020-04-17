@@ -16,10 +16,14 @@
 #include <vector>
 #include <set>
 
+#include <unistd.h>
+#include <dirent.h>
+
 #include <string>
 #include <algorithm>
 #include <fstream>
 
+#include "md5.h"
 #include "uv11.h"
 
 #define HUBToffset          3
@@ -110,9 +114,7 @@ public:
 	bool write_file(std::string file, const std::string& data);
 	bool read_file(std::string file, char* data, ssize_t size);
     
-    // https://github.com/manutdzou/manutdzou.github.io/blob/master/_posts/%E6%8A%80%E6%9C%AF/2016-11-04-C%2B%2B%20file%20traversal.md
-    // https://www.cnblogs.com/fnlingnzb-learner/p/6424563.html
- 
+    std::vector<std::string> GetFiles(std::string cate_dir);
 	
     void EchoSortResult(vector<PAIR>& tVector);
 
