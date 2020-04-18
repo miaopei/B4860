@@ -1,13 +1,4 @@
-﻿/*
-Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-Author: orcaer@yeah.net
-
-Last modified: 2019-10-24
-
-Description: https://github.com/wlgq2/uv-cpp
-*/
-#include "include/CycleBuffer.h"
+﻿#include "include/CycleBuffer.h"
 #include "include/GlobalConfig.h"
 
 using namespace uv;

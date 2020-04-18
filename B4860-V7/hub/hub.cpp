@@ -332,10 +332,10 @@ void HUB::UpgradeProcess(uv::Packet& packet)
     } else {
         std::cout << "Info: FtpDownloadFile success" << std::endl;
         /* 执行升级命令 */
-        if(_system("./etc/user/user_update_sh") < 0)
+        if(_system("/etc/user/user_update_sh") < 0)
         {
             std::cout << "Error: system user_update_sh execute error" << std::endl;
-            if(_system("./etc/user/user_update_error_sh") < 0)
+            if(_system("/etc/user/user_update_error_sh") < 0)
             {
                 std::cout << "Error: system user_update_error_sh execute error" << std::endl;
             }
@@ -409,8 +409,8 @@ bool HUB::FtpDownloadFile(uv::Packet& packet)
         return false;
     }
 
-    std::cout << "file md5=" << md5file(fileName.c_str()) << std::endl;
-    if(md5 != md5file(fileName.c_str()))
+    std::cout << "file md5=" << md5file("/etc/user/rHUP.tar") << std::endl;
+    if(md5 != md5file("/etc/user/rHUP.tar"))
     {
         std::cout << "Error: md5 check error" << std::endl;
         return false;

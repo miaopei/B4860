@@ -1,14 +1,4 @@
-﻿/*
-   Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-   Author: orcaer@yeah.net
-
-   Last modified: 2019-12-31
-
-   Description: https://github.com/wlgq2/uv-cpp
-*/
-
-#include <string>
+﻿#include <string>
 #include <iostream>
 
 #include "include/TcpClient.h"

@@ -1,14 +1,4 @@
-﻿/*
-   Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-   Author: orcaer@yeah.net
-
-   Last modified: 2019-10-25
-
-   Description: https://github.com/wlgq2/uv-cpp
-*/
-
-#include <functional>
+﻿#include <functional>
 
 #include "include/GlobalConfig.h"
 #include "include/Packet.h"

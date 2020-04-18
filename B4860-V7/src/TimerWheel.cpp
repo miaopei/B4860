@@ -1,14 +1,4 @@
-﻿/*
-   Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-   Author: orcaer@yeah.net
-    
-   Last modified: 2017-10-10
-    
-   Description: https://github.com/wlgq2/uv-cpp
-*/
-
-#include "include/TimerWheel.h"
+﻿#include "include/TimerWheel.h"
 
 using namespace uv;
 using namespace std;

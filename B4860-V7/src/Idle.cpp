@@ -1,14 +1,4 @@
-﻿/*
-   Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-   Author: orcaer@yeah.net
-    
-   Last modified: 2019-9-10
-    
-   Description: uv-cpp
-*/
-
-#include "include/Idle.h"
+﻿#include "include/Idle.h"
 
 using namespace uv;
 

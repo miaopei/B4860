@@ -1,14 +1,4 @@
-﻿/*
-   Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-   Author: orcaer@yeah.net
-
-   Last modified: 2019-2-21
-
-   Description: https://github.com/wlgq2/uv-cpp
-*/
-
-#ifndef UV_ASYNC_H
+﻿#ifndef UV_ASYNC_H
 #define UV_ASYNC_H
 
 #include <memory>

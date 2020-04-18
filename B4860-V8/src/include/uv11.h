@@ -19,7 +19,6 @@
 #include   "TcpClient.h"
 #include   "LogWriter.h"
 #include   "Packet.h"
-#include   "PacketIR.h"
 #include   "Udp.h"
 #include   "Idle.h"
 #include   "GlobalConfig.h"

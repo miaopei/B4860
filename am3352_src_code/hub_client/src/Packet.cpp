@@ -1,5 +1,4 @@
-﻿
-#include <iostream>
+﻿#include <iostream>
 #include <cstring>
 #include "include/Packet.h"
 #include "include/LogWriter.h"

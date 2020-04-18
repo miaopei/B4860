@@ -1,14 +1,4 @@
-﻿/*
-   Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-   Author: orcaer@yeah.net
-    
-   Last modified: 2018-8-23
-    
-   Description: https://github.com/wlgq2/uv-cpp
-*/
-
-#include "include/Signal.h"
+﻿#include "include/Signal.h"
 #include "include/LogWriter.h"
 #include "include/EventLoop.h"
 

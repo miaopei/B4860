@@ -1,14 +1,4 @@
-﻿/*
-   Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-   Author: orcaer@yeah.net
-    
-   Last modified: 2017-10-10
-    
-   Description: https://github.com/wlgq2/uv-cpp
-*/
-
-#ifndef   UV_TIMER_WHEEL_H
+﻿#ifndef   UV_TIMER_WHEEL_H
 #define   UV_TIMER_WHEEL_H
 
 #include <vector>

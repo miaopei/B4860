@@ -7,12 +7,13 @@ INCLUDE_DIR = $(BUILD_DIR)/include
 LIB_DIR = $(BUILD_DIR)/lib
 BIN_DIR = $(BUILD_DIR)/bin
 
-TARGET = oam
+TARGET = oam_adapter
 
 CC = g++
 CFLAGS = -Wall -std=c++11 
 USER_LINK_INC = -I$(INCLUDE_DIR)
 USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -Wl,-rpath,$(LIB_DIR)
+#USER_LINK_LIB = -pthread -L$(LIB_DIR) -luv -lbbu
 
 SOURCE = $(wildcard *.cpp)
 OBJECTS = $(SOURCE:.cpp=.o)

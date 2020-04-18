@@ -1,14 +1,4 @@
-﻿/*
-   Copyright © 2017-2019, orcaer@yeah.net  All rights reserved.
-
-   Author: orcaer@yeah.net
-
-   Last modified: 2019-12-31
-
-   Description: https://github.com/wlgq2/uv-cpp
-*/
-
-#ifndef   UV_TCP_CLIENT_H
+﻿#ifndef   UV_TCP_CLIENT_H
 #define   UV_TCP_CLIENT_H
 
 #include  <functional>
