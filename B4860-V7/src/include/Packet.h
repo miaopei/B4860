@@ -25,7 +25,7 @@ using namespace std;
 
 //PacketIR:
 //-----------------------------------------------------------------------------------------------------------------
-//  head  | source | destination |   mac   | state  | msgID  | HOP  |  port  | uPort  | length |  data  |  end   |
+//  head  | source | destination |   mac   | state  | msgID  |   HOP  |  port  | uPort  | length |  data  |  end   |
 // 1 Byte | 1 Byte |    1 Byte   | 12 Byte | 1 Byte | 4 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
 //-----------------------------------------------------------------------------------------------------------------
 // head: 数据包头校验 (0x7e)

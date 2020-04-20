@@ -403,7 +403,7 @@ void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Pa
         if(it.second.s_source == to_string(uv::Packet::OAM))
             continue;
 
-        data += "ip=" + it.second.s_ip + "&mac=" + it.second.s_mac + "&source=" + it.second.s_source + "&hop=" + it.second.s_hop + "&upgradeState=" + to_string(it.second.s_upgradeState) + "&routeIndex=" + it.second.s_routeIndex + "#";
+        data += "ip=" + it.second.s_ip + "&mac=" + it.second.s_mac + "&source=" + it.second.s_source + "&hop=" + it.second.s_hop + "&upgradeState=" + it.second.s_upgradeState + "&routeIndex=" + it.second.s_routeIndex + "#";
     } 
 
     SendPackMessage(connection, head, data, data.length());

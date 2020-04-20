@@ -40,7 +40,7 @@ public:
         std::string s_port;
         std::string s_uport;
 		std::string s_routeIndex;
-        int s_upgradeState;
+        std::string s_upgradeState;
 		RRUDelayInfo_T s_rruDelayInfo;
 		#if 0
         DeviceInfo(){};

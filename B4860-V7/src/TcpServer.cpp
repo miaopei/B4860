@@ -463,7 +463,7 @@ bool TcpServer::SetDeviceInfo(uv::TcpConnectionPtr& connection, std::string key,
 
     if(key == "upgradeState")
     {
-	    rst->second.s_upgradeState = stoi(value);
+	    rst->second.s_upgradeState = value;
 	    return true;
     }else{
         std::cout << "Error: key error" << std::endl;
