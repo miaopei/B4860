@@ -4,6 +4,8 @@
 #include <string.h>
 #include <uv.h>
 
+#include "Packet.h"
+
 using namespace std;
 
 uv_loop_t *loop;

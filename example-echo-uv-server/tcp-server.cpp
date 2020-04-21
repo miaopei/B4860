@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include <uv.h>
 
+#include "Packet.h"
+
 #define DEFAULT_PORT 30000
 #define DEFAULT_BACKLOG 128
 

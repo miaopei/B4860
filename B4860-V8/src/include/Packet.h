@@ -53,6 +53,17 @@ namespace uv
 class Packet
 {
 public:
+    typedef struct BHRO_S_MSG_HEADER {
+        uint8_t source;
+        uint8_t destination;
+        uint8_t mac[6];
+        uint8_t state;
+        uint16_t msgID;
+        uint8_t hop;
+        uint8_t port;
+        uint8_t uport;
+    } BHRO_T_MSG_HEADER;
+
     struct Head{
         std::string s_source;
         std::string s_destination;

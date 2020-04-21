@@ -79,9 +79,12 @@ public:
 	bool write_file(std::string file, const std::string& data);
 	bool read_file(std::string file, char* data, ssize_t size);
 
+    void UpgradeThread(uv::Packet& packet);
     bool FtpDownloadFile(uv::Packet& packet);
     void SendUpgradeFailure(uv::Packet& packet, const std::string errorno);
+
     std::string bbu_addr;
+
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
     std::shared_ptr<HUB> clientptr_;

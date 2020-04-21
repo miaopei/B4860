@@ -323,6 +323,20 @@ void HUB::UpdataDelay(uv::Packet& packet)
 
 void HUB::UpgradeProcess(uv::Packet& packet)
 {
+#if 0
+    std::thread t1(std::bind(&HUB::UpgradeThread, this, packet));
+    t1.join();
+#endif
+
+#if 1
+    std::thread back(std::bind(&HUB::UpgradeThread, this, packet));
+    back.detach();
+    //this_thread::sleep_for(chrono::milliseconds(200));
+#endif
+}
+
+void HUB::UpgradeThread(uv::Packet& packet)
+{
     if(!FtpDownloadFile(packet))
     {
         std::cout << "Error: FtpDownloadFile error" << std::endl;
