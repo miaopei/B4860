@@ -1,0 +1,22 @@
+# rhup 脚本复制路径方法
+
+note: 所有脚本拷贝过程中要注意权限，必须有可执行权限，否则系统启动不会执行应用层软件
+
+## init.d
+
+rcS替换到/etc/init.d目录下
+
+user_init_sh复制到/etc/init.d目录下
+
+## user
+
+user 目录下的文件都放到 /etc/user目录下
+
+## fpga_load_file
+
+fpga_load_file 复制到/root里面 
+
+## inittab
+
+inittab替换到/etc下
+
