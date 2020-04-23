@@ -24,9 +24,32 @@ int main(int argc, char *argv[])
     }
     serverIP = argv[1];
 
-    //char* interface_addr = NULL;
+#if 0
     const char *interface_name = "enp0s31f6";
-    DispNetInfo(interface_name);
+    char* pdata = NULL;
+    size_t size = 32;
+    pdata = (char*)malloc(size * sizeof(char));
+    if(pdata == NULL)
+    {
+        std::cout << "Error: malloc gateway memory error" << std::endl;
+        return -1;
+    }
+
+    GetDeviceIP(interface_name, pdata, size);
+    std::cout << "Device IP: " << pdata << std::endl;
+    memset(pdata , 0, size);
+
+    GetDeviceMAC(interface_name, pdata, size);
+    std::cout << "Device MAC: " << pdata << std::endl;
+    memset(pdata , 0, size);
+    
+    GetDeviceGateWay(interface_name, pdata, size);
+    std::cout << "Device GateWay: " << pdata << std::endl;
+    memset(pdata , 0, size);
+    
+    free(pdata);
+    pdata = NULL;
+#endif
 
     SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
 
