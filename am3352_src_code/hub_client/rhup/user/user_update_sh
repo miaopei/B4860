@@ -1,9 +1,26 @@
 #!/bin/sh
 
 echo "user update img............"
-tar -xvf /etc/user/rHUP.tar
-cp /root/jinsha_fpga_top.bit /etc/user/jinsha_fpga_top_bak.bit
-cp /etc/user/jinsha_fpga_top.bit /root
-./root/fpga_load_file /root/jinsha_fpga_top.bit
-./root/system_init 0
-
+mv /etc/user/rHUB.tar /tmp
+tar -xvf /tmp/rHUB.tar
+if [ ! -f "/tmp/rhub/jinsha_fpga_top.bit" ]; then
+	echo "............."
+else
+	echo "update fpga bit file............."
+	cp /root/jinsha_fpga_top.bit /etc/user/jinsha_fpga_top_bak.bit
+	cp /tmp/rhub/jinsha_fpga_top.bit /root
+fi
+if [ ! -f "/tmp/update_hubmngr.sh" ]; then
+	echo "............."
+else
+	echo "update software file............."
+	cd /tmp/
+	sh ./update_hubmngr.sh
+fi
+if [ ! -f "/tmp/rhub/jinsha_fpga_top.bit" ]; then
+	echo "............."
+else
+	echo "reload fpga file and init system............."
+	/root/fpga_load_file /root/jinsha_fpga_top.bit
+	/root/system_init 0
+fi

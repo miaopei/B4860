@@ -6,7 +6,7 @@
 >
 > [C++单元测试工具——doctest](https://blog.csdn.net/liao20081228/article/details/76984975)
 >
-> []()
+> [C语言如何封装printf函数？](https://www.zhihu.com/question/51102741)
 
 ### 工程编译
 
