@@ -3,7 +3,7 @@ PWD=`pwd`
 WORK_ROOT = $(PWD)
 
 BUILD_DIR = $(WORK_ROOT)/../build
-INCLUDE_DIR = $(BUILD_DIR)/include/bbu
+INCLUDE_DIR = $(BUILD_DIR)/include
 LIB_DIR = $(BUILD_DIR)/lib
 BIN_DIR = $(BUILD_DIR)/bin
 
