@@ -15,6 +15,7 @@
 #include <net/if.h>
 
 #include "PacketBuffer.h"
+#include "Utilities.h"
 
 using namespace std;
 

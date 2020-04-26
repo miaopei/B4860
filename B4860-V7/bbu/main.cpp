@@ -9,22 +9,25 @@
 
 using namespace uv;
 
-std::string serverIP;
-
 int main(int argc, char *argv[])
 {
     EventLoop* loop = EventLoop::DefaultLoop();
 
     uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer;
-    
-    if(argc != 2)
-    {
-        fprintf(stdout, "usage: %s server_ip_address\neg.%s 192.168.1.1\n", argv[0], argv[0]);
-        return 0;
-    }
-    serverIP = argv[1];
 
-    SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
+	const char *interface_name = "enp1s0";
+    char* pdata = NULL;
+    size_t size = 32;
+    pdata = (char*)malloc(size * sizeof(char));
+    if(pdata == NULL)
+    {
+		LOG_PRINT(LogLevel::error, "malloc gateway memory error");
+    }
+
+    GetDeviceIP(interface_name, pdata, size);	
+	LOG_PRINT(LogLevel::debug, "Device IP: %s", pdata);
+	
+    SocketAddr addr(pdata, 30000, SocketAddr::Ipv4);
 
     BBU bbu(loop);
 
@@ -33,7 +36,9 @@ int main(int argc, char *argv[])
     bbu.bindAndListen(addr);
 
     loop->run();
-
+	
+	free(pdata);
+    pdata = NULL;
     return 0;
 }
 

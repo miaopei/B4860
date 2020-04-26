@@ -14,16 +14,25 @@
 #include <errno.h>
 #include <vector>
 
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <time.h>
 #include <stdarg.h>
 
-#include "uv11.h"
+#include "LogWriter.h"
 
 #define LOG_BUF_SIZE    (4096)
+
+#define _DEBUG
 
 enum class LogLevel {
     debug = 0,
     info,
+    warn,
     error
 };
 

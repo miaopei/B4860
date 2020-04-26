@@ -129,7 +129,7 @@ int TcpConnection::write(const char* buf, ssize_t size, AfterWriteCallback callb
         });
         if (0 != rst)
         {
-            uv::LogWriter::Instance()->error(std::string("write data error:"+std::to_string(rst)));
+			LOG_PRINT(LogLevel::error, "write data error: %d", rst);
             if (nullptr != callback)
             {
                 struct WriteInfo info = { rst,const_cast<char*>(buf),static_cast<unsigned long>(size) };
@@ -179,7 +179,7 @@ void  TcpConnection::onMesageReceive(uv_stream_t* client, ssize_t nread, const u
     else if (nread < 0)
     {
         connection->setConnectStatus(false);
-        uv::LogWriter::Instance()->error( uv_err_name((int)nread));
+		LOG_PRINT(LogLevel::error, "%s", uv_err_name((int)nread));
 
         if (nread != UV_EOF)
         {

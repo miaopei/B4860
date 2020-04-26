@@ -30,7 +30,7 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
 	/* 数据包校验，数据粘包问题处理 */
 	if(size < HEADLENGTH)
 	{
-        uv::LogWriter::Instance()->error("Message length error.");
+		LOG_PRINT(LogLevel::error, "Message length error.");
 		return ;
 	}
 
@@ -41,27 +41,12 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
 		uv::Packet packet;
         while (0 == packetbuf->readPacket(packet))
         {
-            //uv::LogWriter::Instance()->info(std::string("ReceiveData: " + packet.DataSize()) + std::string(":" + to_string(packet.getData())));
-            //uv::LogWriter::Instance()->info(std::string("ReceiveData: " + packet.DataSize()) + std::string(":") + std::string(packet.getData()));
-            
-            #if 1
-            std::cout << __FUNCTION__ << ":" << __LINE__ 
-                      << "[ReceiveData: " << packet.DataSize() << ":" 
-                      << std::string(packet.getData(), packet.DataSize())  << "]" << std::endl;
-            #endif
-#if 0			
-			Message_T message;
-			memcpy(&message, packet.getData(), size);
-			std::cout << "source=" << message.source 
-					  << " des=" << message.destination
-					  << " len=" << message.len
-					  << " data=" << message.data
-					  << std::endl;
-#endif
+			LOG_PRINT(LogLevel::debug, "[ReceiveData: %d:%s]", packet.DataSize(), packet.getData());
+
 			packet.UnPackMessage();
 
 			/* 打印解包信息 */
-			//packet.EchoUnPackMessage();
+			packet.EchoUnPackMessage();
 
 			ProcessRecvMessage(connection, packet);
         }
@@ -73,23 +58,23 @@ void BBU::ProcessRecvMessage(uv::TcpConnectionPtr connection, uv::Packet& packet
 	switch(std::stoi(packet.GetDestination()))
 	{
 		case uv::Packet::TO_BBU:
-			std::cout << "[Destiantion: BBU]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[Destiantion: BBU]");
 			BBUMessageProcess(connection, packet);
 			break;
 		case uv::Packet::TO_HUB:
-			std::cout << "[Destiantion: HUB]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[Destiantion: HUB]");
 			HUBMessageProcess(connection, packet);
 			break;
 		case uv::Packet::TO_RRU:
-			std::cout << "[Destiantion: RRB]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[Destiantion: RRU]");
 			RRUMessageProcess(connection, packet);
 			break;
 		case uv::Packet::TO_OAM:
-			std::cout << "[Destiantion: OAM]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[Destiantion: OAM]");
 			OAMMessageProcess(connection, packet);
 			break;
 		default:
-			std::cout << "[Error: Destiantion: Error]" << std::endl;
+			LOG_PRINT(LogLevel::error, "[Destiantion: Error]");
 	}
 }
 
@@ -99,27 +84,27 @@ void BBU::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 	switch(std::stoi(packet.GetMsgID()))
 	{
 		case uv::Packet::MSG_CONNECT:
-			std::cout << "[msg_connect]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[msg_connect]");
 			SetConnectionClient(connection, packet);
             break;
         case uv::Packet::MSG_UPGRADE:
-            std::cout << "[msg_upgrade]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[msg_upgrade]");
             UpgradeResultProcess(connection, packet);
             break;
         case uv::Packet::MSG_GET_NETWORK_TOPOLOGY:
-            std::cout << "[msg_get_network_topology]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[msg_get_network_topology]");
             NetworkTopologyMessageProcess(connection, packet);
             break;
 		case uv::Packet::MSG_DELAY_MEASUREMENT:
-			std::cout << "[msg_delay_measurement]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[msg_delay_measurement]");
 			DelayMeasurementProcess(connection, packet);
 			break;
         case uv::Packet::MSG_UPDATE_DELAY:
-            std::cout << "[msg_update_delay]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[msg_update_delay]");
             UpdateHUBDelayInfo(packet);
             break;
 		default:
-			std::cout << "[Error: MessageID Error]" << std::endl;
+			LOG_PRINT(LogLevel::error, "[MessageID Error]");
 	}
 }
 
@@ -128,11 +113,11 @@ void BBU::HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
     switch(std::stoi(packet.GetMsgID()))
 	{
         case uv::Packet::MSG_UPGRADE:
-            std::cout << "[msg_upgrade]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[msg_upgrade]");
             HUBUpgradeProcess(connection, packet);
             break;
 		default:
-			std::cout << "[Error: MessageID Error]" << std::endl;
+			LOG_PRINT(LogLevel::error, "[MessageID Error]");
 	}
 }
 
@@ -141,15 +126,15 @@ void BBU::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 	switch(std::stoi(packet.GetMsgID()))
 	{
         case uv::Packet::MSG_UPGRADE:
-            std::cout << "[msg_upgrade]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[msg_upgrade]");
             RRUUpgradeProcess(connection, packet);
             break;
         case uv::Packet::MSG_RFTxStatus_SET:
-            std::cout << "[msg_RFTxStatus_set]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[msg_RFTxStatus_set]");
             RRURFTxStatusProcess(connection, packet);
             break;
 		default:
-			std::cout << "[Error: MessageID Error]" << std::endl;
+			LOG_PRINT(LogLevel::error, "[MessageID Error]");
 	}
 }
 
@@ -169,9 +154,6 @@ void BBU::HUBUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 	packet.SplitData2Map(map);
 	if(!FindDataMapValue(map, "routeIndex", routeIndex))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Info: not find dataMapValue routeIndex, upgrade all hub devices" << std::endl;
-
         std::vector<TcpConnectionPtr> hubsConnection;
         GetHUBsConnection(hubsConnection);
         for(auto it : hubsConnection)
@@ -184,7 +166,7 @@ void BBU::HUBUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
              * */
             if(!SetDeviceInfo(it, "upgradeState", "3"))
             {
-                std::cout << "Error: Set Device upgradeState error" << std::endl;
+				LOG_PRINT(LogLevel::error, "Set Device upgradeState error");
                 return ;
             }
 
@@ -196,23 +178,20 @@ void BBU::HUBUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 
     if(!GetConnectByRouteIndex(routeIndex, to_connect))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: Get Connect by routeIndex error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Get Connect by routeIndex error");
         return ;
     }
     std::string fileName;
     std::string md5;
     if(!FindDataMapValue(map, "fileName", fileName))
 	{
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: not find dataMapValue fileName" << std::endl;
+		LOG_PRINT(LogLevel::error, "not find dataMapValue fileName");
 		return ;
 	}
 
     if(!FindDataMapValue(map, "md5", md5))
 	{
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: not find dataMapValue fileName" << std::endl;
+		LOG_PRINT(LogLevel::error, "not find dataMapValue fileName");
 		return ;
 	}
 
@@ -224,7 +203,7 @@ void BBU::HUBUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
      * */
     if(!SetDeviceInfo(to_connect, "upgradeState", "3"))
     {
-        std::cout << "Error: Set Device upgradeState error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Set Device upgradeState error");
         return ;
     }
 
@@ -246,24 +225,20 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 	packet.SplitData2Map(map);
     if(!FindDataMapValue(map, "fileName", fileName))
 	{
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: not find dataMapValue fileName" << std::endl;
+		LOG_PRINT(LogLevel::error, "not find dataMapValue fileName");
 		return ;
 	}
 
     std::vector<std::string> files = GetFiles(fileName);
-    if(static_cast<int>(files.size()) != 2)
+    if(static_cast<int>(files.size()) != 3)
     {
-        std::cout << "Error: RRU upgrade Directory" << std::endl;
+		LOG_PRINT(LogLevel::error, "RRU upgrade Director file num error");
         return ;
     }
     data = "fileName=" + files[0] + "&md5=" + md5file(std::string(fileName + "/" + files[0]).c_str()) + "&fileName=" + files[1] + "&md5=" + md5file(std::string(fileName + "/" + files[1]).c_str());
 
 	if(!FindDataMapValue(map, "routeIndex", routeIndex))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Info: not find dataMapValue routeIndex" << std::endl;
-
         std::vector<TcpConnectionPtr> rrusConnection;
         GetRRUsConnection(rrusConnection);
         for(auto it : rrusConnection)
@@ -276,7 +251,7 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
              * */
             if(!SetDeviceInfo(it, "upgradeState", "3"))
             {
-                std::cout << "Error: Set Device upgradeState error" << std::endl;
+				LOG_PRINT(LogLevel::error, "Set Device upgradeState error");
                 return ;
             }
 
@@ -289,8 +264,7 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 
     if(!GetConnectByRouteIndex(routeIndex, to_connect))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: Get Connect by routeIndex error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Get Connect by routeIndex error");
         return ;
     }
     
@@ -302,7 +276,7 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
      * */
     if(!SetDeviceInfo(to_connect, "upgradeState", "3"))
     {
-        std::cout << "Error: Set Device upgradeState error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Set Device upgradeState error");
         return ;
     }
 
@@ -322,8 +296,7 @@ void BBU::RRURFTxStatusProcess(uv::TcpConnectionPtr& connection, uv::Packet& pac
 	packet.SplitData2Map(map);
 	if(!FindDataMapValue(map, "routeIndex", routeIndex))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Info: not find dataMapValue routeIndex" << std::endl;
+		LOG_PRINT(LogLevel::error, "not find dataMapValue routeIndex");
 
         std::vector<TcpConnectionPtr> rrusConnection;
         GetRRUsConnection(rrusConnection);
@@ -337,16 +310,14 @@ void BBU::RRURFTxStatusProcess(uv::TcpConnectionPtr& connection, uv::Packet& pac
 
     if(!GetConnectByRouteIndex(routeIndex, to_connect))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: Get Connect by routeIndex error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Get Connect by routeIndex error");
         return ;
     }
 
     std::string RFTxStatus;
     if(!FindDataMapValue(map, "RFTxStatus", RFTxStatus))
 	{
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: not find dataMapValue RFTxStatus" << std::endl;
+		LOG_PRINT(LogLevel::error, "not find dataMapValue RFTxStatus");
 		return ;
 	}
 
@@ -360,8 +331,7 @@ void BBU::UpgradeResultProcess(uv::TcpConnectionPtr& connection, uv::Packet& pac
 {
     if(!WriteUpgradeResultToDevice(connection, packet))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: WriteUpgradeResultToDevice error" << std::endl;
+		LOG_PRINT(LogLevel::error, "WriteUpgradeResultToDevice error");
 		return ;
     }
 }
@@ -384,7 +354,14 @@ void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Pa
     GetNetworkTopology(netTopology);
 
     for(auto &it : netTopology)
-    { 
+    {
+    	LOG_PRINT(LogLevel::debug, "netTopology: %s -> %s %s %s %s %s %s %s %s %s",
+									it.first.c_str(), it.second.s_ip.c_str(),
+									it.second.s_connection, it.second.s_source.c_str(),
+									it.second.s_mac.c_str(), it.second.s_hop.c_str(),
+									it.second.s_port.c_str(), it.second.s_uport.c_str(),
+									it.second.s_routeIndex.c_str(), it.second.s_upgradeState.c_str());
+#if 0
         std::cout << "netTopology: " 
             << it.first << " - > " 
             << it.second.s_ip << " "
@@ -399,7 +376,7 @@ void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Pa
             << it.second.s_rruDelayInfo.Ta3 << " "
             << it.second.s_upgradeState << " "
             << std::endl;
-
+#endif
         if(it.second.s_source == to_string(uv::Packet::OAM))
             continue;
 

@@ -25,8 +25,6 @@
 
 #include "md5.h"
 #include "uv11.h"
-#define _DEBUG
-#include "Utilities.h"
 
 #define HUBToffset          3
 #define HUBCascadeEToffset  3

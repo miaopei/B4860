@@ -145,6 +145,9 @@ void LogPrint(LogLevel level, const char* pFile, int iLine, const char* fmt, ...
     case LogLevel::info:
         uv::LogWriter::Instance()->info(log_buf);
         break;
+	case LogLevel::warn:
+		uv::LogWriter::Instance()->warn(log_buf);
+        break;
     case LogLevel::error:
         uv::LogWriter::Instance()->error(log_buf);
         break;

@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "EventLoop.h"
+#include "Utilities.h"
 
 namespace uv
 {

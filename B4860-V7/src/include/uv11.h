@@ -12,5 +12,6 @@
 #include   "Udp.h"
 #include   "Idle.h"
 #include   "GlobalConfig.h"
+#include   "Utilities.h"
 
 #endif
