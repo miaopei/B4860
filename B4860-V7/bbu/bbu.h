@@ -120,8 +120,6 @@ public:
 
     void NetworkTopology();
 
-    void TestGet();
-
 private:
     void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
     std::string m_mac;

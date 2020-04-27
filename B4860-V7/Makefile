@@ -21,12 +21,8 @@ all: before bbu
 	@make -C ftplibpp
 	@make -C ftplibpp install
 	@make -C hub
-	@make -C hub-2
-	@make -C hub-3
 	@make -C rru
-	@make -C rru-2
-	@make -C rru-3
-	@make -C oam
+	@make -C oam_adapter_cli
 	@make -C test
 	@echo "[compile time $(COMPILE_TIME)]"
 
@@ -60,11 +56,7 @@ clean:
 	@make clean -C bbu
 	@make -C ftplibpp clean
 	@make clean -C hub
-	@make clean -C hub-2
-	@make clean -C hub-3
 	@make clean -C rru
-	@make clean -C rru-2
-	@make clean -C rru-3
-	@make clean -C oam
+	@make clean -C oam_adapter_cli
 	@make clean -C test
 

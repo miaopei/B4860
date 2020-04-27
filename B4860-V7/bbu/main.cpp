@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
     uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer;
 
-	const char *interface_name = "enp1s0";
+	const char *interface_name = "enp0s31f6";
     char* pdata = NULL;
     size_t size = 32;
     pdata = (char*)malloc(size * sizeof(char));

@@ -355,27 +355,13 @@ void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Pa
 
     for(auto &it : netTopology)
     {
+#if 0
     	LOG_PRINT(LogLevel::debug, "netTopology: %s -> %s %s %s %s %s %s %s %s %s",
 									it.first.c_str(), it.second.s_ip.c_str(),
 									it.second.s_connection, it.second.s_source.c_str(),
 									it.second.s_mac.c_str(), it.second.s_hop.c_str(),
 									it.second.s_port.c_str(), it.second.s_uport.c_str(),
 									it.second.s_routeIndex.c_str(), it.second.s_upgradeState.c_str());
-#if 0
-        std::cout << "netTopology: " 
-            << it.first << " - > " 
-            << it.second.s_ip << " "
-            << it.second.s_connection << " "
-            << it.second.s_source << " "
-            << it.second.s_mac << " "
-            << it.second.s_hop << " " 
-            << it.second.s_port << " "
-            << it.second.s_uport << " "
-            << it.second.s_routeIndex << " "
-            << it.second.s_rruDelayInfo.T2a << " "
-            << it.second.s_rruDelayInfo.Ta3 << " "
-            << it.second.s_upgradeState << " "
-            << std::endl;
 #endif
         if(it.second.s_source == to_string(uv::Packet::OAM))
             continue;
@@ -399,7 +385,7 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 
 	if(!SetConnectionInfo(connection, dInfo))
 	{
-		std::cout << "[Error: SetConnectionInfo Error]" << std::endl;
+		LOG_PRINT(LogLevel::error, "SetConnectionInfo error");
 		return;
 	}
 
@@ -415,8 +401,7 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
     /* upgrade state check */
     if(!WriteUpgradeResultToDevice(connection, packet))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: WriteUpgradeResultToDevice error" << std::endl;
+		LOG_PRINT(LogLevel::error, "WriteUpgradeResultToDevice error");
 		return;
     }
 
@@ -431,15 +416,13 @@ bool BBU::WriteUpgradeResultToDevice(uv::TcpConnectionPtr& connection, uv::Packe
 	packet.SplitData2Map(map);
 	if(!FindDataMapValue(map, "ResultID", resultID))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-            << " > Error: resultID not find" << std::endl;
+		LOG_PRINT(LogLevel::error, "resultID not find");
         return false;
     }
 
     if(!SetDeviceInfo(connection, "upgradeState", resultID))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":"
-            << " > Error: Set Device upgradeState error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Set Device upgradeState error");
         return false;
     }
     return true;
@@ -449,22 +432,22 @@ void BBU::DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::Packet& 
 {
 	if(!SetDeviceRouteIndex(connection))
 	{
-		std::cout << "Error: Set Device RouteIndex error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Set Device RouteIndex error");
 		return ;
 	}
 
     switch(std::stoi(packet.GetSource()))
     {
         case uv::Packet::HUB:
-            std::cout << "[hub_delay_measurement]" << std::endl;
+		    LOG_PRINT(LogLevel::debug, "[hub_delay_measurement]");
 			HubDelayInfo(packet);
             break;
         case uv::Packet::RRU:
-            std::cout << "[rru_delay_measurement]" << std::endl;
+		    LOG_PRINT(LogLevel::debug, "[rru_delay_measurement]");
             RruDelayProcess(connection, packet);
             break;
         default:
-            std::cout << "[Error: delay measurement source error]" << std::endl;
+		    LOG_PRINT(LogLevel::error, "delay measurement source error");
     }
 }
 
@@ -500,7 +483,7 @@ void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, uv::Packet::Head hea
     Packet.PackMessage(data, size);
 
 	/* 打印数据封装信息 */
-	Packet.EchoPackMessage();
+	//Packet.EchoPackMessage();
 
 	std::string send_buf = Packet.GetPacket();
 
@@ -513,13 +496,13 @@ void BBU::SendPackMessageToAllDevice(DeviceType device, uv::Packet::Head head, s
     switch(device)
     {
         case ALL_HUB_DEVICE:
-            std::cout << "[SendPackMessageToAllDevice: ALL_HUB_DEVICE]" << std::endl;
+		    LOG_PRINT(LogLevel::debug, "[SendPackMessageToAllDevice: ALL_HUB_DEVICE]");
             break;
         case ALL_RRU_DEVICE:
-            std::cout << "[SendPackMessageToAllDevice: ALL_RRU_DEVICE]" << std::endl;
+		    LOG_PRINT(LogLevel::debug, "[SendPackMessageToAllDevice: ALL_RRU_DEVICE]");
             break;
         default:
-            std::cout << "[Error: SendPackMessageToAllDevice device error]" << std::endl;
+		    LOG_PRINT(LogLevel::error, "SendPackMessageToAllDevice device error");
     }
 }
 
@@ -528,7 +511,7 @@ void BBU::SendUpdateHUBDelayMessage(uv::TcpConnectionPtr& connection, uv::Packet
     shared_ptr<TcpConnection> reconnection;
     if(!QueryUhubConnection(connection, reconnection))
     {
-        std::cout << "[Error: SendUpdateHUBDelayMessage not find hub rruid]" << std::endl;
+		LOG_PRINT(LogLevel::error, "SendUpdateHUBDelayMessage not find hub rruid");
         return;
     }
     
@@ -552,12 +535,13 @@ void BBU::UpdateHUBDelayInfo(uv::Packet& packet)
 {
     UpdateDelayInfo(packet.GetData(), packet.GetHop(), delay_map);
 	
-#if 1
+#if 0
     for(auto &it : delay_map)
     {
-        std::cout << "key=" << it.first 
-                  << " key.key=" << it.second.key
-                  << " key.value=" << it.second.value << std::endl;
+		LOG_PRINT(LogLevel::debug, "key=%s key.key=%s key.value=%s", 
+                                    it.first.c_str(),
+                                    it.second.key.c_str(),
+                                    it.second.value.c_str());
     }
 #endif
 }
@@ -567,12 +551,13 @@ void BBU::HubDelayInfo(uv::Packet& packet)
 	std::string data = packet.GetData();
     SplitStrings2Map(data, packet.GetHop(), delay_map);
     
-#if 1
+#if 0
     for(auto &it : delay_map)
     {
-        std::cout << "key=" << it.first 
-                  << " key.key=" << it.second.key
-                  << " key.value=" << it.second.value << std::endl;
+        LOG_PRINT(LogLevel::debug, "key=%s key.key=%s key.value=%s", 
+                                    it.first.c_str(),
+                                    it.second.key.c_str(),
+                                    it.second.value.c_str());
     }
 #endif
 }
@@ -584,7 +569,7 @@ void BBU::RruDelayProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 
 	if(!SaveRRUDelayInfo(connection, packet))
 	{
-		std::cout << "Error: Save RRU Delay Info error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Save RRU Delay Info error");
 		return ;
 	}
 	
@@ -619,19 +604,19 @@ bool BBU::SaveRRUDelayInfo(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 
 	if(!FindDataMapValue(map, "T2a", rruDelayInfo.T2a))
 	{
-		std::cout << __FUNCTION__ << "#Error: FindDataMapValue T2a error" << std::endl;
+		LOG_PRINT(LogLevel::error, "FindDataMapValue T2a error");
 		return false;
 	}
 
 	if(!FindDataMapValue(map, "Ta3", rruDelayInfo.Ta3))
 	{
-		std::cout << "Error: FindDataMapValue Ta3 error" << std::endl;
+		LOG_PRINT(LogLevel::error, "FindDataMapValue Ta3 error");
 		return false;
 	}
 	
 	if(!SetRRUDeviceDelayInfo(connection, rruDelayInfo))
 	{
-		std::cout << "Error: Set RRU Device Delay Info error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Set RRU Device Delay Info error");
 		return false;
 	}
 	return true;
@@ -643,8 +628,7 @@ bool BBU::QueryUhubConnection(uv::TcpConnectionPtr& connection, uv::TcpConnectio
 
 	if(!FindUpHubDeviceInfo(connection, upHubDInfo))
 	{
-		std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
-                  << " > Error: Get Next Device Info error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Get Next Device Info error");
 		return false;
 	}
 	reconnection = upHubDInfo.s_connection;
@@ -675,12 +659,11 @@ void BBU::UpdataRRUDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packe
 	{	
 		if(it == connection)
 		{
-			std::cout << "conntion=" << connection << std::endl;
+		    LOG_PRINT(LogLevel::debug, "conntion=%s", connection);
 			continue;
 		}
 		
-		std::cout << __FUNCTION__ << ":" << __LINE__ << ":"
-		  		  << " > it=" << it << " connection=" << connection << std::endl;
+		LOG_PRINT(LogLevel::debug, "it=%s connection=%s", it, connection);
 		
 		CalculationDelayCompensation(it, delayULCompensation, delayDLCompensation);
 	    data = "delayULCompensation=" + delayULCompensation + "&delayDLCompensation=" + delayDLCompensation;
@@ -719,49 +702,42 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 
 	if(!GetDeviceInfo(connection, dInfo))
 	{
-		std::cout << "Error: Get Device Info error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Get Device Info error");
 		return false;
 	}
-	std::cout << __FUNCTION__ << ":" << __LINE__ << ":"
-			  << " > RouteIndex=" << dInfo.s_routeIndex << std::endl;
+	LOG_PRINT(LogLevel::debug, "RouteIndex=%s", dInfo.s_routeIndex.c_str());
 
 	level = std::stoi(dInfo.s_hop) - 1;
 	if(level <= 0)
 	{
-		std::cout << "Error: level error" << std::endl;
+		LOG_PRINT(LogLevel::error, "level error");
 		return false;
 	} 
 
 	/* 计算 rru 上一级 hub delay */
 	/* TBdelay DL */
 	key = std::string(to_string(level) + "1" + dInfo.s_uport);
-	std::cout << "key = " << key << std::endl;
 	if(!FindDelayMapValue(key, tbdelayDL))
 	{
-		std::cout << "Error: FindDelayMapValue tbdelayDL error" << std::endl;
+		LOG_PRINT(LogLevel::error, "FindDelayMapValue tbdelayDL error");
 		return false;
 	}
-	std::cout << "tbdelayDL = " << tbdelayDL << std::endl;
 
 	/* TBdelay UL */
 	key = std::string(to_string(level) + "2" + dInfo.s_uport);
-	std::cout << "key = " << key << std::endl;
 	if(!FindDelayMapValue(key, tbdelayUL))
 	{
-		std::cout << "Error: FindDelayMapValue tbdelayUL error" << std::endl;
+		LOG_PRINT(LogLevel::error, "FindDelayMapValue tbdelayUL error");
 		return false;
 	}
-	std::cout << "tbdelayUL = " << tbdelayUL << std::endl;
 
 	/* T14 */
 	key = std::string(to_string(level) + "3" + dInfo.s_uport);
-	std::cout << "key = " << key << std::endl;
 	if(!FindDelayMapValue(key, t14))
 	{
-		std::cout << "Error: FindDelayMapValue t14 error" << std::endl;
+		LOG_PRINT(LogLevel::error, "FindDelayMapValue t14 error");
 		return false;
 	}
-	std::cout << "t14 = " << t14 << std::endl;
 
 	totalDLHUBDelay = stoi(tbdelayDL.c_str()) + ((stoi(t14.c_str()) - (RRUToffset)) / 2);
 	totalULHUBDelay = stoi(tbdelayUL.c_str()) + ((stoi(t14.c_str()) - (RRUToffset)) / 2);
@@ -772,39 +748,31 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 	{
 		for(level = level; level > 0; level--)
 		{
-			std::cout << __FUNCTION__ << ":" << __LINE__ << ":" << "level=" << level << std::endl;
-
 			/* TBdelay DL */
 			key = std::string(to_string(level) + "1" + "1");  // 最后一位为级联口
-			std::cout << "key = " << key << std::endl;
 			if(!FindDelayMapValue(key, tbdelayDL))
 			{
-				std::cout << "Error: FindDelayMapValue tbdelayDL error" << std::endl;
+		        LOG_PRINT(LogLevel::error, "FindDelayMapValue tbdelayDL error");
 				return false;
 			}
-			std::cout << "tbdelayDL = " << tbdelayDL << std::endl;
 			totalDLHUBDelay += stoi(tbdelayDL.c_str());
 
 			/* TBdelay UL */
 			key = std::string(to_string(level) + "2" + "1");
-			std::cout << "key = " << key << std::endl;
 			if(!FindDelayMapValue(key, tbdelayUL))
 			{
-				std::cout << "Error: FindDelayMapValue tbdelayUL error" << std::endl;
+		        LOG_PRINT(LogLevel::error, "FindDelayMapValue tbdelayUL error");
 				return false;
 			}
-			std::cout << "tbdelayUL = " << tbdelayUL << std::endl;
 			totalULHUBDelay += stoi(tbdelayUL.c_str());
 
 			/* T14 */
 			key = std::string(to_string(level) + "3" + "1");
-			std::cout << "key = " << key << std::endl;
 			if(!FindDelayMapValue(key, t14))
 			{
-				std::cout << "Error: FindDelayMapValue t14 error" << std::endl;
+		        LOG_PRINT(LogLevel::error, "FindDelayMapValue t14 error");
 				return false;
 			}
-			std::cout << "t14 = " << t14 << std::endl;
 			totalDLHUBDelay += ((stoi(t14.c_str()) - (RRUToffset)) / 2);
 			totalULHUBDelay += ((stoi(t14.c_str()) - (RRUToffset)) / 2);
 		}
@@ -813,8 +781,8 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 	t12 = ((BBUT14 - (HUBCascadeEToffset * TOFFSETCYCLE)) / 2) / TOFFSETCYCLE;
 	totalDL = t12 + totalDLHUBDelay + stoi(dInfo.s_rruDelayInfo.T2a.c_str());
 	totalUL = t12 + totalULHUBDelay + stoi(dInfo.s_rruDelayInfo.Ta3.c_str());
-	std::cout << "totalDL=" << to_string(totalDL) << std::endl;
-	std::cout << "totalUL=" << to_string(totalUL) << std::endl;
+	LOG_PRINT(LogLevel::debug, "totalDL=%d", totalDL);
+	LOG_PRINT(LogLevel::debug, "totalUL=%d", totalUL);
 
 	DeleteRRUTotalDelay(connection, tVectorDL);
 	DeleteRRUTotalDelay(connection, tVectorDL);
@@ -825,15 +793,15 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
     sortMapByValue(mDelayDL, tVectorDL);
     sortMapByValue(mDelayUL, tVectorUL);
 
-    std::cout << "Echo maxDelayDL Result: " << std::endl;
+	LOG_PRINT(LogLevel::debug, "Echo maxDelayDL Result: ");
     EchoSortResult(tVectorDL);
 
-    std::cout << "Echo maxDelayUL Result: " << std::endl;
+	LOG_PRINT(LogLevel::debug, "Echo maxDelayUL Result: ");
     EchoSortResult(tVectorUL);
 
 	int maxDLDelay = stoi(tVectorDL.begin()->second.c_str());
 	int maxULDelay = stoi(tVectorUL.begin()->second.c_str());
-	std::cout << "maxDLDelay=" << maxDLDelay << " maxULDelay=" << maxULDelay << std::endl;
+	LOG_PRINT(LogLevel::debug, "maxDLDelay=%d maxULDelay=%d", maxDLDelay, maxULDelay);
 
     delayiDLCompensation = to_string(stoi(tVectorDL.begin()->second.c_str()) - totalDL);
     delayiULCompensation = to_string(stoi(tVectorUL.begin()->second.c_str()) - totalUL);
@@ -846,7 +814,7 @@ bool BBU::FindDelayMapValue(std::string key, std::string& value)
 	auto rst = delay_map.find(key);
 	if(rst == delay_map.end())
 	{
-		std::cout << "Error: not find delay_map key" << std::endl;
+	    LOG_PRINT(LogLevel::error, "not find delay_map key");
 		return false;
 	}
 	value = rst->second.value;
@@ -858,7 +826,7 @@ bool BBU::FindDataMapValue(std::map<std::string, std::string>& map, std::string 
 	auto rst = map.find(key);
 	if(rst == map.end())
 	{
-		std::cout << "Error: not find dataMap key" << std::endl;
+	    LOG_PRINT(LogLevel::error, "not find dataMap key");
 		return false;
 	}
 	value = rst->second;
@@ -871,18 +839,18 @@ int BBU::_system(std::string command)
     status = system(command.c_str());
 
     if(-1 == status){
-        std::cout << "Error: system error!" << std::endl;
+	    LOG_PRINT(LogLevel::error, "system error!");
         return -1;
     } else {
         if(WIFEXITED(status)){
             if(0 == WEXITSTATUS(status)){
                 return 0;
             } else {
-                std::cout << "Error: run shell script fail, script exit code: " << WEXITSTATUS(status) << std::endl;
+	            LOG_PRINT(LogLevel::error, "run shell script fail, script exit code: %d", WEXITSTATUS(status));
                 return -2;
             }
         } else {
-            std::cout << "Error: exit status: " << WEXITSTATUS(status) << std::endl;
+	        LOG_PRINT(LogLevel::error, "exit status: %d", WEXITSTATUS(status));
             return -3;
         }
     }
@@ -895,7 +863,7 @@ bool BBU::write_file(std::string file, const std::string& data)
 	fout.open(file);
 	if(!fout.is_open())
 	{
-		std::cout << "Error: open file error" << std::endl;
+	    LOG_PRINT(LogLevel::error, "open file error");
 		return false;
 	}
 	fout << data << std::endl; 
@@ -910,7 +878,7 @@ bool BBU::read_file(std::string file, char* data, ssize_t size)
 	fin.open(file);
 	if(!fin.is_open())
 	{
-		std::cout << "Error: open file error" << std::endl;
+	    LOG_PRINT(LogLevel::error, "open file error");
 		return false;
 	}
 	fin.getline(data, size);
@@ -926,7 +894,7 @@ std::vector<std::string> BBU::GetFiles(std::string cate_dir)
 
     if ((dir = opendir(cate_dir.c_str())) == NULL)
     {
-        std::cout << "Error: open dir error" << std::endl;
+	    LOG_PRINT(LogLevel::error, "open dir error");
         return files;
     }
 
@@ -970,21 +938,9 @@ std::vector<std::string> BBU::GetFiles(std::string cate_dir)
 
 
 
-#if 0
-void BBU::writeCallback(uv::WriteInfo& info)
-{
-    uv::LogWriter::Instance()->debug("Server::writeCallback");
-    if(0 != info.status)
-    {
-        std::cout << "Write error ：" << EventLoop::GetErrorMessage(info.status) << std::endl;
-    }
-    delete[] info.buf;
-}
-#endif
-
 void BBU::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
-    std::cout << "[SendMessage: " << buf << "]" << std::endl;
+	LOG_PRINT(LogLevel::debug, "[SendMessage: %s]", buf);
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         connection->write(buf, size, nullptr);
@@ -999,26 +955,11 @@ void BBU::EchoSortResult(vector<PAIR>& tVector)
 {
     for(int i = 0; i < static_cast<int>(tVector.size()); i++)
     {
-        std::cout << tVector[i].first << ":" << tVector[i].second << std::endl;
+	    LOG_PRINT(LogLevel::debug, "%s:%s", tVector[i].first.c_str(), tVector[i].second.c_str());
     }
 
-    std::cout << "Max Delay: " << tVector.begin()->second << std::endl;
+	LOG_PRINT(LogLevel::debug, "Max Delay: %s", tVector.begin()->second.c_str());
 }
-
-#if 0
-void BBU::SendAllClientMessage(const char* msg, ssize_t size)
-{
-    std::map<std::string ,TcpConnectionPtr>  allconnnections;
-    getAllConnection(allconnnections);
-
-    for(auto &conn : allconnnections)
-    {
-        std::cout << "client ip=" << conn.first << std::endl; 
-        //conn.second->write(msg, size, nullptr);
-        SendMessage(conn.second, msg, size);
-    }
-}
-#endif
 
 void BBU::NetworkTopology()
 {
@@ -1027,37 +968,14 @@ void BBU::NetworkTopology()
 
     for(auto &it : netTopology)
     { 
-        std::cout << "netTopology: " 
-            << it.first << " - > " 
-            << it.second.s_ip << " "
-            << it.second.s_connection << " "
-            << it.second.s_source << " "
-            << it.second.s_mac << " "
-            << it.second.s_hop << " " 
-            << it.second.s_port << " "
-            << it.second.s_uport << " "
-            << it.second.s_routeIndex << " "
-            << it.second.s_rruDelayInfo.T2a << " "
-            << it.second.s_rruDelayInfo.Ta3 << " "
-            << it.second.s_upgradeState << " "
-            << std::endl;
-    }
-}
-
-void BBU::TestGet()
-{
-    std::vector<TcpConnectionPtr> hubsConnection;
-    GetHUBsConnection(hubsConnection);
-    for(auto &it : hubsConnection)
-    {
-        std::cout << "hubsConnection: " << it << std::endl;
-    }
-
-    std::vector<TcpConnectionPtr> rrusConnection;
-    GetRRUsConnection(rrusConnection);
-    for(auto &it : rrusConnection)
-    {
-        std::cout << "rrusConnection: " << it << std::endl;
+        LOG_PRINT(LogLevel::debug, "netTopology: %s -> %s %s %s %s %s %s %s %s %s %s %s",
+									it.first.c_str(), it.second.s_ip.c_str(),
+									it.second.s_connection, it.second.s_source.c_str(),
+									it.second.s_mac.c_str(), it.second.s_hop.c_str(),
+									it.second.s_port.c_str(), it.second.s_uport.c_str(),
+									it.second.s_routeIndex.c_str(), it.second.s_upgradeState.c_str(),
+                                    it.second.s_rruDelayInfo.T2a.c_str(),
+                                    it.second.s_rruDelayInfo.Ta3.c_str());
     }
 }
 
