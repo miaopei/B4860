@@ -42,7 +42,7 @@ void uv::LogWriter::write(Level level, const std::string& data)
         else
         {
 #if    USED_STD_OUT
-            std::cout << getLevelName(level) << " :" << data << std::endl;
+            std::cout << getLevelName(level) << ": " << data << std::endl;
 #endif
         }
     }

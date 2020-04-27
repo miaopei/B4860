@@ -13,6 +13,7 @@
 #include "ListBuffer.h"
 #include "CycleBuffer.h"
 #include "SocketAddr.h"
+#include "Utilities.h"
 
 namespace uv
 {

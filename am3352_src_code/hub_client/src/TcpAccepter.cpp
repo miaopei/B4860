@@ -48,7 +48,7 @@ int TcpAccepter::listen()
     {
         if (status < 0)
         {
-            uv::LogWriter::Instance()->error (std::string("New connection error :")+ EventLoop::GetErrorMessage(status));
+			LOG_PRINT(LogLevel::error, "New connection error: %s", EventLoop::GetErrorMessage(status));
             return;
         }
         TcpAccepter* accept = static_cast<TcpAccepter*>(server->data);

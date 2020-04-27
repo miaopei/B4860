@@ -17,7 +17,32 @@ BBU::BBU(EventLoop* loop)
     :TcpServer(loop)
 {
     setMessageCallback(std::bind(&BBU::OnMessage, this, placeholders::_1, placeholders::_2, placeholders::_3));
-    
+#if 0
+	/* 需要优化 把 GetDeviceMac 放到其他公共地方  */
+    uv::Packet packet;
+    char mac[32] = {0};
+	if(!packet.GetDeviceMac(IFRNAME, mac))
+    {
+        std::cout << "Error: GetMac error" << std::endl;
+        return ;
+    }
+    m_mac = mac;
+	
+	FUN_T_PARA *para = new FUN_T_PARA;
+	para->carrierIdx = 0;
+	
+	ipc_init_nxp(1, para);
+	std::cout << "main: carrierIdx[0] T14=" << para->t14 << std::endl;
+	m_carrierIdx_0_T14 = para->t14;
+	
+	para->carrierIdx = 1;
+	ipc_init_nxp(1, para);
+	std::cout << "main: carrierIdx[1] T14=" << para->t14 << std::endl;
+	m_carrierIdx_1_T14 = para->t14;
+
+	delete para;
+#endif
+	
     m_mac = "FFFFFFFFFFFF";
     m_source = to_string(uv::Packet::BBU);
     m_hop = "0";
@@ -35,6 +60,13 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
 		return ;
 	}
 #endif
+	for(int i = 0; i < size; i++)
+	{
+		printf("%x ", buf[i]);
+	}
+	printf("\n");
+	printf("size=%d\n", size);
+
 	auto packetbuf = connection->getPacketBuffer();
     if (nullptr != packetbuf)
     {
@@ -246,13 +278,13 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 		return ;
 	}
 
-    std::vector<std::string> files = GetFiles(fileName);
+    std::vector<std::string> files = GetFiles(std::string("/mnt/ftp/" + fileName));
     if(static_cast<int>(files.size()) != 3)
     {
 		LOG_PRINT(LogLevel::error, "RRU upgrade Director file num error");
         return ;
     }
-    data = "fileName=" + files[0] + "&md5=" + md5file(std::string(fileName + "/" + files[0]).c_str()) + "&fileName=" + files[1] + "&md5=" + md5file(std::string(fileName + "/" + files[1]).c_str());
+    data = "fileName=" + fileName + "/" + files[0] + "&md5=" + md5file(std::string("/mnt/ftp/" + fileName + "/" + files[0]).c_str()) + "&fileName=" + fileName + "/" + files[1] + "&md5=" + md5file(std::string("/mnt/ftp/" + fileName + "/" + files[1]).c_str()) + "&fileName=" + fileName + "/" + files[2] + "&md5=" + md5file(std::string("/mnt/ftp/" + fileName + "/" + files[2]).c_str());
 
 	if(!FindDataMapValue(map, "routeIndex", routeIndex))
     {

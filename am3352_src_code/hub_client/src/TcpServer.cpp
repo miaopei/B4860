@@ -36,7 +36,7 @@ void uv::TcpServer::onAccept(EventLoop * loop, UVTcpPtr client)
     string key;
     SocketAddr::AddrToStr(client.get(), key, ipv_);
 
-    uv::LogWriter::Instance()->info("new connect  " + key);
+	LOG_PRINT(LogLevel::info, "new connect %s", key.c_str());
     shared_ptr<TcpConnection> connection(new TcpConnection(loop, key, client));
     if (connection)
     {
@@ -49,7 +49,7 @@ void uv::TcpServer::onAccept(EventLoop * loop, UVTcpPtr client)
     }
     else
     {
-        uv::LogWriter::Instance()->error("create connection fail. :" + key);
+		LOG_PRINT(LogLevel::error, "create connection %s fail.", key.c_str());
     }
 }
 
@@ -89,11 +89,11 @@ void TcpServer::removeConnnection(string& name)
 			{
 				if(!DeleteRRUTotalDelay(rst->second.s_connection, tVectorDL))
 				{
-					uv::LogWriter::Instance()->error("Error: DeleteRRUTotalDelay tVectorDL error");
+					LOG_PRINT(LogLevel::error, "DeleteRRUTotalDelay tVectorDL error");
 				}
 				if(!DeleteRRUTotalDelay(rst->second.s_connection, tVectorUL))
 				{
-					uv::LogWriter::Instance()->error("Error: DeleteRRUTotalDelay tVectorUL error");
+					LOG_PRINT(LogLevel::error, "DeleteRRUTotalDelay tVectorUL error");
 				}
 			}
     	}
@@ -137,7 +137,7 @@ bool TcpServer::SetConnectionInfo(TcpConnectionPtr connection, DeviceInfo& cInfo
 
 	if(cName.empty())
 	{
-		uv::LogWriter::Instance()->error("Error: not find connection name");
+		LOG_PRINT(LogLevel::error, "not find connection name");
 		return false;
 	}
 	
@@ -188,26 +188,6 @@ void TcpServer::GetNetworkTopology(std::map<std::string, DeviceInfo>& netTopolog
 	netTopology = connectionInfo_;
 }
 
-#if 0
-std::vector<std::string> TcpServer::Split(const std::string& in, const std::string& delim)
-{
-    vector<string> ret;
-    try
-    {
-        regex re{delim};
-        return vector<string>{
-            sregex_token_iterator(in.begin(), in.end(), re, -1),
-            sregex_token_iterator()
-        };      
-    }
-    catch(const std::exception& e)
-    {
-        std::cout << "error:" << e.what() << std::endl;
-    }
-    return ret;
-}
-#endif
-
 std::vector<std::string> TcpServer::Split(const std::string& in, const std::string& delim)
 {
     vector<string> res;
@@ -234,10 +214,12 @@ void TcpServer::SplitStrings2Map(const std::string &input, std::string rruid, st
     std::string key;
     atom v;
     int cout = 0;
-    vector<string>ret = Split(input.c_str(), "&");
+    std::vector<string>ret = Split(input.c_str(), "&");
     int ret_size = ret.size();
 	m_base = ret_size / 3;
-	std::cout << "m_base = " << m_base << std::endl;
+	
+	LOG_PRINT(LogLevel::debug, "m_base = %d", m_base);
+	
     for(int i = 0; i < ret_size; i++)
     {
         /* key = rruid + type + port(delay num)  
@@ -275,7 +257,7 @@ void TcpServer::DeleteHubDelay(std::string rruid, std::map<std::string, atom>& m
 {
 	if(m_base == 0)
 	{
-		std::cout << "Error: m_base error" << std::endl;
+		LOG_PRINT(LogLevel::error, "m_base error");
 		return;
 	}
 	
@@ -285,7 +267,6 @@ void TcpServer::DeleteHubDelay(std::string rruid, std::map<std::string, atom>& m
     {
         cout = (i % m_base) + 1;
         key = std::string(rruid + to_string((i/m_base)+1) + to_string(cout));
-        //std::cout << "key=" << key << std::endl;
         map.erase(key);
     }
 }
@@ -319,8 +300,7 @@ std::string TcpServer::CreateRouteIndex(uv::TcpConnectionPtr& connection)
 
 	if(!GetDeviceInfo(connection, dInfo))
 	{
-		std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
-                  << " > Error: Get Device Info error" << std::endl;
+		LOG_PRINT(LogLevel::error, "Get Device Info error");
 		return "";
 	}
 
@@ -330,8 +310,7 @@ std::string TcpServer::CreateRouteIndex(uv::TcpConnectionPtr& connection)
     level = level - 1;
     if(level < 0)
 	{
-		std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
-                  << "#Error: level error" << std::endl;
+		LOG_PRINT(LogLevel::error, "level error");
 		return "";
 	} 
 	if(level == 0)
@@ -345,8 +324,7 @@ std::string TcpServer::CreateRouteIndex(uv::TcpConnectionPtr& connection)
         {
             if(!FindNextDeviceInfo(level, next_dInfo))
             {
-                std::cout << __FILE__ << ":" << __LINE__ << ":" <<__FUNCTION__ 
-                    << "#Error: level error" << std::endl;
+				LOG_PRINT(LogLevel::error, "level error");
                 return "";
             }
             RouteIndex += "_" + next_dInfo.s_port + "_" + next_dInfo.s_uport;
@@ -404,20 +382,20 @@ bool TcpServer::SetDeviceRouteIndex(uv::TcpConnectionPtr& connection)
 	
 	if(RouteIndex.empty())
 	{
-		uv::LogWriter::Instance()->error("Error: CreateRouteIndex failure");
+		LOG_PRINT(LogLevel::error, "CreateRouteIndex failure");
 		return false;
 	}
 	
 	if(cName.empty())
 	{
-		uv::LogWriter::Instance()->error("Error: not find connection name");
+		LOG_PRINT(LogLevel::error, "not find connection name");
 		return false;
 	}
 	
 	auto rst = connectionInfo_.find(cName);
     if(rst == connectionInfo_.end())
     {
-    	uv::LogWriter::Instance()->error("Error: not find connection");
+		LOG_PRINT(LogLevel::error, "not find connection");
         return false;
     }
 	rst->second.s_routeIndex = RouteIndex;
@@ -430,14 +408,14 @@ bool TcpServer::GetDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& dInf
 		
 	if(cName.empty())
 	{
-		uv::LogWriter::Instance()->error("Error: not find connection name");
+		LOG_PRINT(LogLevel::error, "not find connection name");
 		return false;
 	}
 	
 	auto rst = connectionInfo_.find(cName);
     if(rst == connectionInfo_.end())
     {
-    	uv::LogWriter::Instance()->error("Error: not find connection");
+		LOG_PRINT(LogLevel::error, "not find connection");
         return false;
     }
 	dInfo = rst->second;
@@ -450,23 +428,23 @@ bool TcpServer::SetDeviceInfo(uv::TcpConnectionPtr& connection, std::string key,
 		
 	if(cName.empty())
 	{
-		uv::LogWriter::Instance()->error("Error: not find connection name");
+		LOG_PRINT(LogLevel::error, "not find connection name");
 		return false;
 	}
 	
 	auto rst = connectionInfo_.find(cName);
     if(rst == connectionInfo_.end())
     {
-    	uv::LogWriter::Instance()->error("Error: not find connection");
+		LOG_PRINT(LogLevel::error, "not find connection");
         return false;
     }
 
     if(key == "upgradeState")
     {
-	    rst->second.s_upgradeState = stoi(value);
+	    rst->second.s_upgradeState = value;
 	    return true;
     }else{
-        std::cout << "Error: key error" << std::endl;
+		LOG_PRINT(LogLevel::error, "key error");
         return false;
     }
 }
@@ -478,14 +456,14 @@ bool TcpServer::FindUpHubDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo
 		
 	if(cName.empty())
 	{
-		uv::LogWriter::Instance()->error("Error: not find connection name");
+		LOG_PRINT(LogLevel::error, "not find connection name");
 		return false;
 	}
 	
     auto rst = connectionInfo_.find(cName);
     if(rst == connectionInfo_.end())
     {
-    	uv::LogWriter::Instance()->error("Error: not find connection");
+		LOG_PRINT(LogLevel::error, "not find connection");
         return false;
     }
 	uphub_level = stoi(rst->second.s_hop) - 1;
@@ -510,14 +488,14 @@ bool TcpServer::SetRRUDeviceDelayInfo(uv::TcpConnectionPtr& connection, RRUDelay
 	
 	if(cName.empty())
 	{
-		uv::LogWriter::Instance()->error("Error: not find connection name");
+		LOG_PRINT(LogLevel::error, "not find connection name");
 		return false;
 	}
 	
 	auto rst = connectionInfo_.find(cName);
     if(rst == connectionInfo_.end())
     {
-    	uv::LogWriter::Instance()->error("Error: not find connection");
+		LOG_PRINT(LogLevel::error, "not find connection");
         return false;
     }
 	rst->second.s_rruDelayInfo = rruDelayInfo;
@@ -553,11 +531,11 @@ void TcpServer::closeConnection(string& name)
 						{
 							if(!DeleteRRUTotalDelay(rst->second.s_connection, tVectorDL))
 							{
-								uv::LogWriter::Instance()->error("Error: DeleteRRUTotalDelay tVectorDL error");
+								LOG_PRINT(LogLevel::error, "DeleteRRUTotalDelay tVectorDL error");
 							}
 							if(!DeleteRRUTotalDelay(rst->second.s_connection, tVectorUL))
 							{
-								uv::LogWriter::Instance()->error("Error: DeleteRRUTotalDelay tVectorUL error");
+								LOG_PRINT(LogLevel::error, "DeleteRRUTotalDelay tVectorUL error");
 							}
 						}
 			    	}
@@ -610,7 +588,7 @@ void TcpServer::writeInLoop(shared_ptr<TcpConnection> connection,const char* buf
     }
     else if (callback)
     {
-        uv::LogWriter::Instance()->warn("try write a disconnect connection.");
+		LOG_PRINT(LogLevel::warn, "try write a disconnect connection.");
         WriteInfo info = { WriteInfo::Disconnected,const_cast<char*>(buf),size };
         callback(info);
     }

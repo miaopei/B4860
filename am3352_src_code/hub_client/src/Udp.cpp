@@ -48,7 +48,7 @@ int uv::Udp::send(SocketAddr& to, const char* buf, unsigned size)
         {
             std::string info("udp send error :");
             info += EventLoop::GetErrorMessage(status);
-            uv::LogWriter::Instance()->error(info);
+			LOG_PRINT(LogLevel::error, "%s", info.c_str());
         }
         delete handle;
     });
@@ -104,7 +104,7 @@ void uv::Udp::onMesageReceive(uv_udp_t* handle, ssize_t nread, const uv_buf_t* b
     {
         std::string info("udp read error :");
         info += EventLoop::GetErrorMessage((int)nread);
-        uv::LogWriter::Instance()->error(info);
+		LOG_PRINT(LogLevel::error, "%s", info.c_str());
     }
     else if(nread >0)
     {

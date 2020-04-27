@@ -32,6 +32,25 @@
 #define RRUToffset          6
 #define TOFFSETCYCLE        8.013       
 
+#if 0
+#define IFRNAME     "ceth"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "bpoam_message.h"
+
+int ipc_init_nxp(int rat_id, FUN_T_PARA *para);
+
+void bpoamDelayT14Req(void *arg);
+void bpoamDelayT14Rsp(void *arg);
+
+#ifdef __cplusplus
+}
+#endif
+#endif
+
 #define BBUT14  580
 
 class BBU :public uv::TcpServer

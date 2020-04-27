@@ -89,6 +89,7 @@ public:
 
     void SetRHUBInfo();
     void SendRHUBDelayInfo();
+    void RHUBDelayInfoCalculate(std::string& data);
 
     void ConnectResultProcess(uv::Packet& packet);
     void UpdataDelay(uv::Packet& packet);

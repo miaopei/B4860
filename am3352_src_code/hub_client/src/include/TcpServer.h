@@ -14,6 +14,7 @@
 #include "TcpConnection.h"
 #include "TimerWheel.h"
 #include "Packet.h"
+#include "Utilities.h"
 
 namespace uv
 {
@@ -40,7 +41,7 @@ public:
         std::string s_port;
         std::string s_uport;
 		std::string s_routeIndex;
-        int s_upgradeState;
+        std::string s_upgradeState;
 		RRUDelayInfo_T s_rruDelayInfo;
 		#if 0
         DeviceInfo(){};
@@ -99,14 +100,14 @@ public:
 
 	/* 最大时延补偿 map，最大时延可配置 */
     typedef std::pair<std::string, std::string> PAIR;	
-    vector<PAIR> tVectorDL;
-    vector<PAIR> tVectorUL;
+    std::vector<PAIR> tVectorDL;
+    std::vector<PAIR> tVectorUL;
     static double cmp(const PAIR& x, const PAIR& y);
-    void sortMapByValue(std::map<std::string, std::string>& map, vector<PAIR>& tVector);
+    void sortMapByValue(std::map<std::string, std::string>& map, std::vector<PAIR>& tVector);
 
 	std::string CreateRouteIndex(uv::TcpConnectionPtr& connection);
     bool FindNextDeviceInfo(int level, DeviceInfo& next_dInfo);
-	bool DeleteRRUTotalDelay(uv::TcpConnectionPtr& connection, vector<PAIR>& tVector);
+	bool DeleteRRUTotalDelay(uv::TcpConnectionPtr& connection, std::vector<PAIR>& tVector);
 
 	bool SetDeviceRouteIndex(uv::TcpConnectionPtr& connection);
 	bool GetDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& dInfo);

@@ -48,7 +48,7 @@ void uv::Packet::PackMessage(std::string& data, size_t size)
 {
     if(size >= 10000)
     {
-        std::cout << "The data is too big" << std::endl;
+		LOG_PRINT(LogLevel::error, "The data is too big");
         return;
     }
 
@@ -136,36 +136,42 @@ std::string uv::Packet::GetData()
 
 void uv::Packet::EchoPackMessage()
 {
-	std::cout << "封装 packet:" 
-		<< "\n\tPacket: " << m_packet
-		<< "\n\tSource: " << m_source << " [HUB,RRU,BBU,OAM]"
-		<< "\n\tDestination: " << m_destination << " [HUB,RRU,BBU,OAM]"
-		<< "\n\tMac: " << m_mac 
-		<< "\n\tState: " << m_state << " [REQUEST,RESPONSE]"
-		<< "\n\tMsgID: " << m_msgID 
-		<< "\n\tRRUID: " << m_hop
-		<< "\n\tPort: " << m_port
-		<< "\n\tUPort: " << m_uport
-		<< "\n\tLength: " << m_length
-		<< "\n\tData: " << m_data
-		<< std::endl;
+	LOG_PRINT(LogLevel::debug, "Pack packet:\n\tPacket: %s\
+								\n\tSource: %s [HUB,RRU,BBU,OAM]\
+								\n\tDestination: %s [HUB,RRU,BBU,OAM]\
+								\n\tMac: %s\
+								\n\tState: %s [REQUEST,RESPONSE]\
+								\n\tMsgID: %s\
+								\n\tHOP: %s\
+								\n\tPort: %s\
+								\n\tUPort: %s\
+								\n\tLength: %d\
+								\n\tData: %s", 
+								m_packet.c_str(), m_source.c_str(),
+								m_destination.c_str(), m_mac.c_str(),
+								m_state.c_str(), m_msgID.c_str(),
+								m_hop.c_str(), m_port.c_str(),
+								m_uport.c_str(), m_length, m_data.c_str());
 }
 
 void uv::Packet::EchoUnPackMessage()
 {
-	std::cout << "解析 packet:" 
-		<< "\n\tPacket: " << m_packet
-		<< "\n\tSource: " << m_source << " [HUB,RRU,BBU,OAM]"
-		<< "\n\tDestination: " << m_destination << " [HUB,RRU,BBU,OAM]"
-		<< "\n\tMac: " << m_mac
-		<< "\n\tState: " << m_state << " [REQUEST,RESPONSE]"
-		<< "\n\tMsgID: " << m_msgID 
-		<< "\n\tRRUID: " << m_hop
-		<< "\n\tPort: " << m_port
-		<< "\n\tUPort: " << m_uport
-		<< "\n\tLength: " << m_length
-		<< "\n\tData: " << m_data
-		<< std::endl;
+	LOG_PRINT(LogLevel::debug, "UnPack packet:\n\tPacket: %s\
+								\n\tSource: %s [HUB,RRU,BBU,OAM]\
+								\n\tDestination: %s [HUB,RRU,BBU,OAM]\
+								\n\tMac: %s\
+								\n\tState: %s [REQUEST,RESPONSE]\
+								\n\tMsgID: %s\
+								\n\tHOP: %s\
+								\n\tPort: %s\
+								\n\tUPort: %s\
+								\n\tLength: %d\
+								\n\tData: %s", 
+								m_packet.c_str(), m_source.c_str(),
+								m_destination.c_str(), m_mac.c_str(),
+								m_state.c_str(), m_msgID.c_str(),
+								m_hop.c_str(), m_port.c_str(),
+								m_uport.c_str(), m_length, m_data.c_str());
 }
 
 std::vector<std::string> uv::Packet::DataSplit(const std::string& in, const std::string& delim)

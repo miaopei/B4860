@@ -245,18 +245,17 @@ static char hb2hex(unsigned char hb) {
 
 string md5file(const char* filename){
 	string res = "";
-    std::FILE* file = std::fopen(filename, "rb");
+	std::FILE* file = std::fopen(filename, "rb");
     if(file == NULL)
     {
         return res;
     }
-    res = md5file(file);
+	res = md5file(file);
 	std::fclose(file);
 	return res;
 }
 
 string md5file(std::FILE* file){
-
 	MD5_CTX c;
     MD5_Init(&c);
 
