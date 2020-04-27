@@ -34,13 +34,6 @@
 
 #define BBUT14  580
 
-typedef struct Message_S {
-	char source[1];
-	char destination[1];
-	uint32_t len;
-	char data[100];
-} Message_T;
-
 class BBU :public uv::TcpServer
 {
 public:

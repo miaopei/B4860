@@ -27,13 +27,14 @@ BBU::BBU(EventLoop* loop)
 
 void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
+#if 0
 	/* 数据包校验，数据粘包问题处理 */
 	if(size < HEADLENGTH)
 	{
 		LOG_PRINT(LogLevel::error, "Message length error.");
 		return ;
 	}
-
+#endif
 	auto packetbuf = connection->getPacketBuffer();
     if (nullptr != packetbuf)
     {
@@ -43,12 +44,28 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
         {
 			LOG_PRINT(LogLevel::debug, "[ReceiveData: %d:%s]", packet.DataSize(), packet.getData());
 
-			packet.UnPackMessage();
+            BHRO_T_PACKET *bhro_packet = (BHRO_T_PACKET*)malloc(packet.DataSize());
+            memcpy(bhro_packet, packet.getData(), packet.DataSize());
+            LOG_PRINT(LogLevel::debug, "source=%d destination=%d len=%d",
+                                        bhro_packet->packet_head.source,
+                                        bhro_packet->packet_head.destination,
+                                        bhro_packet->packet_head.len);
+
+            BHRO_T_CONNECT_REQ *connect_req = (BHRO_T_CONNECT_REQ*)malloc(bhro_packet->packet_head.len + 1);
+            memcpy(connect_req, bhro_packet->tlv_data, bhro_packet->packet_head.len + 1);
+            LOG_PRINT(LogLevel::debug, "data=%d", connect_req->resultID);
+            
+            free(connect_req);
+            connect_req = NULL;
+            free(bhro_packet);
+            bhro_packet = NULL;
+
+			//packet.UnPackMessage();
 
 			/* 打印解包信息 */
-			packet.EchoUnPackMessage();
+			//packet.EchoUnPackMessage();
 
-			ProcessRecvMessage(connection, packet);
+			//ProcessRecvMessage(connection, packet);
         }
     }
 }

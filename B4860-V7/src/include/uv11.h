@@ -13,5 +13,6 @@
 #include   "Idle.h"
 #include   "GlobalConfig.h"
 #include   "Utilities.h"
+#include   "BHROPacketInternal.h"
 
 #endif

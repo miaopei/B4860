@@ -102,45 +102,6 @@ public:
         MSG_UPDATE_DELAY            = 1043,
         MSG_END                     = 9999
     };
-#if 0
-	enum RRUID
-	{
-		RRUID_0 	= 0,
-		RRUID_1		= 1,
-		RRUID_2	 	= 2,
-		RRUID_3		= 3,
-		RRUID_4		= 4,
-        RRUID_X     = 9
-	};
-
-	enum Port
-	{
-		PORT_0	= 0,
-		PORT_1	= 1,
-		PORT_2 	= 2,
-		PORT_3 	= 3,
-		PORT_4	= 4,
-		PORT_5	= 5,
-		PORT_6	= 6,
-		PORT_7	= 7,
-		PORT_8	= 8,
-        PORT_X  = 9
-	};
-
-    enum UPort
-	{
-		UPORT_0	    = 0,
-		UPORT_1	    = 1,
-		UPORT_2 	= 2,
-		UPORT_3 	= 3,
-		UPORT_4	    = 4,
-		UPORT_5	    = 5,
-		UPORT_6	    = 6,
-		UPORT_7	    = 7,
-		UPORT_8	    = 8,
-        UPORT_X     = 9
-	};
-#endif
 
     Packet();
     ~Packet();

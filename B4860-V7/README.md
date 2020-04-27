@@ -6,7 +6,21 @@
 >
 > [C++单元测试工具——doctest](https://blog.csdn.net/liao20081228/article/details/76984975)
 >
-> [C语言如何封装printf函数？](https://www.zhihu.com/question/51102741)
+> [JSON for Modern C++](https://www.jianshu.com/p/69e57f2af904)
+
+> 测试：
+>
+> [**如何定义变长的TLV结构体？**](http://www.cppblog.com/aa19870406/archive/2012/06/14/178803.html)
+>
+> [结构体中最后成员为一个零长数组与一个指针](http://wenboo.site/2017/09/05/结构体中最后成员为一个零长数组与一个指针/)
+>
+> [解析变长结构体的用法和优点](https://blog.csdn.net/Move_now/article/details/71929225)
+>
+> [深入浅出变长结构体](https://blog.csdn.net/wojiushiwo987/article/details/11908731)
+>
+> [可变长的结构体](https://blog.csdn.net/wasd6081058/article/details/7216266)
+>
+> [Dale工作学习笔记](https://www.cnblogs.com/anker/p/3744127.html)
 
 ### 工程编译
 

@@ -54,6 +54,55 @@ void HUB::reConnect()
 
 void HUB::SendConnectMessage()
 {
+    int packet_len = sizeof(BHRO_T_PACKET) + sizeof(BHRO_T_CONNECT_REQ);
+    BHRO_T_PACKET *bhro_packet = (BHRO_T_PACKET*)malloc(packet_len);
+    if(NULL == bhro_packet)
+    {
+        LOG_PRINT(LogLevel::error, "memory malloc failure");
+        return ;
+    }
+    memset(bhro_packet, 0, packet_len);
+    bhro_packet->packet_head.source = 1;
+    bhro_packet->packet_head.destination = 2;
+    bhro_packet->packet_head.len = sizeof(BHRO_T_CONNECT_REQ);
+
+    BHRO_T_CONNECT_REQ *connect_req = (BHRO_T_CONNECT_REQ*)malloc(sizeof(BHRO_T_CONNECT_REQ));
+    connect_req->resultID = 3;
+    memcpy((BHRO_T_CONNECT_REQ*)bhro_packet->tlv_data, connect_req, sizeof(BHRO_T_CONNECT_REQ));
+
+    SendMessage((char*)bhro_packet, packet_len);
+    LOG_PRINT(LogLevel::debug, "free memory");
+    free(connect_req);
+    connect_req = NULL;
+    free(bhro_packet);
+    bhro_packet = NULL;
+
+#if 0
+    int packet_len = sizeof(BHRO_T_PACKET) + sizeof(BHRO_T_CONNECT_REQ) + 1;
+    BHRO_T_PACKET *bhro_packet = (BHRO_T_PACKET*)malloc(sizeof(BHRO_T_PACKET));
+    if(NULL == bhro_packet)
+    {
+        LOG_PRINT(LogLevel::error, "memory malloc failure");
+        return ;
+    }
+    memset(bhro_packet, 0, sizeof(BHRO_T_PACKET))
+    bhro_packet->packet_head.source = 1;
+    bhro_packet->packet_head.destination = 2;
+    bhro_packet->packet_head.len = sizeof(BHRO_T_CONNECT_REQ);
+
+    bhro_packet->data = (BHRO_T_CONNECT_REQ*)malloc(sizeof(BHRO_T_CONNECT_REQ) + 1);
+    memset(bhro_packet->data, 0, sizeof(BHRO_T_CONNECT_REQ) + 1)
+    BHRO_T_CONNECT_REQ *connect_req;
+    connect_req->resultID = 3;
+    memcpy((BHRO_T_CONNECT_REQ*)bhro_packet->data, connect_req, sizeof(BHRO_T_CONNECT_REQ) + 1);
+
+    LOG_PRINT(LogLevel::debug, "packet_len=%c", &bhro_packet->data);
+    SendMessage((char*)bhro_packet, packet_len);
+    LOG_PRINT(LogLevel::debug, "free memory");
+    free(bhro_packet->data);
+    free(bhro_packet);
+#endif
+#if 0
     std::string data = "ResultID=0";
     
     uv::Packet::Head head;
@@ -67,6 +116,7 @@ void HUB::SendConnectMessage()
     head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
+#endif
 }
 
 void HUB::SetRHUBInfo()
