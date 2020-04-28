@@ -61,10 +61,21 @@ void HUB::SendConnectMessage()
     bhro_packet->packet_head.destination = 2;
     bhro_packet->packet_head.len = sizeof(BHRO_T_CONNECT_REQ);
 
+#if 0
     //BHRO_T_CONNECT_REQ *connect_req = (BHRO_T_CONNECT_REQ*)malloc(sizeof(BHRO_T_CONNECT_REQ));
     BHRO_T_CONNECT_REQ connect_req;
     connect_req.resultID = 3;
     memcpy((BHRO_T_CONNECT_REQ*)bhro_packet->tlv_data, &connect_req, sizeof(BHRO_T_CONNECT_REQ));
+#endif
+
+#if 1
+    BHRO_T_TOPO topo;
+    topo.addr = "192.168.2.76:12345";
+    topo.mac = "00:00:20:20:03:03";
+    topo.hop = 2;
+    topo.port = 4;
+    memcpy();
+#endif
 
     SendMessage((char*)bhro_packet, packet_len);
     LOG_PRINT(LogLevel::debug, "free memory");
