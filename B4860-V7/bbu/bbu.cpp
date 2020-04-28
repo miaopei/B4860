@@ -60,12 +60,6 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
 		return ;
 	}
 #endif
-	for(int i = 0; i < size; i++)
-	{
-		printf("%x ", buf[i]);
-	}
-	printf("\n");
-	printf("size=%d\n", size);
 
 	auto packetbuf = connection->getPacketBuffer();
     if (nullptr != packetbuf)
@@ -83,12 +77,14 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
                                         bhro_packet->packet_head.destination,
                                         bhro_packet->packet_head.len);
 
-            BHRO_T_CONNECT_REQ *connect_req = (BHRO_T_CONNECT_REQ*)malloc(bhro_packet->packet_head.len + 1);
-            memcpy(connect_req, bhro_packet->tlv_data, bhro_packet->packet_head.len + 1);
-            LOG_PRINT(LogLevel::debug, "data=%d", connect_req->resultID);
+            //BHRO_T_CONNECT_REQ *connect_req = (BHRO_T_CONNECT_REQ*)malloc(bhro_packet->packet_head.len + 1);
+            //memcpy(connect_req, bhro_packet->tlv_data, bhro_packet->packet_head.len + 1);
+            //LOG_PRINT(LogLevel::debug, "data=%d", connect_req->resultID);
+            LOG_PRINT(LogLevel::debug, "data=%d", ((BHRO_T_CONNECT_REQ*)bhro_packet->tlv_data)->resultID);
             
-            free(connect_req);
-            connect_req = NULL;
+            //free(connect_req);
+            //connect_req = NULL;
+
             free(bhro_packet);
             bhro_packet = NULL;
 

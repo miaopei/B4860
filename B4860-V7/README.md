@@ -7,6 +7,14 @@
 > [C++单元测试工具——doctest](https://blog.csdn.net/liao20081228/article/details/76984975)
 >
 > [JSON for Modern C++](https://www.jianshu.com/p/69e57f2af904)
+>
+> [jsoncpp](https://github.com/open-source-parsers/jsoncpp)
+>
+> [手把手教你实现自定义的应用层协议](https://segmentfault.com/a/1190000008740863)
+>
+> [手把手教你实现自定义的应用层协议](https://blog.csdn.net/ACb0y/article/details/61421006)
+
+> [interview](https://github.com/huihut/interview)
 
 > 测试：
 >
@@ -21,6 +29,10 @@
 > [可变长的结构体](https://blog.csdn.net/wasd6081058/article/details/7216266)
 >
 > [Dale工作学习笔记](https://www.cnblogs.com/anker/p/3744127.html)
+>
+> [第2篇:C/C++ 结构体及其数组的内存对齐](https://www.jianshu.com/p/666852837034)
+>
+> [linux下jsoncpp的编译安装](https://blog.csdn.net/x2017x/article/details/92761750)
 
 ### 工程编译
 
@@ -114,4 +126,51 @@ $ nandwrite -p /dev/mtd3 fitImage
 [ftp client lib github](https://github.com/mkulke/ftplibpp)
 
 [ti-processor-sdk](http://software-dl.ti.com/processor-sdk-linux/esd/AM335X/06_00_00_07/index_FDS.html)
+
+
+
+
+
+## 编译安装jsoncpp
+下载 jsoncpp 源码
+
+```shell
+$ wget https://github.com/open-source-parsers/jsoncpp/archive/0.10.1.zip
+```
+
+解压缩源码文件
+
+```shell
+$ mv 0.10.1.zip jsoncpp-0.10.1.zip
+$ unzip jsoncpp-0.10.1.zip
+```
+
+编译安装
+
+```shell
+$ cd jsoncpp-0.10.1
+$ mkdir -p ./build/debug
+$ cd ./build/debug
+$ cmake \
+-D CMAKE_BUILD_TYPE=debug \
+-D BUILD_STATIC_LIBS=ON \
+-D BUILD_SHARED_LIBS=OFF \
+-D CMAKE_INSTALL_PREFIX=/usr/local/jsoncpp \
+-D CMAKE_C_COMPILER=/usr/local/bin/gcc \
+-D CMAKE_CXX_COMPILER=/usr/local/bin/g++ \
+-G "Unix Makefiles" ../..
+$ make && make install
+```
+
+```shell
+$ mkdir -p build/debug
+$ cd build/debug
+$ cmake -DCMAKE_BUILD_TYPE=debug -DBUILD_STATIC_LIBS=ON -DBUILD_SHARED_LIBS=ON -DARCHIVE_INSTALL_DIR=. -G "Unix Makefiles" ../..
+$ make
+// 查看生成的静态和动态链接库
+$ find . -name *.a
+./src/lib_json/libjsoncpp.a
+$ find . -name *.so
+./src/lib_json/libjsoncpp.so
+```
 

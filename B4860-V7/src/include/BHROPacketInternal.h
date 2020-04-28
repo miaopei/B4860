@@ -19,9 +19,15 @@ typedef struct PACK_STRUCT BHRO_S_PACKET_HDR {
     uint16_t len;   // Lenght of data (bytes)
 } BHRO_T_PACKET_HDR;
 
+typedef struct PACK_STRUCT BHRO_S_TLV {
+    uint8_t tag;
+    uint16_t len;
+    uint8_t value[];
+} BHRO_T_TLV;
+
 typedef struct PACK_STRUCT BHRO_S_PACKET {
     BHRO_T_PACKET_HDR packet_head;
-    char tlv_data[];
+    uint8_t tlv_data[];
 } BHRO_T_PACKET;
 
 typedef struct PACK_STRUCT BHRO_S_CONNECT_REQ {
@@ -31,5 +37,16 @@ typedef struct PACK_STRUCT BHRO_S_CONNECT_REQ {
 typedef struct PACK_STRUCT BHRO_S_CONNECT_RSP {
     uint8_t resultID;
 } BHRO_T_CONNECT_RSP;
+
+typedef struct PACK_STRUCT BHRO_S_TOPO {
+    std::string addr;
+    std::string mac;
+    uint8_t hop;
+    uint8_t port;
+} BHRO_T_TOPO;
+
+
+
+
 
 #endif
