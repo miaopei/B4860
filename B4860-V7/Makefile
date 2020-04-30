@@ -8,6 +8,8 @@ WORK_ROOT = $(PWD)
 
 LIBUV = libuv-v1.9.1
 
+PLATFORM = linux-gcc
+
 BUILD_DIR = $(WORK_ROOT)/build
 INCLUDE_DIR = $(BUILD_DIR)/include
 LIB_DIR = $(BUILD_DIR)/lib
@@ -16,7 +18,7 @@ BIN_DIR = $(BUILD_DIR)/bin
 LD_INCLUDE_PATH = $(INCLUDE_DIR)
 LD_LIBRARY_PATH = $(LIB_DIR)
 
-all: before bbu
+all: before json bbu
 	@echo "[build done ...]"
 	@make -C ftplibpp
 	@make -C ftplibpp install
@@ -29,6 +31,21 @@ all: before bbu
 before:
 	@test -d $(BUILD_DIR) || mkdir -p $(BUILD_DIR)
 	@test -d $(BIN_DIR) || mkdir -p $(BIN_DIR)
+
+json: scons
+	@echo "[build json...]"
+	@tar -zxf jsoncpp-src-0.5.0.tar.gz -C $(BUILD_DIR)
+	@echo $(SCONS)
+	@cd $(BUILD_DIR)/jsoncpp-src-0.5.0 && python $(SCONS)/script/scons platform=$(PLATFORM)
+	@cp -rf $(BUILD_DIR)/jsoncpp-src-0.5.0/include/* $(INCLUDE_DIR)
+	#@cp -d $(BUILD_DIR)/jsoncpp-src-0.5.0/libs/*.so $(LIB_DIR)/libjson.so
+	#@cp -d $(BUILD_DIR)/jsoncpp-src-0.5.0/libs/*.a $(LIB_DIR)/libjson.a
+
+scons:
+	@echo "[build scons...]"
+	@tar -zxf scons-3.1.1.tar.gz -C $(BUILD_DIR)
+	export SCONS=$(BUILD_DIR)/scons-3.1.1
+	#@(shell export SCONS_LIB_DIR=$(shell $(SCONS))/engine)
 
 libuv:
 	@echo "[build libuv ...]"

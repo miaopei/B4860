@@ -41,6 +41,7 @@ void HUB::onConnect(ConnectStatus status)
 
 void HUB::reConnect()
 {
+    LOG_PRINT(LogLevel::debug, "ReConnect.");
     uv::Timer* timer = new uv::Timer(loop_, 500, 0, [this](uv::Timer* ptr)
     {
         connect(*(sockAddr.get()));
@@ -54,28 +55,19 @@ void HUB::reConnect()
 
 void HUB::SendConnectMessage()
 {
+#if 0
     int packet_len = sizeof(BHRO_T_PACKET) + sizeof(BHRO_T_CONNECT_REQ);
     BHRO_T_PACKET *bhro_packet = (BHRO_T_PACKET*)malloc(packet_len);
     memset(bhro_packet, 0, packet_len);
     bhro_packet->packet_head.source = 1;
     bhro_packet->packet_head.destination = 2;
-    bhro_packet->packet_head.len = sizeof(BHRO_T_CONNECT_REQ);
 
-#if 0
+    bhro_packet->packet_head.len = sizeof(BHRO_T_CONNECT_REQ);
     //BHRO_T_CONNECT_REQ *connect_req = (BHRO_T_CONNECT_REQ*)malloc(sizeof(BHRO_T_CONNECT_REQ));
     BHRO_T_CONNECT_REQ connect_req;
     connect_req.resultID = 3;
     memcpy((BHRO_T_CONNECT_REQ*)bhro_packet->tlv_data, &connect_req, sizeof(BHRO_T_CONNECT_REQ));
-#endif
 
-#if 1
-    BHRO_T_TOPO topo;
-    topo.addr = "192.168.2.76:12345";
-    topo.mac = "00:00:20:20:03:03";
-    topo.hop = 2;
-    topo.port = 4;
-    memcpy();
-#endif
 
     SendMessage((char*)bhro_packet, packet_len);
     LOG_PRINT(LogLevel::debug, "free memory");
@@ -85,6 +77,7 @@ void HUB::SendConnectMessage()
 
     free(bhro_packet);
     bhro_packet = NULL;
+#endif
 
 #if 0
     int packet_len = sizeof(BHRO_T_PACKET) + sizeof(BHRO_T_CONNECT_REQ) + 1;
@@ -111,7 +104,7 @@ void HUB::SendConnectMessage()
     free(bhro_packet->data);
     free(bhro_packet);
 #endif
-#if 0
+#if 1
     std::string data = "ResultID=0";
     
     uv::Packet::Head head;

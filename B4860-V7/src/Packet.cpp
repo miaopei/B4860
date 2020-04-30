@@ -136,7 +136,7 @@ std::string uv::Packet::GetData()
 
 void uv::Packet::EchoPackMessage()
 {
-	LOG_PRINT(LogLevel::debug, "Pack packet:\n\tPacket: %s\
+	LOG_PRINT(LogLevel::debug, "Pack packet:\
 								\n\tSource: %s [HUB,RRU,BBU,OAM]\
 								\n\tDestination: %s [HUB,RRU,BBU,OAM]\
 								\n\tMac: %s\
@@ -147,7 +147,7 @@ void uv::Packet::EchoPackMessage()
 								\n\tUPort: %s\
 								\n\tLength: %d\
 								\n\tData: %s", 
-								m_packet.c_str(), m_source.c_str(),
+								m_source.c_str(),
 								m_destination.c_str(), m_mac.c_str(),
 								m_state.c_str(), m_msgID.c_str(),
 								m_hop.c_str(), m_port.c_str(),
@@ -156,7 +156,7 @@ void uv::Packet::EchoPackMessage()
 
 void uv::Packet::EchoUnPackMessage()
 {
-	LOG_PRINT(LogLevel::debug, "UnPack packet:\n\tPacket: %s\
+	LOG_PRINT(LogLevel::debug, "UnPack packet:\
 								\n\tSource: %s [HUB,RRU,BBU,OAM]\
 								\n\tDestination: %s [HUB,RRU,BBU,OAM]\
 								\n\tMac: %s\
@@ -167,7 +167,7 @@ void uv::Packet::EchoUnPackMessage()
 								\n\tUPort: %s\
 								\n\tLength: %d\
 								\n\tData: %s", 
-								m_packet.c_str(), m_source.c_str(),
+								m_source.c_str(),
 								m_destination.c_str(), m_mac.c_str(),
 								m_state.c_str(), m_msgID.c_str(),
 								m_hop.c_str(), m_port.c_str(),

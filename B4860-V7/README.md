@@ -13,6 +13,8 @@
 > [手把手教你实现自定义的应用层协议](https://segmentfault.com/a/1190000008740863)
 >
 > [手把手教你实现自定义的应用层协议](https://blog.csdn.net/ACb0y/article/details/61421006)
+>
+> [C++ TCP socket心跳包示例程序](https://blog.csdn.net/qq_19004627/article/details/79871665)
 
 > [interview](https://github.com/huihut/interview)
 

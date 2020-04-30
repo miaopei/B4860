@@ -68,8 +68,9 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
 		uv::Packet packet;
         while (0 == packetbuf->readPacket(packet))
         {
-			LOG_PRINT(LogLevel::debug, "[ReceiveData: %d:%s]", packet.DataSize(), packet.getData());
+			//LOG_PRINT(LogLevel::debug, "[ReceiveData: %d:%s]", packet.DataSize(), packet.getData());
 
+#if 0
             BHRO_T_PACKET *bhro_packet = (BHRO_T_PACKET*)malloc(packet.DataSize());
             memcpy(bhro_packet, packet.getData(), packet.DataSize());
             LOG_PRINT(LogLevel::debug, "source=%d destination=%d len=%d",
@@ -87,13 +88,15 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
 
             free(bhro_packet);
             bhro_packet = NULL;
-
-			//packet.UnPackMessage();
+#endif
+#if 1
+			packet.UnPackMessage();
 
 			/* 打印解包信息 */
-			//packet.EchoUnPackMessage();
+			packet.EchoUnPackMessage();
 
-			//ProcessRecvMessage(connection, packet);
+			ProcessRecvMessage(connection, packet);
+#endif
         }
     }
 }
@@ -401,8 +404,8 @@ void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Pa
     for(auto &it : netTopology)
     {
 #if 0
-    	LOG_PRINT(LogLevel::debug, "netTopology: %s -> %s %s %s %s %s %s %s %s %s",
-									it.first.c_str(), it.second.s_ip.c_str(),
+    	LOG_PRINT(LogLevel::debug, "\n\tnetTopology: -> %s %s %s %s %s %s %s %s %s",
+									it.second.s_ip.c_str(),
 									it.second.s_connection, it.second.s_source.c_str(),
 									it.second.s_mac.c_str(), it.second.s_hop.c_str(),
 									it.second.s_port.c_str(), it.second.s_uport.c_str(),
@@ -1013,8 +1016,8 @@ void BBU::NetworkTopology()
 
     for(auto &it : netTopology)
     { 
-        LOG_PRINT(LogLevel::debug, "netTopology: %s -> %s %s %s %s %s %s %s %s %s %s %s",
-									it.first.c_str(), it.second.s_ip.c_str(),
+        LOG_PRINT(LogLevel::debug, "\n\tnetTopology: -> %s %s %s %s %s %s %s %s %s %s %s",
+									it.second.s_ip.c_str(),
 									it.second.s_connection, it.second.s_source.c_str(),
 									it.second.s_mac.c_str(), it.second.s_hop.c_str(),
 									it.second.s_port.c_str(), it.second.s_uport.c_str(),

@@ -40,6 +40,7 @@ void RRU::onConnect(ConnectStatus status)
 
 void RRU::reConnect()
 {
+    std::cout << "ReConnect." << std::endl;
     uv::Timer* timer = new uv::Timer(loop_, 500, 0, [this](uv::Timer* ptr)
     {
         connect(*(sockAddr.get()));

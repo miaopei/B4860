@@ -39,8 +39,8 @@ typedef struct PACK_STRUCT BHRO_S_CONNECT_RSP {
 } BHRO_T_CONNECT_RSP;
 
 typedef struct PACK_STRUCT BHRO_S_TOPO {
-    std::string addr;
-    std::string mac;
+    uint8_t *addr;
+    uint8_t *mac;
     uint8_t hop;
     uint8_t port;
 } BHRO_T_TOPO;

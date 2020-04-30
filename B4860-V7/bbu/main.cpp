@@ -32,7 +32,8 @@ int main(int argc, char *argv[])
     BBU bbu(loop);
 
     // 心跳超时
-    //server.setTimeout(40);
+    bbu.setTimeout(40);
+
     bbu.bindAndListen(addr);
 
     loop->run();
