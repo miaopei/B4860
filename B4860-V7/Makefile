@@ -18,12 +18,13 @@ BIN_DIR = $(BUILD_DIR)/bin
 LD_INCLUDE_PATH = $(INCLUDE_DIR)
 LD_LIBRARY_PATH = $(LIB_DIR)
 
-all: before json bbu
+all: before bbu
 	@echo "[build done ...]"
 	@make -C ftplibpp
 	@make -C ftplibpp install
 	@make -C hub
 	@make -C rru
+	@make -C oam_adapter
 	@make -C oam_adapter_cli
 	@make -C test
 	@echo "[compile time $(COMPILE_TIME)]"
@@ -35,17 +36,16 @@ before:
 json: scons
 	@echo "[build json...]"
 	@tar -zxf jsoncpp-src-0.5.0.tar.gz -C $(BUILD_DIR)
-	@echo $(SCONS)
-	@cd $(BUILD_DIR)/jsoncpp-src-0.5.0 && python $(SCONS)/script/scons platform=$(PLATFORM)
+	@cd $(BUILD_DIR)/jsoncpp-src-0.5.0 && python ../scons-3.1.1/script/scons platform=$(PLATFORM)
 	@cp -rf $(BUILD_DIR)/jsoncpp-src-0.5.0/include/* $(INCLUDE_DIR)
-	#@cp -d $(BUILD_DIR)/jsoncpp-src-0.5.0/libs/*.so $(LIB_DIR)/libjson.so
-	#@cp -d $(BUILD_DIR)/jsoncpp-src-0.5.0/libs/*.a $(LIB_DIR)/libjson.a
+	@cp -rd $(BUILD_DIR)/jsoncpp-src-0.5.0/libs/*.so $(LIB_DIR)/libjson.so
+	@cp -rd $(BUILD_DIR)/jsoncpp-src-0.5.0/libs/*.a $(LIB_DIR)/libjson.a
 
 scons:
 	@echo "[build scons...]"
 	@tar -zxf scons-3.1.1.tar.gz -C $(BUILD_DIR)
-	export SCONS=$(BUILD_DIR)/scons-3.1.1
-	#@(shell export SCONS_LIB_DIR=$(shell $(SCONS))/engine)
+	#export SCONS=$(BUILD_DIR)/scons-3.1.1
+	#export SCONS_LIB_DIR=$(shell $(SCONS))/engine)
 
 libuv:
 	@echo "[build libuv ...]"
@@ -74,6 +74,7 @@ clean:
 	@make -C ftplibpp clean
 	@make clean -C hub
 	@make clean -C rru
+	@make clean -C oam_adapter
 	@make clean -C oam_adapter_cli
 	@make clean -C test
 

@@ -16,13 +16,6 @@
 
 #define IFRNAME     "enp0s31f6"
 
-typedef struct Message_S {
-	char source[1];
-	char destination[1];
-	uint32_t len;
-	char data[100];
-} Message_T;
-
 class OamAdapter :public uv::TcpClient
 {
 public:
@@ -59,10 +52,14 @@ public:
 
 	void GetNetworkTopology();
 
+    bool GetRSPPacket(uv::Packet packet);
+
+    bool RSPStatus;
 
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
     std::shared_ptr<OamAdapter> clientptr_;
+    uv::Packet packet_;
     std::string m_source;
 	std::string m_mac;
     std::string m_hop;

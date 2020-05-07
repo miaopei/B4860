@@ -53,7 +53,6 @@ void OamAdapter::reConnect()
 
 void OamAdapter::SendConnectMessage()
 {
-#if 1
     std::string data = "ResultID=0";
     
     uv::Packet::Head head;
@@ -67,20 +66,6 @@ void OamAdapter::SendConnectMessage()
     head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
-#endif
-#if 0
-	std::string data = "This is test socket send structs";
-	Message_T message;
-	strcpy(message.source, "1");
-	//message.destination = "2";
-	strcpy(message.destination, "2");
-	//strcpy(message.len, data.length())
-	message.len = data.length();
-	strcpy(message.data, data.c_str());
-	//message.data = (char*)data.c_str();
-
-	SendMessage((char*)&message, sizeof(Message_T)+1);
-#endif
 }
 
 void OamAdapter::SetROamAdapterInfo()
@@ -131,6 +116,9 @@ void OamAdapter::RecvMessage(const char* buf, ssize_t size)
 
 void OamAdapter::ProcessRecvMessage(uv::Packet& packet)
 {
+    packet_ = packet;
+    RSPStatus = true;
+#if 0
     switch(std::stoi(packet.GetMsgID()))
     {
         case uv::Packet::MSG_CONNECT:
@@ -143,6 +131,7 @@ void OamAdapter::ProcessRecvMessage(uv::Packet& packet)
         default:
             std::cout << "[Error: MessageID Error]" << std::endl;
     }
+#endif
 }
 
 void OamAdapter::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size)
@@ -276,6 +265,7 @@ void OamAdapter::SendRFTxMessage(std::string routeIndex, std::string RFTxStatus)
 
 void OamAdapter::GetNetworkTopology()
 {
+    RSPStatus = false;
 	std::string data = "";
     
     uv::Packet::Head head;
@@ -291,4 +281,13 @@ void OamAdapter::GetNetworkTopology()
     SendPackMessage(head, data, data.length());
 }
 
+bool OamAdapter::GetRSPPacket(uv::Packet packet)
+{
+    if(RSPStatus)
+    {
+        packet = packet_;
+        return true;
+    }
+    return false;
+}
 

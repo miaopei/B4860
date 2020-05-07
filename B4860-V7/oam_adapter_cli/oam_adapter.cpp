@@ -53,7 +53,6 @@ void OamAdapter::reConnect()
 
 void OamAdapter::SendConnectMessage()
 {
-#if 1
     std::string data = "ResultID=0";
     
     uv::Packet::Head head;
@@ -67,20 +66,6 @@ void OamAdapter::SendConnectMessage()
     head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
-#endif
-#if 0
-	std::string data = "This is test socket send structs";
-	Message_T message;
-	strcpy(message.source, "1");
-	//message.destination = "2";
-	strcpy(message.destination, "2");
-	//strcpy(message.len, data.length())
-	message.len = data.length();
-	strcpy(message.data, data.c_str());
-	//message.data = (char*)data.c_str();
-
-	SendMessage((char*)&message, sizeof(Message_T)+1);
-#endif
 }
 
 void OamAdapter::SetROamAdapterInfo()

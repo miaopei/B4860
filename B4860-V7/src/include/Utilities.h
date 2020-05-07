@@ -38,7 +38,7 @@ enum class LogLevel {
 
 #ifdef _DEBUG
 #define LOG_PRINT(level, fmt...) \
-    LogPrint(level, __FUNCTION__, __LINE__, fmt);
+    LogPrint(level, __FILE__, __FUNCTION__, __LINE__, fmt);
 #else
 #define LOG_PRINT(fmt...)
 #endif
@@ -88,7 +88,7 @@ bool GetDeviceGateWay(const char* interface_name, char* gateway, size_t size);
 
 std::vector<std::string> DataSplit(const std::string& in, const std::string& delim);
 
-void LogPrint(LogLevel level, const char* pFile, int iLine, const char* fmt, ...);
+void LogPrint(LogLevel level, const char* pFile, const char* pFunc, int iLine, const char* fmt, ...);
 
 
 #endif
