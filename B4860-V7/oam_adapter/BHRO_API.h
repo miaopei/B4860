@@ -26,12 +26,15 @@ class BHRO_API
 {
 public:
     BHRO_API();
+    void ConnectBBU();
+    void AdapterProcess();
     void BHRO_INIT();
-    bool GetToPo(uv::Packet packet);
+    bool GetToPo(uv::Packet& packet);
 
 private:
     EventLoop* loop_;
     OamAdapterPtr oam_adapter_;
-
+    std::mutex mutex_;
+    std::condition_variable condition_;
     bool inited_;
 };

@@ -1,4 +1,4 @@
-## ,并B4860 开发任务
+## B4860 开发任务
 
 - [x] BBU 工程项目整理，把libuv-v1.9.1 开源包编译到工程中，工程 Makefile 整理
 - [x] BBU HUB 消息测试，根据测试情况将 设备type，rruid，port内容封装到消息中，不需要在dnsmasq中维护。

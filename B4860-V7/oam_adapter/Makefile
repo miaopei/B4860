@@ -22,7 +22,8 @@ OBJECTS = $(SOURCE:.cpp=.o)
 
 all: $(TARGET).so
 	@echo "[build bhro ...]"		
-	#@mv $(TARGET) $(BIN_DIR)
+	@mv $(TARGET).so $(LIB_DIR)
+	@cp -rf *.h $(INCLUDE_DIR)
 
 $(TARGET).so: $(OBJECTS)
 	$(SOLINK.cc) $(TARGET).so $(OBJECTS) $(LINK_ARG)

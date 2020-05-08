@@ -12,7 +12,7 @@ TARGET = test
 CC = g++
 CFLAGS = -Wall -std=c++11 
 USER_LINK_INC = -I$(INCLUDE_DIR)
-USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -Wl,-rpath,$(LIB_DIR)
+USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -lbhro -Wl,-rpath,$(LIB_DIR)
 
 SOURCE = $(wildcard *.cpp)
 OBJECTS = $(SOURCE:.cpp=.o)

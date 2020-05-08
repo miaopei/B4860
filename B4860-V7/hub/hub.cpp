@@ -41,7 +41,6 @@ void HUB::onConnect(ConnectStatus status)
 
 void HUB::reConnect()
 {
-    LOG_PRINT(LogLevel::debug, "ReConnect.");
     uv::Timer* timer = new uv::Timer(loop_, 500, 0, [this](uv::Timer* ptr)
     {
         connect(*(sockAddr.get()));

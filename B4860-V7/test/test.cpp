@@ -6,9 +6,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
+#include "BHRO_API.h"
+
 
 TEST_CASE("test utilities interfade function") {
-    const char *interface_name = "enp0s31f6";
+    //const char *interface_name = "enp0s31f6";
     char* pdata = NULL;
     size_t size = 32;
     pdata = (char*)malloc(size * sizeof(char));
@@ -38,4 +40,26 @@ TEST_CASE("test utilities log function") {
     LOG_PRINT(LogLevel::info, "test utilities info log function");
     LOG_PRINT(LogLevel::error, "test utilities error log function");
 }
+
+TEST_CASE("test BHRO lib") {
+    BHRO_API adapter;
+    adapter.BHRO_INIT();
+
+    uv::Packet packet;
+    if(adapter.GetToPo(packet))
+    {
+        LOG_PRINT(LogLevel::debug, "packet: %s", packet.GetPacket().c_str());
+    } else {
+        LOG_PRINT(LogLevel::error, "Get TOPO error");
+    }
+    
+    if(adapter.GetToPo(packet))
+    {
+        LOG_PRINT(LogLevel::debug, "packet: %s", packet.GetPacket().c_str());
+    } else {
+        LOG_PRINT(LogLevel::error, "Get TOPO error");
+    }
+
+}
+
 

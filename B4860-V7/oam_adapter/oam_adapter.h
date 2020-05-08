@@ -52,7 +52,7 @@ public:
 
 	void GetNetworkTopology();
 
-    bool GetRSPPacket(uv::Packet packet);
+    bool GetRSPPacket(uv::Packet& packet);
 
     bool RSPStatus;
 

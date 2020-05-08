@@ -281,8 +281,9 @@ void OamAdapter::GetNetworkTopology()
     SendPackMessage(head, data, data.length());
 }
 
-bool OamAdapter::GetRSPPacket(uv::Packet packet)
+bool OamAdapter::GetRSPPacket(uv::Packet& packet)
 {
+    LOG_PRINT(LogLevel::debug, "GetRSPPacket ...");
     if(RSPStatus)
     {
         packet = packet_;
