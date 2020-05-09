@@ -8,7 +8,7 @@
 
 #include "BHRO_API.h"
 
-
+#if 0
 TEST_CASE("test utilities interfade function") {
     //const char *interface_name = "enp0s31f6";
     char* pdata = NULL;
@@ -40,11 +40,15 @@ TEST_CASE("test utilities log function") {
     LOG_PRINT(LogLevel::info, "test utilities info log function");
     LOG_PRINT(LogLevel::error, "test utilities error log function");
 }
-
+#endif
 TEST_CASE("test BHRO lib") {
     BHRO_API adapter;
     adapter.BHRO_INIT();
 
+    uv::Packet packet;
+    adapter.AdapterProcess("xxx", packet);
+    LOG_PRINT(LogLevel::debug, "packet: %s", packet.GetPacket().c_str());
+#if 0
     uv::Packet packet;
     if(adapter.GetToPo(packet))
     {
@@ -52,14 +56,15 @@ TEST_CASE("test BHRO lib") {
     } else {
         LOG_PRINT(LogLevel::error, "Get TOPO error");
     }
-    
+#endif
+#if 0
     if(adapter.GetToPo(packet))
     {
         LOG_PRINT(LogLevel::debug, "packet: %s", packet.GetPacket().c_str());
     } else {
         LOG_PRINT(LogLevel::error, "Get TOPO error");
     }
-
+#endif
 }
 
 

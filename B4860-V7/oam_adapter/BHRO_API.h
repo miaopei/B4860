@@ -22,19 +22,26 @@ using namespace std;
 
 using OamAdapterPtr = std::shared_ptr<OamAdapter>;
 
+struct ThreadArg
+{
+    EventLoop* loop_;
+    OamAdapterPtr oam_adapter;
+    std::mutex mutex;
+    std::condition_variable condition;
+    bool inited;
+    int flag;
+};
+static struct ThreadArg threadArg_;
+
 class BHRO_API
 {
 public:
     BHRO_API();
-    void ConnectBBU();
-    void AdapterProcess();
+    void ConnectBBU(ThreadArg& threadArg);
     void BHRO_INIT();
+    void AdapterProcess(std::string method, uv::Packet& packet);
     bool GetToPo(uv::Packet& packet);
 
 private:
-    EventLoop* loop_;
-    OamAdapterPtr oam_adapter_;
-    std::mutex mutex_;
-    std::condition_variable condition_;
-    bool inited_;
+
 };
