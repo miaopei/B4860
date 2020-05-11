@@ -39,8 +39,19 @@ public:
     BHRO_API();
     void ConnectBBU(ThreadArg& threadArg);
     void BHRO_INIT();
-    void AdapterProcess(std::string method, uv::Packet& packet);
-    bool GetToPo(uv::Packet& packet);
+    void ConditionWait();
+
+    /* destination: 
+     * 0 - HUB 
+     * 1 - RRU
+     * */
+    void DeviceUpGrade(std::string destination, std::string fileName, std::string md5);
+    void DeviceUpGrade(std::string destination, std::string routeIndex, std::string fileName, std::string md5);
+
+    void SetRFTx(std::string RFTxStatus);
+    void SetRFTx(std::string routeIndex, std::string RFTxStatus);
+
+	void GetTopo();
 
 private:
 

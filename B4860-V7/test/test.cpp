@@ -45,26 +45,9 @@ TEST_CASE("test BHRO lib") {
     BHRO_API adapter;
     adapter.BHRO_INIT();
 
-    uv::Packet packet;
-    adapter.AdapterProcess("xxx", packet);
-    LOG_PRINT(LogLevel::debug, "packet: %s", packet.GetPacket().c_str());
-#if 0
-    uv::Packet packet;
-    if(adapter.GetToPo(packet))
-    {
-        LOG_PRINT(LogLevel::debug, "packet: %s", packet.GetPacket().c_str());
-    } else {
-        LOG_PRINT(LogLevel::error, "Get TOPO error");
-    }
-#endif
-#if 0
-    if(adapter.GetToPo(packet))
-    {
-        LOG_PRINT(LogLevel::debug, "packet: %s", packet.GetPacket().c_str());
-    } else {
-        LOG_PRINT(LogLevel::error, "Get TOPO error");
-    }
-#endif
+    adapter.GetTopo();
+    adapter.DeviceUpGrade("0", "rHUP_1.tar", "123456789");
+    adapter.DeviceUpGrade("0", "0_1_0_0", "rHUP_2.tar", "123456789");
 }
 
 
