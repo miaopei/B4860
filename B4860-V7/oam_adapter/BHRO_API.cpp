@@ -36,7 +36,7 @@ void BHRO_API::ConnectBBU(ThreadArg& threadArg)
         GetDeviceIP(interface_name, pdata, size);	
         LOG_PRINT(LogLevel::debug, "Device IP: %s", pdata);
 
-        SocketAddr addr(pdata, 30000, SocketAddr::Ipv4);
+        SocketAddr addr(pdata, SOCKETPORT, SocketAddr::Ipv4);
 
         auto oamAdapter = std::make_shared<OamAdapter>(loop);
         oamAdapter->connectToServer(addr);
@@ -106,5 +106,27 @@ void BHRO_API::GetTopo()
     } else {
         LOG_PRINT(LogLevel::error, "failure");
     }
+}
+
+void BHRO_API::TestTimer()
+{
+    uv::Timer* pTimer = new uv::Timer(threadArg_.loop_, 500, 0, [this](uv::Timer* ptr)
+    {
+        LOG_PRINT(LogLevel::debug, "timer callback run onice.")
+
+        ptr->close([](uv::Timer* ptr)
+        {
+            delete ptr;    
+        });
+    });
+    pTimer->start();
+#if 0
+    uv::Timer timer(threadArg_.loop_, 200, 2,                                                                  
+        [](Timer*)
+    {
+        LOG_PRINT(LogLevel::debug, "timer callback test...");
+    });
+    timer.start();
+#endif
 }
 

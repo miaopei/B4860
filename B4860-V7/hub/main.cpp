@@ -27,7 +27,6 @@ int main(int argc, char* argv[])
 
     uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer;
 
-	const char *interface_name = "enp0s31f6";
 	char* pdata = NULL;
 	size_t size = 32;
 	pdata = (char*)malloc(size * sizeof(char));
@@ -42,11 +41,12 @@ int main(int argc, char* argv[])
 #endif
 
 #if 1
-    GetDeviceIP(interface_name, pdata, size);	
+    GetDeviceIP(IFRNAME, pdata, size);	
 	LOG_PRINT(LogLevel::debug, "Device IP: %s", pdata);
 #endif
 
-	SocketAddr addr(pdata, 30000, SocketAddr::Ipv4);
+	SocketAddr addr("127.0.0.1", PORT, SocketAddr::Ipv4);
+	//SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
     HUB hub(loop);
 
 #if 0

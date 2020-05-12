@@ -33,6 +33,25 @@ int main(int argc, char *argv[])
 
     // 心跳超时
     //bbu.setTimeout(40);
+#if 0
+    uv::Timer* pTimer = new uv::Timer(loop, 500, 0, [](uv::Timer* handle)
+    {
+        LOG_PRINT(LogLevel::debug, "timer callback run onice.")
+        handle->close([](uv::Timer* ptr)
+        {
+            delete ptr;    
+        });
+    });
+    pTimer->start();
+#endif
+#if 0
+    uv::Timer timer(loop, 1000, 1000,                                                                  
+        [](Timer*)
+    {
+        LOG_PRINT(LogLevel::debug, "timer callback test...");
+    });
+    timer.start();
+#endif
 
     bbu.bindAndListen(addr);
 

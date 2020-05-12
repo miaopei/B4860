@@ -42,7 +42,23 @@ void OamAdapter::reConnect()
 {
     uv::Timer* timer = new uv::Timer(loop_, 500, 0, [this](uv::Timer* ptr)
     {
-        connect(*(sockAddr.get()));
+        char* pdata = NULL;
+        size_t size = 32;
+        pdata = (char*)malloc(size * sizeof(char));
+        if(pdata == NULL)
+        {		
+            LOG_PRINT(LogLevel::error, "malloc gateway memory error");
+        }
+
+        GetDeviceIP(IFRNAME, pdata, size);	
+        LOG_PRINT(LogLevel::debug, "ReConnect Device IP: %s", pdata);
+
+        SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
+        connect(addr);
+
+        free(pdata);
+        pdata = NULL;
+
         ptr->close([](uv::Timer* ptr)
         {
             delete ptr;    
@@ -103,7 +119,7 @@ void OamAdapter::RecvMessage(const char* buf, ssize_t size)
 		uv::Packet packet;
 		while (0 == packetbuf->readPacket(packet))
 		{
-			//std::cout << "\n[ReceiveData: " << packet.DataSize() << ":" << packet.getData() << "]" << std::endl;
+			LOG_PRINT(LogLevel::debug, "[ReceiveData: %d:%s]", packet.DataSize(), packet.getData());
 			packet.UnPackMessage();
 
 			/* 打印解包信息 */

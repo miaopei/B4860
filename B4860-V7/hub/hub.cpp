@@ -43,7 +43,28 @@ void HUB::reConnect()
 {
     uv::Timer* timer = new uv::Timer(loop_, 500, 0, [this](uv::Timer* ptr)
     {
-        connect(*(sockAddr.get()));
+        char* pdata = NULL;
+        size_t size = 32;
+        pdata = (char*)malloc(size * sizeof(char));
+        if(pdata == NULL)
+        {		
+            LOG_PRINT(LogLevel::error, "malloc gateway memory error");
+        }
+#if 0
+        GetDeviceGateWay(interface_name, pdata, size);
+        LOG_PRINT(LogLevel::debug, "ReConnect Device GateWay: %s", pdata);
+#endif
+#if 1
+        GetDeviceIP(IFRNAME, pdata, size);	
+        LOG_PRINT(LogLevel::debug, "ReConnect Device IP: %s", pdata);
+#endif
+
+        SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
+        connect(addr);
+
+        free(pdata);
+        pdata = NULL;
+
         ptr->close([](uv::Timer* ptr)
         {
             delete ptr;    
@@ -589,6 +610,29 @@ bool HUB::read_file(std::string file, char* data, ssize_t size)
 	fin.close();
 	return true;
 }
+
+
+void HUB::Heart()
+{
+    LOG_PRINT(LogLevel::debug, "Start Heart ...");
+    std::thread t1(std::bind(&HUB::HandleHeart, (void*)this));
+    t1.detach();
+}
+
+void HUB::HandleHeart(void* arg)
+{
+    LOG_PRINT(LogLevel::debug, "Heartbeat ...");
+    HUB* hub = (HUB*)arg;
+    std::string heartStr = "heartbeat";
+    uv::Timer timer(loop_, 1000, 1000,                                                                  
+        [&hub](Timer*)
+    {
+        LOG_PRINT(LogLevel::debug, "timer callback send heartbeat...");
+        hub.SendMessage(heartStr.c_str(), heartStr.length());
+    });
+    timer.start();
+}
+
 
 
 void HUB::TestProcess(uv::Packet& packet)

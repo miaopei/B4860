@@ -20,7 +20,6 @@
 
 #define TOFFSET 3
 
-#define IFRNAME     "enp0s31f6"
 
 #if 0
 #ifdef __cplusplus
@@ -107,6 +106,9 @@ public:
     void UpgradeThread(uv::Packet& packet);
     bool FtpDownloadFile(uv::Packet& packet);
     void SendUpgradeFailure(uv::Packet& packet, const std::string errorno);
+
+    void Heart();
+    void HandleHeart(void* arg);
 
 
     void TestProcess(uv::Packet& packet);

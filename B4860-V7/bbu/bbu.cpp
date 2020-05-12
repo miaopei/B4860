@@ -48,6 +48,7 @@ BBU::BBU(EventLoop* loop)
     m_hop = "0";
     m_port = "0";
     m_uport = "0";
+
 }
 
 void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)

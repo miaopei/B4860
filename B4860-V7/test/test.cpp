@@ -48,6 +48,8 @@ TEST_CASE("test BHRO lib") {
     adapter.GetTopo();
     adapter.DeviceUpGrade("0", "rHUP_1.tar", "123456789");
     adapter.DeviceUpGrade("0", "0_1_0_0", "rHUP_2.tar", "123456789");
+    //adapter.TestTimer();
+    //while(1){sleep(1);}
 }
 
 

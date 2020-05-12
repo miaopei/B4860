@@ -15,6 +15,7 @@
 
 #include "oam_adapter.h"
 
+#define SOCKETPORT      30000
 #define interface_name "enp0s31f6"
 
 using namespace uv;
@@ -52,6 +53,8 @@ public:
     void SetRFTx(std::string routeIndex, std::string RFTxStatus);
 
 	void GetTopo();
+
+    void TestTimer();
 
 private:
 
