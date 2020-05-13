@@ -53,14 +53,12 @@ BBU::BBU(EventLoop* loop)
 
 void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
-#if 0
 	/* 数据包校验，数据粘包问题处理 */
 	if(size < HEADLENGTH)
 	{
 		LOG_PRINT(LogLevel::error, "Message length error.");
 		return ;
 	}
-#endif
 
 	auto packetbuf = connection->getPacketBuffer();
     if (nullptr != packetbuf)
