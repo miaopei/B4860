@@ -94,6 +94,7 @@ public:
     void UpdataDelay(uv::Packet& packet);
 
     void SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size);
+    void HeartSendPackMessage(uv::Packet::Head head, std::string data, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
 
     void UpgradeProcess(uv::Packet& packet);

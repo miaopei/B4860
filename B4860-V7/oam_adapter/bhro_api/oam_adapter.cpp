@@ -165,9 +165,24 @@ void OamAdapter::SendPackMessage(uv::Packet::Head& head, std::string& data, ssiz
     SendMessage(send_buf.c_str(), send_buf.length());
 }
 
+void OamAdapter::HeartSendPackMessage(uv::Packet::Head head, std::string data, ssize_t size)
+{
+    uv::Packet packet;
+    packet.SetHead(head);
+
+    packet.PackMessage(data, size);
+
+    /* 打印数据封装信息 */
+    //packet.EchoPackMessage();
+    
+    std::string send_buf = packet.GetPacket();
+    
+    SendMessage(send_buf.c_str(), send_buf.length());
+}
+
 void OamAdapter::SendMessage(const char* buf, ssize_t size)
 {
-    //std::cout << "[SendMessage: " << buf << "]" << std::endl;
+    LOG_PRINT(LogLevel::debug, "[SendMessage: %s]", buf);
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         write(buf, (unsigned int)size);
@@ -306,5 +321,37 @@ bool OamAdapter::GetRSPPacket(uv::Packet& packet)
         return true;
     }
     return false;
+}
+
+void OamAdapter::Heart()
+{
+    LOG_PRINT(LogLevel::debug, "Start Heart ...");
+    std::thread t1(std::bind(&OamAdapter::HandleHeart, this, (void*)this));
+    t1.detach();
+}
+
+void OamAdapter::HandleHeart(void* arg)
+{
+    EventLoop loop;
+    OamAdapter* adapter = (OamAdapter*)arg;
+
+    std::string data = "heartbeat";
+    uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::REQUEST);
+    head.s_msgID = to_string(uv::Packet::MSG_HEART_BEAT);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
+
+    uv::Timer timer(&loop, 30000, 30000,                                                                  
+        [&adapter, head, data](Timer*)
+    {
+        adapter->HeartSendPackMessage(head, data, data.length());
+    });
+    timer.start();
+    loop.run();
 }
 

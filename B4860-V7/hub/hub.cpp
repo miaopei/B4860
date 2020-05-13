@@ -399,6 +399,21 @@ void HUB::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t siz
     SendMessage(send_buf.c_str(), send_buf.length());
 }
 
+void HUB::HeartSendPackMessage(uv::Packet::Head head, std::string data, ssize_t size)
+{
+    uv::Packet packet;
+    packet.SetHead(head);
+
+    packet.PackMessage(data, size);
+
+    /* 打印数据封装信息 */
+    //packet.EchoPackMessage();
+    
+    std::string send_buf = packet.GetPacket();
+    
+    SendMessage(send_buf.c_str(), send_buf.length());
+}
+
 void HUB::SendMessage(const char* buf, ssize_t size)
 {
 	LOG_PRINT(LogLevel::debug, "[SendMessage: %s]", buf);
@@ -615,22 +630,33 @@ bool HUB::read_file(std::string file, char* data, ssize_t size)
 void HUB::Heart()
 {
     LOG_PRINT(LogLevel::debug, "Start Heart ...");
-    std::thread t1(std::bind(&HUB::HandleHeart, (void*)this));
+    std::thread t1(std::bind(&HUB::HandleHeart, this, (void*)this));
     t1.detach();
 }
 
 void HUB::HandleHeart(void* arg)
 {
-    LOG_PRINT(LogLevel::debug, "Heartbeat ...");
+    EventLoop loop;
     HUB* hub = (HUB*)arg;
-    std::string heartStr = "heartbeat";
-    uv::Timer timer(loop_, 1000, 1000,                                                                  
-        [&hub](Timer*)
+
+    std::string data = "heartbeat";
+    uv::Packet::Head head;
+    head.s_source = m_source;
+    head.s_destination = to_string(uv::Packet::TO_BBU);
+	head.s_mac = m_mac;
+    head.s_state = to_string(uv::Packet::REQUEST);
+    head.s_msgID = to_string(uv::Packet::MSG_HEART_BEAT);
+    head.s_hop = m_hop;
+    head.s_port = m_port;
+    head.s_uport = m_uport;
+
+    uv::Timer timer(&loop, 30000, 30000,                                                                  
+        [&hub, head, data](Timer*)
     {
-        LOG_PRINT(LogLevel::debug, "timer callback send heartbeat...");
-        hub.SendMessage(heartStr.c_str(), heartStr.length());
+        hub->HeartSendPackMessage(head, data, data.length());
     });
     timer.start();
+    loop.run();
 }
 
 

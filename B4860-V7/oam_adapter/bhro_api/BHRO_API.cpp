@@ -43,6 +43,8 @@ void BHRO_API::ConnectBBU(ThreadArg& threadArg)
         threadArg.oam_adapter = oamAdapter;
         threadArg.inited = true;
 
+        oamAdapter->Heart();
+
         free(pdata);
         pdata = NULL;
         threadArg.flag = 1;
@@ -55,7 +57,6 @@ void BHRO_API::BHRO_INIT()
 {
     LOG_PRINT(LogLevel::debug, "BHRO INIT ...");
     std::thread t1(std::bind(&BHRO_API::ConnectBBU, this, std::ref(threadArg_)));
-    //t1.join();
     t1.detach();
 }
 

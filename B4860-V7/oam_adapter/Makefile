@@ -1,40 +1,44 @@
 PWD=`pwd`
 
+UNAME := $(shell uname -s)
+
+COMPILE_TIME = $(shell date +"%Y-%M-%d %H:%M:%S")
+
 WORK_ROOT = $(PWD)
 
-BUILD_DIR = $(WORK_ROOT)/../build
+LIBUV = libuv-v1.9.1
+
+BUILD_DIR = $(WORK_ROOT)/build
 INCLUDE_DIR = $(BUILD_DIR)/include
 LIB_DIR = $(BUILD_DIR)/lib
 BIN_DIR = $(BUILD_DIR)/bin
 
-TARGET = libbhro
+LD_INCLUDE_PATH = $(INCLUDE_DIR)
+LD_LIBRARY_PATH = $(LIB_DIR)
 
-CC = g++
-SOLINK.cc = $(CC) -shared -o
+all: before bhro
+	@echo "[build done ...]"
+	@echo "[compile time $(COMPILE_TIME)]"
 
-CFLAGS = -Wall -std=c++11 -fPIC
-USER_LINK_INC = -I$(INCLUDE_DIR)
-USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -Wl,-rpath,$(LIB_DIR)
-#USER_LINK_LIB = -pthread -L$(LIB_DIR) -luv -lbbu
+before:
+	@test -d $(BUILD_DIR) || mkdir -p $(BUILD_DIR)
+	@test -d $(BIN_DIR) || mkdir -p $(BIN_DIR)
 
-SOURCE = $(wildcard *.cpp)
-OBJECTS = $(SOURCE:.cpp=.o)
+libuv:
+	@echo "[build libuv ...]"
+	@tar -zxf $(WORK_ROOT)/$(LIBUV).tar.gz -C $(BUILD_DIR)
+	@cd $(BUILD_DIR)/$(LIBUV) && sh autogen.sh && ./configure --prefix=$(WORK_ROOT)/../ && make && make install
 
-all: $(TARGET).so
-	@echo "[build bhro ...]"		
-	@mv $(TARGET).so $(LIB_DIR)
-	@cp -rf *.h $(INCLUDE_DIR)
+src: libuv
+	make -C $(WORK_ROOT)/src
 
-$(TARGET).so: $(OBJECTS)
-	$(SOLINK.cc) $(TARGET).so $(OBJECTS) $(LINK_ARG)
-	chmod a+rx $(TARGET).so
+bhro: src
+	make -C $(WORK_ROOT)/bhro_api
 
-%.o: %.cpp
-	$(CC) -c $(CFLAGS) $(USER_LINK_INC) $< -o $@ $(USER_LINK_LIB) 
-
-.PHONY:clean
+.PHONY: clean
 clean:
-	@echo "[Cleanning bhro ...]"
-	@rm -f $(OBJECTS)
-	@rm -f $(TARGET).so
+	@echo "[Cleanning ...]"
+	@rm -rf $(BUILD_DIR)
+	@make clean -C src
+	@make clean -C bhro_api
 

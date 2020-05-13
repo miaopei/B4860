@@ -36,6 +36,7 @@ public:
     void SendROamAdapterDelayInfo();
 
     void SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size);
+    void HeartSendPackMessage(uv::Packet::Head head, std::string data, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
 
     /* destination: 
@@ -53,6 +54,9 @@ public:
 	void GetNetworkTopology();
 
     bool GetRSPPacket(uv::Packet& packet);
+
+    void Heart();
+    void HandleHeart(void* arg);
 
     bool RSPStatus;
 

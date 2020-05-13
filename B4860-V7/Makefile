@@ -24,8 +24,6 @@ all: before bbu
 	@make -C ftplibpp install
 	@make -C hub
 	@make -C rru
-	@make -C oam_adapter
-	@make -C oam_adapter_cli
 	@make -C test
 	@echo "[compile time $(COMPILE_TIME)]"
 
@@ -74,7 +72,5 @@ clean:
 	@make -C ftplibpp clean
 	@make clean -C hub
 	@make clean -C rru
-	@make clean -C oam_adapter
-	@make clean -C oam_adapter_cli
 	@make clean -C test
 

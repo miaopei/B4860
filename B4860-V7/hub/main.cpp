@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 	LOG_PRINT(LogLevel::debug, "Device IP: %s", pdata);
 #endif
 
-	SocketAddr addr("127.0.0.1", PORT, SocketAddr::Ipv4);
+	SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
 	//SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
     HUB hub(loop);
 
@@ -59,6 +59,8 @@ int main(int argc, char* argv[])
     hub.bbu_addr = pdata;
 
     hub.connectToServer(addr);
+
+    hub.Heart();
 
     loop->run();
 	

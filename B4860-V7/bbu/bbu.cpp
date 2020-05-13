@@ -152,6 +152,9 @@ void BBU::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 			LOG_PRINT(LogLevel::debug, "[msg_update_delay]");
             UpdateHUBDelayInfo(packet);
             break;
+        case uv::Packet::MSG_HEART_BEAT:
+            LOG_PRINT(LogLevel::debug, "[msg_heart_beat]");
+            break;
 		default:
 			LOG_PRINT(LogLevel::error, "[MessageID Error]");
 	}
