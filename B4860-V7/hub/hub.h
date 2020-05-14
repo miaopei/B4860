@@ -20,6 +20,9 @@
 
 #define TOFFSET 3
 
+#define PORT        30000
+#define IFRNAME     "enp0s31f6"
+
 
 #if 0
 #ifdef __cplusplus

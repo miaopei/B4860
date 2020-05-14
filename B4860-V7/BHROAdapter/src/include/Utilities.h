@@ -47,9 +47,6 @@ using namespace std;
 
 #define PATH_ROUTE      "/proc/net/route"
 
-#define PORT        30000
-#define IFRNAME     "enp0s31f6"
-
 /*************************************************************************
  * @GetDeviceIP
  * get device interface address

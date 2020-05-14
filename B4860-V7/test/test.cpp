@@ -1,5 +1,8 @@
 #include <iostream>
 
+#define PORT        30000
+#define IFRNAME     "enp0s31f6"
+
 #define _DEBUG
 #include "Utilities.h"
 
