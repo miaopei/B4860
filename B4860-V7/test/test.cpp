@@ -6,9 +6,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#include "BHRO_API.h"
-
-#if 0
+#if 1
 TEST_CASE("test utilities interfade function") {
     //const char *interface_name = "enp0s31f6";
     char* pdata = NULL;
@@ -19,15 +17,15 @@ TEST_CASE("test utilities interfade function") {
         std::cout << "Error: malloc gateway memory error" << std::endl;
     }
 
-    GetDeviceIP(interface_name, pdata, size);
+    GetDeviceIP(IFRNAME, pdata, size);
     std::cout << "Device IP: " << pdata << std::endl;
     memset(pdata , 0, size);
 
-    GetDeviceMAC(interface_name, pdata, size);
+    GetDeviceMAC(IFRNAME, pdata, size);
     std::cout << "Device MAC: " << pdata << std::endl;
     memset(pdata , 0, size);
     
-    GetDeviceGateWay(interface_name, pdata, size);
+    GetDeviceGateWay(IFRNAME, pdata, size);
     std::cout << "Device GateWay: " << pdata << std::endl;
     memset(pdata , 0, size);
     
@@ -41,6 +39,7 @@ TEST_CASE("test utilities log function") {
     LOG_PRINT(LogLevel::error, "test utilities error log function");
 }
 #endif
+#if 0
 TEST_CASE("test BHRO lib") {
     BHRO_API adapter;
     adapter.BHRO_INIT();
@@ -52,4 +51,5 @@ TEST_CASE("test BHRO lib") {
     //while(1){sleep(1);}
 }
 
+#endif
 

@@ -144,15 +144,6 @@ void HUB::SendConnectMessage()
 void HUB::SetRHUBInfo()
 {
 #if 0
-	uv::Packet packet;
-	char mac[32] = {0};
-	if(!packet.GetDeviceMac(IFRNAME, mac))
-    {
-		LOG_PRINT(LogLevel::error, "GetMac error");
-        return ;
-    }
-	m_mac = mac;
-	
     int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
     /* 获取 rhub 的 port id 信息 */
     uint16_t rhub_port = get_rhup_port_id(mpi_fd, UP);
@@ -169,12 +160,24 @@ void HUB::SetRHUBInfo()
     gpmc_mpi_close(mpi_fd);
 #endif
 
-	//m_mac = mac;
-	m_mac = "F48E38DCD7CA";
+    char* pdata = NULL;
+    size_t size = 32;
+    pdata = (char*)malloc(size * sizeof(char));
+    if(pdata == NULL)
+    {
+        LOG_PRINT(LogLevel::error, "malloc memory error");
+    }
+    GetDeviceMAC(IFRNAME, pdata, size);
+	LOG_PRINT(LogLevel::debug, "Device Mac: %s", pdata);
+
+    m_mac = pdata;
     m_source = "0";
     m_port = "0";
     m_hop = "1";
     m_uport = "2";
+    
+    free(pdata);
+    pdata = NULL;
 }
 
 void HUB::SendRHUBDelayInfo()

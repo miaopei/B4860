@@ -18,16 +18,6 @@ BBU::BBU(EventLoop* loop)
 {
     setMessageCallback(std::bind(&BBU::OnMessage, this, placeholders::_1, placeholders::_2, placeholders::_3));
 #if 0
-	/* 需要优化 把 GetDeviceMac 放到其他公共地方  */
-    uv::Packet packet;
-    char mac[32] = {0};
-	if(!packet.GetDeviceMac(IFRNAME, mac))
-    {
-        std::cout << "Error: GetMac error" << std::endl;
-        return ;
-    }
-    m_mac = mac;
-	
 	FUN_T_PARA *para = new FUN_T_PARA;
 	para->carrierIdx = 0;
 	
@@ -43,12 +33,25 @@ BBU::BBU(EventLoop* loop)
 	delete para;
 #endif
 	
-    m_mac = "FFFFFFFFFFFF";
+    char* pdata = NULL;
+    size_t size = 32;
+    pdata = (char*)malloc(size * sizeof(char));
+    if(pdata == NULL)
+    {
+        LOG_PRINT(LogLevel::error, "malloc memory error");
+    }
+    GetDeviceMAC(IFRNAME, pdata, size);
+	LOG_PRINT(LogLevel::debug, "Device Mac: %s", pdata);
+
+    m_mac = pdata;
+    //m_mac = "FFFFFFFFFFFF";
     m_source = to_string(uv::Packet::BBU);
     m_hop = "0";
     m_port = "0";
     m_uport = "0";
-
+    
+    free(pdata);
+    pdata = NULL;
 }
 
 void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
@@ -422,6 +425,31 @@ void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Pa
     SendPackMessage(connection, head, data, data.length());
 }
 
+void BBU::SendConnectToOamAdapter(uv::TcpConnectionPtr& connection, uv::Packet& packet)
+{
+    uv::Packet::Head head;
+    head.s_source       = packet.GetSource();
+    head.s_destination  = to_string(uv::Packet::TO_OAM);
+	head.s_mac			= packet.GetMac();
+    head.s_state        = packet.GetState();
+    head.s_msgID        = to_string(uv::Packet::MSG_NEW_CONNECT);
+    head.s_hop          = packet.GetHop();
+    head.s_port         = packet.GetPort();
+    head.s_uport        = packet.GetUPort();
+
+	std::string data = "ip=" + GetCurrentName(connection);
+    data += "&mac=" + packet.GetMac();
+    data += "&source=" + packet.GetSource();
+    data += "&hop=" + packet.GetHop();
+
+    std::vector<TcpConnectionPtr> oamsConnection;
+	GetOAMConnection(oamsConnection);
+	for(auto it : oamsConnection)
+	{	
+        SendPackMessage(it, head, data, data.length());
+	}
+}
+
 void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
 	DeviceInfo dInfo;
@@ -438,6 +466,16 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 		LOG_PRINT(LogLevel::error, "SetConnectionInfo error");
 		return;
 	}
+
+    std::vector<TcpConnectionPtr> oamsConnection;
+    GetOAMConnection(oamsConnection);
+    for(auto it : oamsConnection)
+    {
+        if(it != connection)
+        {
+            SendConnectToOamAdapter(connection, packet);
+        }
+    }
 
     /* 如果 source 是 RRU 需要更新上级 HUB 延时测量信息*/
     if(dInfo.s_source == to_string(uv::Packet::RRU))
@@ -1018,12 +1056,15 @@ void BBU::NetworkTopology()
 
     for(auto &it : netTopology)
     { 
-        LOG_PRINT(LogLevel::debug, "\n\tnetTopology: -> %s %s %s %s %s %s %s %s %s %s %s",
+        LOG_PRINT(LogLevel::debug, "\n\tnetTopology: -> %s %s %s %s %s %s %s %s %s %s",
 									it.second.s_ip.c_str(),
-									it.second.s_connection, it.second.s_source.c_str(),
-									it.second.s_mac.c_str(), it.second.s_hop.c_str(),
-									it.second.s_port.c_str(), it.second.s_uport.c_str(),
-									it.second.s_routeIndex.c_str(), it.second.s_upgradeState.c_str(),
+									it.second.s_mac.c_str(), 
+                                    it.second.s_source.c_str(),
+                                    it.second.s_hop.c_str(),
+									it.second.s_port.c_str(), 
+                                    it.second.s_uport.c_str(),
+									it.second.s_routeIndex.c_str(), 
+                                    it.second.s_upgradeState.c_str(),
                                     it.second.s_rruDelayInfo.T2a.c_str(),
                                     it.second.s_rruDelayInfo.Ta3.c_str());
     }

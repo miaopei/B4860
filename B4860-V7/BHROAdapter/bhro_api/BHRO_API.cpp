@@ -33,10 +33,10 @@ void BHRO_API::ConnectBBU(ThreadArg& threadArg)
             LOG_PRINT(LogLevel::error, "malloc gateway memory error");
         }
 
-        GetDeviceIP(interface_name, pdata, size);	
+        GetDeviceIP(IFRNAME, pdata, size);	
         LOG_PRINT(LogLevel::debug, "Device IP: %s", pdata);
 
-        SocketAddr addr(pdata, SOCKETPORT, SocketAddr::Ipv4);
+        SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
 
         auto oamAdapter = std::make_shared<OamAdapter>(loop);
         oamAdapter->connectToServer(addr);
@@ -98,8 +98,8 @@ void BHRO_API::GetTopo()
     ConditionWait();
     threadArg_.oam_adapter->GetNetworkTopology();
 
+#if 0
     std::this_thread::sleep_for(chrono::milliseconds(100)); // 延时 100ms
-
     uv::Packet packet;
     if(threadArg_.oam_adapter->GetRSPPacket(packet))
     {
@@ -107,27 +107,7 @@ void BHRO_API::GetTopo()
     } else {
         LOG_PRINT(LogLevel::error, "failure");
     }
-}
-
-void BHRO_API::TestTimer()
-{
-    uv::Timer* pTimer = new uv::Timer(threadArg_.loop_, 500, 0, [this](uv::Timer* ptr)
-    {
-        LOG_PRINT(LogLevel::debug, "timer callback run onice.")
-
-        ptr->close([](uv::Timer* ptr)
-        {
-            delete ptr;    
-        });
-    });
-    pTimer->start();
-#if 0
-    uv::Timer timer(threadArg_.loop_, 200, 2,                                                                  
-        [](Timer*)
-    {
-        LOG_PRINT(LogLevel::debug, "timer callback test...");
-    });
-    timer.start();
 #endif
 }
+
 

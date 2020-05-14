@@ -33,8 +33,6 @@
 #define TOFFSETCYCLE        8.013       
 
 #if 0
-#define IFRNAME     "ceth"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -70,6 +68,7 @@ public:
 
     void SendPackMessage(uv::TcpConnectionPtr& connection, uv::Packet::Head head, std::string& data, ssize_t size);
     void SendPackMessageToAllDevice(DeviceType device, uv::Packet::Head head, std::string& data, ssize_t size);
+    void SendConnectToOamAdapter(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 
 	void BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 	void HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);

@@ -86,17 +86,17 @@ void OamAdapter::SendConnectMessage()
 
 void OamAdapter::SetROamAdapterInfo()
 {
-#if 0
-	uv::Packet packet;
-	char mac[32] = {0};
-	if(!packet.GetDeviceMac(IFRNAME, mac))
+    char* pdata = NULL;
+    size_t size = 32;
+    pdata = (char*)malloc(size * sizeof(char));
+    if(pdata == NULL)
     {
-        std::cout << "Error: GetMac error" << std::endl;
-        return ;
+        LOG_PRINT(LogLevel::error, "malloc memory error");
     }
-#endif
-	//m_mac = mac;
-	m_mac = "F48E38DCD7C1";
+    GetDeviceMAC(IFRNAME, pdata, size);
+	LOG_PRINT(LogLevel::debug, "Device Mac: %s", pdata);
+
+    m_mac = pdata;
     m_source = to_string(uv::Packet::OAM);
     m_hop = "0";
     m_port = "0";
@@ -134,12 +134,15 @@ void OamAdapter::ProcessRecvMessage(uv::Packet& packet)
 {
     packet_ = packet;
     RSPStatus = true;
-#if 0
+#if 1
     switch(std::stoi(packet.GetMsgID()))
     {
         case uv::Packet::MSG_CONNECT:
             //std::cout << "[RCV:msg_connect]" << std::endl;
-            ConnectResultProcess(packet);
+            //ConnectResultProcess(packet);
+            break;
+        case uv::Packet::MSG_NEW_CONNECT:
+            SetNewConnect(packet);
             break;
         case uv::Packet::MSG_GET_NETWORK_TOPOLOGY:
             NetworkTopologyMessageProcess(packet);
@@ -148,6 +151,11 @@ void OamAdapter::ProcessRecvMessage(uv::Packet& packet)
             std::cout << "[Error: MessageID Error]" << std::endl;
     }
 #endif
+}
+
+void OamAdapter::SetNewConnect(uv::Packet& packet)
+{
+    LOG_PRINT(LogLevel::debug, "mibcli Set New Connect");
 }
 
 void OamAdapter::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size)

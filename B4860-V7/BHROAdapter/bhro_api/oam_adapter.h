@@ -58,6 +58,8 @@ public:
     void Heart();
     void HandleHeart(void* arg);
 
+    void SetNewConnect(uv::Packet& packet);
+
     bool RSPStatus;
 
 private:

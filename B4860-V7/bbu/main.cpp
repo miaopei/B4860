@@ -15,7 +15,6 @@ int main(int argc, char *argv[])
 
     uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer;
 
-	const char *interface_name = "enp0s31f6";
     char* pdata = NULL;
     size_t size = 32;
     pdata = (char*)malloc(size * sizeof(char));
@@ -24,10 +23,10 @@ int main(int argc, char *argv[])
 		LOG_PRINT(LogLevel::error, "malloc gateway memory error");
     }
 
-    GetDeviceIP(interface_name, pdata, size);	
+    GetDeviceIP(IFRNAME, pdata, size);	
 	LOG_PRINT(LogLevel::debug, "Device IP: %s", pdata);
 	
-    SocketAddr addr(pdata, 30000, SocketAddr::Ipv4);
+    SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
 
     BBU bbu(loop);
 

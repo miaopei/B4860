@@ -206,7 +206,7 @@ void uv::Packet::SplitData2Map(std::map<std::string, std::string>& map)
 		map.insert(std::make_pair(kv[0].c_str(), kv[1].c_str()));
     }
 }
-
+#if 0
 bool uv::Packet::GetDeviceMac(const char* inet, char* mac)
 {
     int fd, interface;
@@ -246,6 +246,7 @@ bool uv::Packet::GetDeviceMac(const char* inet, char* mac)
     }
     return false;
 }
+#endif
 
 int uv::Packet::readFromBuffer(PacketBuffer* packetbuf, Packet& out)
 {

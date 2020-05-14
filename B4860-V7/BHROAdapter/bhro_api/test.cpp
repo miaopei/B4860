@@ -17,8 +17,10 @@ int main(int argc, char** argv)
     BHRO_API adapter;
     adapter.BHRO_INIT();
 
-    adapter.GetTopo();
-    while(1){sleep(1);}
+    while(1){
+        //adapter.GetTopo();
+        sleep(15);
+    }
 	return 0;
 }
 
