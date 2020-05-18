@@ -25,6 +25,7 @@ all: before bbu
 	@make -C hub
 	@make -C rru
 	@make -C test
+	@make -C BHROAdapter
 	@echo "[compile time $(COMPILE_TIME)]"
 
 before:
@@ -73,4 +74,5 @@ clean:
 	@make clean -C hub
 	@make clean -C rru
 	@make clean -C test
+	@make clean -C BHROAdapter
 

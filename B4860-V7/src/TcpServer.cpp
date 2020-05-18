@@ -98,7 +98,6 @@ void TcpServer::removeConnnection(string& name)
 			}
     	}
     }
-
     connnections_.erase(name);
 	connectionInfo_.erase(name);
 }
@@ -605,7 +604,7 @@ void TcpServer::setNewConnectCallback(OnConnectionStatusCallback callback)
     onNewConnectCallback_ = callback;
 }
 
-void  TcpServer::setConnectCloseCallback(OnConnectionStatusCallback callback)
+void  TcpServer::setConnectCloseCallback(OnConnectCloseCallback callback)
 {
     onConnectCloseCallback_ = callback;
 }

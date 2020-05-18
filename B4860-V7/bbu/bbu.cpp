@@ -17,6 +17,7 @@ BBU::BBU(EventLoop* loop)
     :TcpServer(loop)
 {
     setMessageCallback(std::bind(&BBU::OnMessage, this, placeholders::_1, placeholders::_2, placeholders::_3));
+    setConnectCloseCallback(std::bind(&BBU::OnConnectClose, this, placeholders::_1));
 #if 0
 	FUN_T_PARA *para = new FUN_T_PARA;
 	para->carrierIdx = 0;
@@ -52,6 +53,16 @@ BBU::BBU(EventLoop* loop)
     
     free(pdata);
     pdata = NULL;
+}
+
+void BBU::OnConnectClose(shared_ptr<TcpConnection> connection)
+{
+    LOG_PRINT(LogLevel::debug, "Connect Close test");
+#if 1
+    DeviceInfo dInfo;
+    GetDeviceInfo(connection, dInfo);
+    LOG_PRINT(LogLevel::debug, "ConnectClose Info: %s", dInfo.s_routeIndex);
+#endif
 }
 
 void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
@@ -425,7 +436,7 @@ void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Pa
     SendPackMessage(connection, head, data, data.length());
 }
 
-void BBU::SendConnectToOamAdapter(uv::TcpConnectionPtr& connection, uv::Packet& packet)
+void BBU::SendConnectToOamAdapter(uv::TcpConnectionPtr& connection, uv::Packet& packet, DeviceInfo& dInfo)
 {
     uv::Packet::Head head;
     head.s_source       = packet.GetSource();
@@ -441,13 +452,12 @@ void BBU::SendConnectToOamAdapter(uv::TcpConnectionPtr& connection, uv::Packet& 
     data += "&mac=" + packet.GetMac();
     data += "&source=" + packet.GetSource();
     data += "&hop=" + packet.GetHop();
+    data += "&routeIndex=" + dInfo.s_routeIndex;
+    data += "&upgradeResult=" + dInfo.s_upgradeState;
 
-    std::vector<TcpConnectionPtr> oamsConnection;
-	GetOAMConnection(oamsConnection);
-	for(auto it : oamsConnection)
-	{	
-        SendPackMessage(it, head, data, data.length());
-	}
+    LOG_PRINT(LogLevel::debug, "+++++++++++++++++++++++++++++++++");
+
+    SendPackMessage(connection, head, data, data.length());
 }
 
 void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& packet)
@@ -467,16 +477,6 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 		return;
 	}
 
-    std::vector<TcpConnectionPtr> oamsConnection;
-    GetOAMConnection(oamsConnection);
-    for(auto it : oamsConnection)
-    {
-        if(it != connection)
-        {
-            SendConnectToOamAdapter(connection, packet);
-        }
-    }
-
     /* 如果 source 是 RRU 需要更新上级 HUB 延时测量信息*/
     if(dInfo.s_source == to_string(uv::Packet::RRU))
     {
@@ -492,6 +492,38 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 		LOG_PRINT(LogLevel::error, "WriteUpgradeResultToDevice error");
 		return;
     }
+    
+#if 0
+    LOG_PRINT(LogLevel::debug, "source=%s", packet.GetSource().c_str());
+    if(packet.GetSource() != to_string(uv::Packet::OAM))
+    {
+        if(!SetDeviceRouteIndex(connection))
+        {
+            LOG_PRINT(LogLevel::error, "Set Device RouteIndex error");
+            return ;
+        }
+
+        SendConnectToOamAdapter(connection, packet);
+    }
+#endif
+#if 1
+    std::vector<TcpConnectionPtr> oamsConnection;
+    GetOAMConnection(oamsConnection);
+    for(auto it : oamsConnection)
+    {
+        if(it != connection)
+        {
+            if(!SetDeviceRouteIndex(connection))
+            {
+                LOG_PRINT(LogLevel::error, "Set Device RouteIndex error");
+                return ;
+            }
+            GetDeviceInfo(connection, dInfo);
+
+            SendConnectToOamAdapter(it, packet, dInfo);
+        }
+    }
+#endif
 
     /* 需要优化，使用同一的消息发送接口 */
     SendConnectionMessage(connection, packet);
@@ -518,11 +550,13 @@ bool BBU::WriteUpgradeResultToDevice(uv::TcpConnectionPtr& connection, uv::Packe
 
 void BBU::DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
+#if 0
 	if(!SetDeviceRouteIndex(connection))
 	{
 		LOG_PRINT(LogLevel::error, "Set Device RouteIndex error");
 		return ;
 	}
+#endif
 
     switch(std::stoi(packet.GetSource()))
     {
