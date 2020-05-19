@@ -144,6 +144,12 @@ void OamAdapter::ProcessRecvMessage(uv::Packet& packet)
         case uv::Packet::MSG_NEW_CONNECT:
             SetNewConnect(packet);
             break;
+        case uv::Packet::MSG_CONNECT_CLOSED:
+            ConnectClose(packet);
+            break;
+        case uv::Packet::MSG_UPDATE_DATA:
+            UpdateData(packet);
+            break;
         case uv::Packet::MSG_GET_NETWORK_TOPOLOGY:
             NetworkTopologyMessageProcess(packet);
             break;
@@ -155,7 +161,17 @@ void OamAdapter::ProcessRecvMessage(uv::Packet& packet)
 
 void OamAdapter::SetNewConnect(uv::Packet& packet)
 {
-    LOG_PRINT(LogLevel::debug, "mibcli Set New Connect");
+    LOG_PRINT(LogLevel::debug, "mibcli Set New Connect, %s", packet.GetData().c_str());
+}
+
+void OamAdapter::ConnectClose(uv::Packet& packet)
+{
+    LOG_PRINT(LogLevel::debug, "mibcli Set Connect close, %s", packet.GetData().c_str());
+}
+
+void OamAdapter::UpdateData(uv::Packet& packet)
+{
+    LOG_PRINT(LogLevel::debug, "mibcli Set update data, %s", packet.GetData().c_str());
 }
 
 void OamAdapter::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size)

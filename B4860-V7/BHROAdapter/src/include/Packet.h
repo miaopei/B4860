@@ -53,6 +53,13 @@ namespace uv
 class Packet
 {
 public:
+    enum HeadInitFlag
+    {
+        BBU2ADAPTER_HEAD        = 0,
+        ADAPTER2BBU_HEAD        = 1,
+        S2D_REVERSAL_HEAD       = 2,
+        GENERAL_HEAD            = 3,
+    };
     struct Head{
         std::string s_source;
         std::string s_destination;
@@ -62,6 +69,67 @@ public:
         std::string s_hop;
         std::string s_port;
         std::string s_uport;
+        Head(){}
+        Head(int flag)
+        {
+            switch(flag)
+            {
+                case HeadInitFlag::BBU2ADAPTER_HEAD:
+                    {
+                        s_source        = to_string(Source::BBU);
+                        s_destination   = to_string(Destination::TO_OAM);
+                        s_mac           = "FFFFFFFFFFFF";
+                        s_state         = to_string(State::REQUEST);
+                        s_msgID         = to_string(MsgID::MSG_END);
+                        s_hop           = "0";
+                        s_port          = "0";
+                        s_uport         = "0";
+                    }
+                    break;
+                case HeadInitFlag::ADAPTER2BBU_HEAD:
+                    {
+                        s_source        = to_string(Source::OAM);
+                        s_destination   = to_string(Destination::TO_BBU);
+                        s_mac           = "FFFFFFFFFFFF";
+                        s_state         = to_string(State::REQUEST);
+                        s_msgID         = to_string(MsgID::MSG_END);
+                        s_hop           = "0";
+                        s_port          = "0";
+                        s_uport         = "0";
+                    }
+                    break;
+            }
+        }
+        Head(int flag, uv::Packet& packet)
+        {
+            switch(flag)
+            {
+                case HeadInitFlag::S2D_REVERSAL_HEAD:
+                    {
+                        s_source        = packet.GetDestination();
+                        s_destination   = packet.GetSource();
+                        s_mac           = packet.GetMac();
+                        s_state         = packet.GetState();
+                        s_msgID         = packet.GetMsgID();
+                        s_hop           = packet.GetHop();
+                        s_port          = packet.GetPort();
+                        s_uport         = packet.GetUPort();
+                    }
+                    break;
+                case HeadInitFlag::GENERAL_HEAD:
+                    {
+                        s_source        = packet.GetSource();
+                        s_destination   = packet.GetDestination();
+                        s_mac           = packet.GetMac();
+                        s_state         = packet.GetState();
+                        s_msgID         = packet.GetMsgID();
+                        s_hop           = packet.GetHop();
+                        s_port          = packet.GetPort();
+                        s_uport         = packet.GetUPort();
+                    }
+                    break;
+            }
+        }
     };
 
     enum Source
@@ -97,6 +165,8 @@ public:
         MSG_GET_NETWORK_TOPOLOGY	= 1006,
         MSG_RFTxStatus_SET          = 1007,
         MSG_NEW_CONNECT             = 1008,
+        MSG_CONNECT_CLOSED          = 1009,
+        MSG_UPDATE_DATA             = 1010,
         MSG_CONNECT					= 1040,
         MSG_DELAY_MEASUREMENT 		= 1041,
         MSG_DELAY_COMPENSATION      = 1042,

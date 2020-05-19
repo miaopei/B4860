@@ -60,6 +60,8 @@ public:
     void HandleHeart(void* arg);
 
     void SetNewConnect(uv::Packet& packet);
+    void ConnectClose(uv::Packet& packet);
+    void UpdateData(uv::Packet& packet);
 
     bool RSPStatus;
 

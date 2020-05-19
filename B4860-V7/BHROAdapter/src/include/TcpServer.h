@@ -20,6 +20,7 @@ namespace uv
 {
 
 using OnConnectionStatusCallback =  std::function<void (std::weak_ptr<TcpConnection> )> ;
+using OnConnectCloseCallback = std::function<void (std::shared_ptr<TcpConnection>)>;
 
 //no thread safe.
 class TcpServer
@@ -70,7 +71,7 @@ public:
     void setMessageCallback(OnMessageCallback callback);
 
     void setNewConnectCallback(OnConnectionStatusCallback callback);
-    void setConnectCloseCallback(OnConnectionStatusCallback callback);
+    void setConnectCloseCallback(OnConnectCloseCallback callback);
 
     void write(TcpConnectionPtr connection,const char* buf,unsigned int size, AfterWriteCallback callback = nullptr);
     void write(std::string& name,const char* buf,unsigned int size, AfterWriteCallback callback =nullptr);
@@ -134,7 +135,8 @@ private:
 
     OnMessageCallback onMessageCallback_;
     OnConnectionStatusCallback onNewConnectCallback_;
-    OnConnectionStatusCallback onConnectCloseCallback_;
+    //OnConnectionStatusCallback onConnectCloseCallback_;
+    OnConnectCloseCallback onConnectCloseCallback_;
     TimerWheel timerWheel_;
 
 	int m_base = 0;

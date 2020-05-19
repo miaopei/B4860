@@ -136,6 +136,9 @@ std::string uv::Packet::GetData()
 
 void uv::Packet::EchoPackMessage()
 {
+    if(m_msgID == to_string(uv::Packet::MSG_HEART_BEAT))
+        return;
+
 	LOG_PRINT(LogLevel::debug, "Pack packet:\
 								\n\tSource: %s [HUB,RRU,BBU,OAM]\
 								\n\tDestination: %s [HUB,RRU,BBU,OAM]\
@@ -156,6 +159,9 @@ void uv::Packet::EchoPackMessage()
 
 void uv::Packet::EchoUnPackMessage()
 {
+    if(m_msgID == to_string(uv::Packet::MSG_HEART_BEAT))
+        return;
+
 	LOG_PRINT(LogLevel::debug, "UnPack packet:\
 								\n\tSource: %s [HUB,RRU,BBU,OAM]\
 								\n\tDestination: %s [HUB,RRU,BBU,OAM]\

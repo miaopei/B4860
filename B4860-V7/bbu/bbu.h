@@ -71,7 +71,7 @@ public:
 
     void SendPackMessage(uv::TcpConnectionPtr& connection, uv::Packet::Head head, std::string& data, ssize_t size);
     void SendPackMessageToAllDevice(DeviceType device, uv::Packet::Head head, std::string& data, ssize_t size);
-    void SendConnectToOamAdapter(uv::TcpConnectionPtr& connection, uv::Packet& packet, DeviceInfo& dInfo);
+    void SendMessage2Adapter(uv::Packet::Head head, std::string& data, ssize_t size);
 
 	void BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 	void HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
@@ -139,10 +139,6 @@ private:
     //void OnConnectClose(uv::TcpConnectionPtr connection);
     void OnConnectClose(uv::TcpConnectionPtr connection);
     std::string m_mac;
-    std::string m_source;
-    std::string m_hop;
-    std::string m_port;
-    std::string m_uport;
 };
 
 #endif // BBU_SERVER_H

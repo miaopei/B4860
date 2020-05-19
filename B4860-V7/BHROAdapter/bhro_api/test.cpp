@@ -17,10 +17,17 @@ int main(int argc, char** argv)
     BHRO_API adapter;
     adapter.BHRO_INIT();
 
-    while(1){
-        //adapter.GetTopo();
-        sleep(15);
+    //adapter.GetTopo();
+    //adapter.DeviceUpGrade("0", "rHUP_1.tar", "123456789");
+    //adapter.DeviceUpGrade("0", "0_2", "rHUP_2.tar", "123456789");
+    int i = 20;
+    while(i != 0){
+        sleep(1);
+        i--;
     }
+    adapter.DeviceUpGrade("0", "rHUP_1.tar", "123456789");
+    while(1){sleep(1);}
+
 	return 0;
 }
 
