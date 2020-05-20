@@ -72,14 +72,8 @@ void OamAdapter::SendConnectMessage()
     std::string data = "ResultID=0";
     
     uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::REQUEST);
+    CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_CONNECT);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 }
@@ -96,11 +90,12 @@ void OamAdapter::SetROamAdapterInfo()
     GetDeviceMAC(IFRNAME, pdata, size);
 	LOG_PRINT(LogLevel::debug, "Device Mac: %s", pdata);
 
-    m_mac = pdata;
-    m_source = to_string(uv::Packet::OAM);
-    m_hop = "0";
-    m_port = "0";
-    m_uport = "0";
+    m_mac       = pdata;
+    m_source    = to_string(uv::Packet::OAM);
+    m_hop       = "X";
+    m_port      = "X";
+    m_uport     = "X";
+    m_uuport    = "X";
 }
 
 void OamAdapter::RecvMessage(const char* buf, ssize_t size)
@@ -255,14 +250,9 @@ void OamAdapter::SendUpgradeMessage(std::string destination, std::string fileNam
     std::string data = "fileName=" + fileName + "&md5=" + md5;
     
     uv::Packet::Head head;
-    head.s_source = m_source;
+    CreateHead(uv::Packet::USER_DEFINED, head);
     head.s_destination = destination;
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::REQUEST);
     head.s_msgID = to_string(uv::Packet::MSG_UPGRADE);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 }
@@ -272,14 +262,9 @@ void OamAdapter::SendUpgradeMessage(std::string destination, std::string routeIn
     std::string data = "routeIndex=" + routeIndex + "&fileName=" + fileName + "&md5=" + md5;
     
     uv::Packet::Head head;
-    head.s_source = m_source;
+    CreateHead(uv::Packet::USER_DEFINED, head);
     head.s_destination = destination;
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::REQUEST);
     head.s_msgID = to_string(uv::Packet::MSG_UPGRADE);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 }
@@ -289,14 +274,8 @@ void OamAdapter::SendRFTxMessage(std::string RFTxStatus)
     std::string data = "RFTxStatus=" + RFTxStatus;
     
     uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_RRU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::REQUEST);
+    CreateHead(uv::Packet::TO_RRU, head);
     head.s_msgID = to_string(uv::Packet::MSG_RFTxStatus_SET);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 }
@@ -306,14 +285,8 @@ void OamAdapter::SendRFTxMessage(std::string routeIndex, std::string RFTxStatus)
     std::string data = "routeIndex=" + routeIndex + "&RFTxStatus=" + RFTxStatus;
     
     uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_RRU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::REQUEST);
+    CreateHead(uv::Packet::TO_RRU, head);
     head.s_msgID = to_string(uv::Packet::MSG_RFTxStatus_SET);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 }
@@ -324,14 +297,8 @@ void OamAdapter::GetNetworkTopology()
 	std::string data = "";
     
     uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::REQUEST);
+    CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_GET_NETWORK_TOPOLOGY);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 }
@@ -361,14 +328,8 @@ void OamAdapter::HandleHeart(void* arg)
 
     std::string data = "heartbeat";
     uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::REQUEST);
+    CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_HEART_BEAT);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     uv::Timer timer(&loop, 30000, 30000,                                                                  
         [&adapter, head, data](Timer*)
@@ -377,5 +338,37 @@ void OamAdapter::HandleHeart(void* arg)
     });
     timer.start();
     loop.run();
+}
+
+void OamAdapter::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head)
+{
+    switch(dType)
+    {
+        case uv::Packet::Destination::TO_BBU:
+            {
+                head.s_destination = to_string(uv::Packet::Destination::TO_BBU);
+            }
+            break;
+        case uv::Packet::Destination::TO_HUB:
+            {
+                head.s_destination = to_string(uv::Packet::Destination::TO_HUB);
+            }
+            break;
+        case uv::Packet::Destination::TO_RRU:
+            {
+                head.s_destination = to_string(uv::Packet::Destination::TO_RRU);
+            }
+            break;
+        default:
+            break;
+    }
+
+    head.s_source   = m_source;
+	head.s_mac      = m_mac;
+    head.s_state    = to_string(uv::Packet::REQUEST);
+    head.s_hop      = m_hop;
+    head.s_port     = m_port;
+    head.s_uport    = m_uport;
+    head.s_uuport   = m_uuport;
 }
 

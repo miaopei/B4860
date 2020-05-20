@@ -19,25 +19,26 @@
 
 using namespace std;
 
-#define HEADLENGTH 		26
+#define HEADLENGTH 		27
 
 #define MAXINTERFACES 	11
 
 
 //PacketIR:
-//-----------------------------------------------------------------------------------------------------------------
-//  head  | source | destination |   mac   | state  | msgID  |   HOP  |  port  | uPort  | length |  data  |  end   |
-// 1 Byte | 1 Byte |    1 Byte   | 12 Byte | 1 Byte | 4 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
-//-----------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------------
+//  head  | source | destination |   mac   | state  | msgID  |   hop  |  port  | uPort  | uuPort | length |  data  |  end   |
+// 1 Byte | 1 Byte |    1 Byte   | 12 Byte | 1 Byte | 4 Byte | 1 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
+//--------------------------------------------------------------------------------------------------------------------------
 // head: 数据包头校验 (0x7e)
 // source：HUB、RRU、BBU、OAM (0,1,2,3)
 // destination: 消息目标发给谁 HUB、RRU、BBU、OAM 
 // mac: 设备连接的网口 mac 地址
 // state: 请求、响应 (0,1)
 // msgID：消息编号 (1001)
-// RRUID: rruid为4 (4)   
+// hop: 层级为4 (4)   
 // port: 设备本端端口号 (0,1)
 // uPort: 设备连接对端端口号 (0-7)
+// uuPort: rru 的上联口接 hub，hub的上联口连接的端口号
 // length: 0021 (data 数据长度)
 // data: 用户数据
 // end: 数据包结尾校验 (0xe7)
@@ -55,10 +56,11 @@ class Packet
 public:
     enum HeadInitFlag
     {
-        BBU2ADAPTER_HEAD        = 0,
-        ADAPTER2BBU_HEAD        = 1,
-        S2D_REVERSAL_HEAD       = 2,
-        GENERAL_HEAD            = 3,
+        DEFAULT_HEAD            = 0,
+        BBU2ADAPTER_HEAD        = 1,
+        ADAPTER2BBU_HEAD        = 2,
+        S2D_REVERSAL_HEAD       = 3,
+        GENERAL_HEAD            = 4,
     };
     struct Head{
         std::string s_source;
@@ -69,11 +71,25 @@ public:
         std::string s_hop;
         std::string s_port;
         std::string s_uport;
+        std::string s_uuport;
         Head(){}
         Head(int flag)
         {
             switch(flag)
             {
+                case HeadInitFlag::DEFAULT_HEAD:
+                    {
+                        s_source        = "9";
+                        s_destination   = "9";
+                        s_mac           = "FFFFFFFFFFFF";
+                        s_state         = to_string(State::REQUEST);
+                        s_msgID         = to_string(MsgID::MSG_END);
+                        s_hop           = "9";
+                        s_port          = "9";
+                        s_uport         = "9";
+                        s_uuport        = "9";
+                    }
+                    break;
                 case HeadInitFlag::BBU2ADAPTER_HEAD:
                     {
                         s_source        = to_string(Source::BBU);
@@ -84,6 +100,7 @@ public:
                         s_hop           = "0";
                         s_port          = "0";
                         s_uport         = "0";
+                        s_uuport        = "0";
                     }
                     break;
                 case HeadInitFlag::ADAPTER2BBU_HEAD:
@@ -96,6 +113,7 @@ public:
                         s_hop           = "0";
                         s_port          = "0";
                         s_uport         = "0";
+                        s_uuport        = "0";
                     }
                     break;
             }
@@ -114,6 +132,7 @@ public:
                         s_hop           = packet.GetHop();
                         s_port          = packet.GetPort();
                         s_uport         = packet.GetUPort();
+                        s_uuport        = packet.GetUUPort();
                     }
                     break;
                 case HeadInitFlag::GENERAL_HEAD:
@@ -126,6 +145,7 @@ public:
                         s_hop           = packet.GetHop();
                         s_port          = packet.GetPort();
                         s_uport         = packet.GetUPort();
+                        s_uuport        = packet.GetUUPort();
                     }
                     break;
             }
@@ -145,7 +165,8 @@ public:
         TO_HUB     = 0,
         TO_RRU     = 1,
         TO_BBU     = 2,
-        TO_OAM     = 3
+        TO_OAM     = 3,
+        USER_DEFINED = 4,
     };
 
     enum State
@@ -199,6 +220,7 @@ public:
 	std::string GetHop();
 	std::string GetPort();
 	std::string GetUPort();
+	std::string GetUUPort();
     int GetLength();
     std::string GetData();
 
@@ -250,6 +272,7 @@ private:
 	std::string m_hop;
 	std::string m_port;
 	std::string m_uport;
+    std::string m_uuport;
     int m_length;
     std::string m_data;
     std::string m_packet;

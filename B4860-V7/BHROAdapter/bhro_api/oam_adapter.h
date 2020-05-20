@@ -63,6 +63,8 @@ public:
     void ConnectClose(uv::Packet& packet);
     void UpdateData(uv::Packet& packet);
 
+    void CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head);
+
     bool RSPStatus;
 
 private:
@@ -74,5 +76,6 @@ private:
     std::string m_hop;
     std::string m_port;
     std::string m_uport;
+    std::string m_uuport;
 };
 

@@ -128,14 +128,8 @@ void HUB::SendConnectMessage()
     std::string data = "ResultID=0";
     
     uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::REQUEST);
+    CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_CONNECT);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 #endif
@@ -175,6 +169,7 @@ void HUB::SetRHUBInfo()
     m_port = "0";
     m_hop = "1";
     m_uport = "2";
+    m_uuport = "X";
     
     free(pdata);
     pdata = NULL;
@@ -443,14 +438,8 @@ void HUB::UpdataDelay(uv::Packet& packet)
     //RHUBDelayInfoCalculate(data);
 
     uv::Packet::Head head;
-    head.s_source = to_string(uv::Packet::HUB);
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::RESPONSE);
+    CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_UPDATE_DELAY);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     //TestProcess(packet);
     std::string data = "delay1_up=34&delay2_up=35&delay3_up=36&delay4_up=37&delay5_up=38&delay1_down=36&delay2_down=37&delay3_down=38&delay4_down=39&delay5_down=37&t14_delay1=11488&t14_delay2=11488&t14_delay3=11488&t14_delay4=11488&t14_delay5=11488";
@@ -499,6 +488,9 @@ void HUB::UpgradeThread(uv::Packet& packet)
 void HUB::SendUpgradeFailure(uv::Packet& packet, const std::string errorno)
 {
     uv::Packet::Head head;
+    CreateHead(uv::Packet::TO_BBU, head);
+    head.s_msgID = packet.GetMsgID();
+#if 0
     head.s_source = packet.GetSource();
     head.s_destination = to_string(uv::Packet::TO_BBU);
 	head.s_mac = packet.GetMac();
@@ -507,6 +499,7 @@ void HUB::SendUpgradeFailure(uv::Packet& packet, const std::string errorno)
     head.s_hop = packet.GetHop();
     head.s_port = packet.GetPort();
     head.s_uport = packet.GetUPort();
+#endif
 
     std::string data = std::string("ResultID=" + errorno);
     
@@ -644,14 +637,8 @@ void HUB::HandleHeart(void* arg)
 
     std::string data = "heartbeat";
     uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::REQUEST);
+    CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_HEART_BEAT);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     uv::Timer timer(&loop, 30000, 30000,                                                                  
         [&hub, head, data](Timer*)
@@ -661,6 +648,38 @@ void HUB::HandleHeart(void* arg)
     timer.start();
     loop.run();
 }
+
+void HUB::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head)
+{
+    switch(dType)
+    {
+        case uv::Packet::Destination::TO_BBU:
+            {
+                head.s_destination = to_string(uv::Packet::Destination::TO_BBU);
+            }
+            break;
+        case uv::Packet::Destination::TO_OAM:
+            {
+                head.s_destination = to_string(uv::Packet::Destination::TO_OAM);
+            }
+            break;
+        default:
+            LOG_PRINT(LogLevel::error, "DeviceType error");
+            return;
+    }
+
+    head.s_source       = m_source;
+	head.s_mac          = m_mac;
+    head.s_state        = to_string(uv::Packet::RESPONSE);
+    head.s_hop          = m_hop;
+    head.s_port         = m_port;
+    head.s_uport        = m_uport;
+    head.s_uuport       = m_uuport;
+}
+
+
+
+
 
 
 
@@ -692,14 +711,8 @@ void HUB::TestProcess(uv::Packet& packet)
 						"&t14_delay4=" + to_string(t14_delay->delay4) +
 						"&t14_delay5=" + to_string(t14_delay->delay5));
     
-    head.s_source = to_string(uv::Packet::HUB);
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::RESPONSE);
+    CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_DELAY_MEASUREMENT);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 

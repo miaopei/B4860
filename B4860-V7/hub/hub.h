@@ -114,6 +114,8 @@ public:
     void Heart();
     void HandleHeart(void* arg);
 
+    void CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head);
+
 
     void TestProcess(uv::Packet& packet);
     void TestGetRhubDelay(uint8_t dir, struct rhub_data_delay* rhub_delay);
@@ -129,6 +131,6 @@ private:
     std::string m_hop;
     std::string m_port;
     std::string m_uport;
-
+    std::string m_uuport;
 };
 
