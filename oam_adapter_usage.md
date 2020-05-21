@@ -1,3 +1,9 @@
+> Title： EU、RU 升级工具 oam_adapter 使用说明
+> Author: 苗沛
+> Email：miaopei@baicells.com
+> Data：2020-04-23
+
+
 ## oam_adapter 使用说明
 
 ```shell
@@ -54,26 +60,32 @@ xxx.img   xxxx.img
 # $ md5sum /mnt/ftp/rHUP.tar
 # f119e2d0e5e273e9dd2e2557d57dac57  /mnt/ftp/rHUP.tar
 OamAdapter > upgrade 0 rHUP.tar f119e2d0e5e273e9dd2e2557d57dac57
+
 # oam_adapter 升级 所有的 rru 设备, rru 为目录，md5输入任意数字，代码中会计算目录下文件的 md5
 OamAdapter > upgrade 1 rru 123
 
 # RouteIndex 通过 oam_adapter get_topo 指令获取
 OamAdapter > get_topo
- 	IP					MAC				Source	HOP		UpgradeState	RouteIndex
- 	10.0.0.123:49260 	38D2693D70BB 	0 		1 		0 				0_0
- 	10.0.0.30:49260 	38D2693D70CC 	1 		2 		0 				0_1_0_0
+ 	IP				  MAC			Source	HOP	 UpgradeState	RouteIndex
+ 	10.0.0.123:49260  38D2693D70BB 	0 		1 	 0 				0_0
+ 	10.0.0.30:49260   38D2693D70CC 	1 		2 	 0 				0_1_0_0
+
 # oam_adapter 升级 指定的 hub 设备
 OamAdapter > upgrade 0 0_0 rHUP.tar f119e2d0e5e273e9dd2e2557d57dac57
+
 # oam_adapter 升级 指定的 rru 设备， rru 为目录，md5输入任意数字，代码中会计算目录下文件的 md5
 OamAdapter > upgrade 1 0_1_0_0 rru 123
 
 # oam_adapter 开功放，设置天线功率
 # 设置所有 rru 设备 开功放
 OamAdapter > RFTxStatus_set 1
+
 # 设置所有 rru 设备 关功放
 OamAdapter > RFTxStatus_set 0
+
 # 指定 rru 设备 开功放
 OamAdapter > RFTxStatus_set 0_1_0_0 1
+
 # 指定 rru 设备 关功放
 OamAdapter > RFTxStatus_set 0_1_0_0 
 ```

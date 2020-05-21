@@ -350,7 +350,7 @@ void HUB::RecvMessage(const char* buf, ssize_t size)
 		uv::Packet packet;
 		while (0 == packetbuf->readPacket(packet))
 		{
-			LOG_PRINT(LogLevel::debug, "[ReceiveData: %d:%s]", packet.DataSize(), packet.getData());
+			//LOG_PRINT(LogLevel::debug, "[ReceiveData: %d:%s]", packet.DataSize(), packet.getData());
 			packet.UnPackMessage();
 
 			/* 打印解包信息 */
@@ -366,15 +366,12 @@ void HUB::ProcessRecvMessage(uv::Packet& packet)
 	switch(std::stoi(packet.GetMsgID()))
     {
         case uv::Packet::MSG_CONNECT:
-			LOG_PRINT(LogLevel::debug, "[RCV:msg_connect]");
             ConnectResultProcess(packet);
             break;
         case uv::Packet::MSG_UPGRADE:
-			LOG_PRINT(LogLevel::debug, "[RCV:msg_upgrade]");
             UpgradeProcess(packet);            
             break;
         case uv::Packet::MSG_UPDATE_DELAY:
-			LOG_PRINT(LogLevel::debug, "[RCV:msg_updata_delay]");
             UpdataDelay(packet);
             break;
         default:
@@ -390,7 +387,7 @@ void HUB::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t siz
     packet.PackMessage(data, size);
 
     /* 打印数据封装信息 */
-    //packet.EchoPackMessage();
+    packet.EchoPackMessage();
     
     std::string send_buf = packet.GetPacket();
     
@@ -414,7 +411,7 @@ void HUB::HeartSendPackMessage(uv::Packet::Head head, std::string data, ssize_t 
 
 void HUB::SendMessage(const char* buf, ssize_t size)
 {
-	LOG_PRINT(LogLevel::debug, "[SendMessage: %s]", buf);
+	//LOG_PRINT(LogLevel::debug, "[SendMessage: %s]", buf);
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         //writeInLoop(buf, (unsigned int)size, nullptr);

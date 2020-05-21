@@ -1,10 +1,11 @@
----
-Title：B4860
-Author： MiaoPei
-Data：
----
+> Title：B4860 项目开发记录
+> Author:  苗沛
+> Email：miaopei@baicells.com
+> Data：2020-04-23
 
 ## B4860 
+
+> [markdown 高级画流程图方法](https://www.runoob.com/markdown/md-advance.html)
 
 ## Reference
 

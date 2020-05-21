@@ -57,6 +57,7 @@ void bpoamDelayT14Rsp(void *arg);
 class BBU :public uv::TcpServer
 {
 public:
+
     
     enum DeviceType{
         ALL_HUB_DEVICE    = 1,
@@ -129,6 +130,8 @@ public:
 	bool read_file(std::string file, char* data, ssize_t size);
     
     std::vector<std::string> GetFiles(std::string cate_dir);
+
+    void CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head);
 	
     void EchoSortResult(vector<PAIR>& tVector);
 
@@ -136,7 +139,6 @@ public:
 
 private:
     void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
-    //void OnConnectClose(uv::TcpConnectionPtr connection);
     void OnConnectClose(uv::TcpConnectionPtr connection);
     std::string m_mac;
 };

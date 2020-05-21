@@ -146,7 +146,7 @@ void uv::Packet::EchoPackMessage()
     if(m_msgID == to_string(uv::Packet::MSG_HEART_BEAT))
         return;
 
-	LOG_PRINT(LogLevel::debug, "Pack packet:\
+	LOG_PRINT(LogLevel::debug,  "\n\t###### Pack packet: ######\
 								\n\tSource: %s [HUB,RRU,BBU,OAM]\
 								\n\tDestination: %s [HUB,RRU,BBU,OAM]\
 								\n\tMac: %s\
@@ -157,7 +157,7 @@ void uv::Packet::EchoPackMessage()
 								\n\tUPort: %s\
 								\n\tUUPort: %s\
 								\n\tLength: %d\
-								\n\tData: %s", 
+								\n\tData: %s\n", 
 								m_source.c_str(),
 								m_destination.c_str(), m_mac.c_str(),
 								m_state.c_str(), m_msgID.c_str(),
@@ -170,7 +170,7 @@ void uv::Packet::EchoUnPackMessage()
     if(m_msgID == to_string(uv::Packet::MSG_HEART_BEAT))
         return;
 
-	LOG_PRINT(LogLevel::debug, "UnPack packet:\
+	LOG_PRINT(LogLevel::debug,  "\n\t###### UnPack packet: ###### \
 								\n\tSource: %s [HUB,RRU,BBU,OAM]\
 								\n\tDestination: %s [HUB,RRU,BBU,OAM]\
 								\n\tMac: %s\
@@ -181,7 +181,7 @@ void uv::Packet::EchoUnPackMessage()
 								\n\tUPort: %s\
 								\n\tUUPort: %s\
 								\n\tLength: %d\
-								\n\tData: %s", 
+								\n\tData: %s\n", 
 								m_source.c_str(),
 								m_destination.c_str(), m_mac.c_str(),
 								m_state.c_str(), m_msgID.c_str(),

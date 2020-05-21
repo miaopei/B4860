@@ -297,13 +297,13 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 		return ;
 	}
 
-    std::vector<std::string> files = GetFiles(std::string("/mnt/ftp/" + fileName));
+    std::vector<std::string> files = GetFiles(std::string("/tmp/ftp/" + fileName));
     if(static_cast<int>(files.size()) != 3)
     {
 		LOG_PRINT(LogLevel::error, "RRU upgrade Director file num error");
         return ;
     }
-    data = "fileName=" + fileName + "/" + files[0] + "&md5=" + md5file(std::string("/mnt/ftp/" + fileName + "/" + files[0]).c_str()) + "&fileName=" + fileName + "/" + files[1] + "&md5=" + md5file(std::string("/mnt/ftp/" + fileName + "/" + files[1]).c_str()) + "&fileName=" + fileName + "/" + files[2] + "&md5=" + md5file(std::string("/mnt/ftp/" + fileName + "/" + files[2]).c_str());
+    data = "fileName=" + fileName + "/" + files[0] + "&md5=" + md5file(std::string("/tmp/ftp/" + fileName + "/" + files[0]).c_str()) + "&fileName=" + fileName + "/" + files[1] + "&md5=" + md5file(std::string("/tmp/ftp/" + fileName + "/" + files[1]).c_str()) + "&fileName=" + fileName + "/" + files[2] + "&md5=" + md5file(std::string("/mnt/ftp/" + fileName + "/" + files[2]).c_str());
 
 	if(!FindDataMapValue(map, "routeIndex", routeIndex))
     {
@@ -523,27 +523,11 @@ bool BBU::WriteUpgradeResultToDevice(uv::TcpConnectionPtr& connection, uv::Packe
 		LOG_PRINT(LogLevel::error, "Set Device upgradeState error");
         return false;
     }
-
-    uv::Packet::Head head(uv::Packet::GENERAL_HEAD, packet);
-    head.s_destination  = to_string(uv::Packet::TO_OAM);
-    head.s_msgID        = to_string(uv::Packet::MSG_UPDATE_DATA);
-
-    std::string data = "upgradeState=" + resultID;
-    SendMessage2Adapter(head, data, data.length());
-
     return true;
 }
 
 void BBU::DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-#if 0
-	if(!SetDeviceRouteIndex(connection))
-	{
-		LOG_PRINT(LogLevel::error, "Set Device RouteIndex error");
-		return ;
-	}
-#endif
-
     switch(std::stoi(packet.GetSource()))
     {
         case uv::Packet::HUB:
@@ -566,77 +550,6 @@ void BBU::UnPackData(uv::Packet& packet, std::map<std::string, std::string>& map
 	//packet.SplitData2Map(map);
 }
 
-void BBU::SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet)
-{
-    uv::Packet::Head head(uv::Packet::S2D_REVERSAL_HEAD, packet);
-    head.s_mac      = m_mac;
-    head.s_state    = to_string(uv::Packet::RESPONSE);
-
-	std::string data = "ConnectResult=0";
-
-    SendPackMessage(connection, head, data, data.length());
-}
-
-void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, uv::Packet::Head head, std::string& data, ssize_t size)
-{
-    uv::Packet Packet;
-    Packet.SetHead(head);
-
-    Packet.PackMessage(data, size);
-
-	/* 打印数据封装信息 */
-	//Packet.EchoPackMessage();
-
-	std::string send_buf = Packet.GetPacket();
-
-	SendMessage(connection, send_buf.c_str(), send_buf.length());
-}
-
-void BBU::SendMessage2Adapter(uv::Packet::Head head, std::string& data, ssize_t size)
-{
-    std::vector<TcpConnectionPtr> oamsConnection;
-    GetOAMConnection(oamsConnection);
-    for(auto it : oamsConnection)
-    {
-        SendPackMessage(it, head, data, size);
-    }
-}
-
-void BBU::SendPackMessageToAllDevice(DeviceType device, uv::Packet::Head head, std::string& data, ssize_t size)
-{
-    if(device == ALL_HUB_DEVICE)
-    switch(device)
-    {
-        case ALL_HUB_DEVICE:
-		    LOG_PRINT(LogLevel::debug, "[SendPackMessageToAllDevice: ALL_HUB_DEVICE]");
-            break;
-        case ALL_RRU_DEVICE:
-		    LOG_PRINT(LogLevel::debug, "[SendPackMessageToAllDevice: ALL_RRU_DEVICE]");
-            break;
-        default:
-		    LOG_PRINT(LogLevel::error, "SendPackMessageToAllDevice device error");
-    }
-}
-
-void BBU::SendUpdateHUBDelayMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet)
-{
-    shared_ptr<TcpConnection> reconnection;
-    if(!QueryUhubConnection(connection, reconnection))
-    {
-		LOG_PRINT(LogLevel::error, "SendUpdateHUBDelayMessage not find hub rruid");
-        return;
-    }
-    
-    /* 封装消息，指定 HUB 更新时延测量 */
-    uv::Packet::Head head(uv::Packet::S2D_REVERSAL_HEAD, packet);
-    head.s_destination  = to_string(uv::Packet::TO_HUB);
-    head.s_state        = to_string(uv::Packet::REQUEST);
-    head.s_msgID        = to_string(uv::Packet::MSG_UPDATE_DELAY);
-
-    std::string data = "updataDelayInfo";
-
-    SendPackMessage(reconnection, head, data, data.length());
-}
 
 void BBU::UpdateHUBDelayInfo(uv::Packet& packet)
 {
@@ -1023,17 +936,29 @@ std::vector<std::string> BBU::GetFiles(std::string cate_dir)
     return files;
 }
 
+void BBU::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head)
+{
+    switch(dType)
+    {
+        case uv::Packet::Destination::TO_OAM:
+            {
+                head.s_destination = to_string(uv::Packet::Destination::TO_OAM);
+            }
+            break;
+        default:
+            LOG_PRINT(LogLevel::error, "DeviceType error");
+            return;
+    }
 
+    head.s_source       = m_source;
+	head.s_mac          = m_mac;
+    head.s_state        = to_string(uv::Packet::RESPONSE);
+    head.s_hop          = m_hop;
+    head.s_port         = m_port;
+    head.s_uport        = m_uport;
+    head.s_uuport       = m_uuport;
 
-
-
-
-
-
-
-
-
-
+}
 
 void BBU::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
 {
@@ -1047,6 +972,90 @@ void BBU::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssi
 		connection->write(packet.Buffer().c_str(), packet.PacketSize(), nullptr);
     }
 }
+
+void BBU::SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet)
+{
+    uv::Packet::Head head(uv::Packet::S2D_REVERSAL_HEAD, packet);
+    head.s_mac      = m_mac;
+    head.s_state    = to_string(uv::Packet::RESPONSE);
+
+	std::string data = "ConnectResult=0";
+
+    SendPackMessage(connection, head, data, data.length());
+}
+
+void BBU::SendPackMessage(uv::TcpConnectionPtr& connection, uv::Packet::Head head, std::string& data, ssize_t size)
+{
+    uv::Packet Packet;
+    Packet.SetHead(head);
+
+    Packet.PackMessage(data, size);
+
+	/* 打印数据封装信息 */
+	//Packet.EchoPackMessage();
+
+	std::string send_buf = Packet.GetPacket();
+
+	SendMessage(connection, send_buf.c_str(), send_buf.length());
+}
+
+void BBU::SendMessage2Adapter(uv::Packet::Head head, std::string& data, ssize_t size)
+{
+    std::vector<TcpConnectionPtr> oamsConnection;
+    GetOAMConnection(oamsConnection);
+    for(auto it : oamsConnection)
+    {
+        SendPackMessage(it, head, data, size);
+    }
+}
+
+void BBU::SendPackMessageToAllDevice(DeviceType device, uv::Packet::Head head, std::string& data, ssize_t size)
+{
+    if(device == ALL_HUB_DEVICE)
+    switch(device)
+    {
+        case ALL_HUB_DEVICE:
+		    LOG_PRINT(LogLevel::debug, "[SendPackMessageToAllDevice: ALL_HUB_DEVICE]");
+            break;
+        case ALL_RRU_DEVICE:
+		    LOG_PRINT(LogLevel::debug, "[SendPackMessageToAllDevice: ALL_RRU_DEVICE]");
+            break;
+        default:
+		    LOG_PRINT(LogLevel::error, "SendPackMessageToAllDevice device error");
+    }
+}
+
+void BBU::SendUpdateHUBDelayMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet)
+{
+    shared_ptr<TcpConnection> reconnection;
+    if(!QueryUhubConnection(connection, reconnection))
+    {
+		LOG_PRINT(LogLevel::error, "SendUpdateHUBDelayMessage not find hub rruid");
+        return;
+    }
+    
+    /* 封装消息，指定 HUB 更新时延测量 */
+    uv::Packet::Head head(uv::Packet::S2D_REVERSAL_HEAD, packet);
+    head.s_destination  = to_string(uv::Packet::TO_HUB);
+    head.s_state        = to_string(uv::Packet::REQUEST);
+    head.s_msgID        = to_string(uv::Packet::MSG_UPDATE_DELAY);
+
+    std::string data = "updataDelayInfo";
+
+    SendPackMessage(reconnection, head, data, data.length());
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 void BBU::EchoSortResult(vector<PAIR>& tVector)
 {

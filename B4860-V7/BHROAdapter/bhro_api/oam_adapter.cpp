@@ -114,11 +114,11 @@ void OamAdapter::RecvMessage(const char* buf, ssize_t size)
 		uv::Packet packet;
 		while (0 == packetbuf->readPacket(packet))
 		{
-			LOG_PRINT(LogLevel::debug, "[ReceiveData: %d:%s]", packet.DataSize(), packet.getData());
+			//LOG_PRINT(LogLevel::debug, "[ReceiveData: %d:%s]", packet.DataSize(), packet.getData());
 			packet.UnPackMessage();
 
 			/* 打印解包信息 */
-			//packet.EchoUnPackMessage();
+			packet.EchoUnPackMessage();
 
 			ProcessRecvMessage(packet);
 		}
@@ -177,7 +177,7 @@ void OamAdapter::SendPackMessage(uv::Packet::Head& head, std::string& data, ssiz
     packet.PackMessage(data, size);
 
     /* 打印数据封装信息 */
-    //packet.EchoPackMessage();
+    packet.EchoPackMessage();
     
     std::string send_buf = packet.GetPacket();
     
@@ -201,7 +201,6 @@ void OamAdapter::HeartSendPackMessage(uv::Packet::Head head, std::string data, s
 
 void OamAdapter::SendMessage(const char* buf, ssize_t size)
 {
-    LOG_PRINT(LogLevel::debug, "[SendMessage: %s]", buf);
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         write(buf, (unsigned int)size);
