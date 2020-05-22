@@ -14,6 +14,7 @@
 
 #include "uv11.h"
 
+#define PORT        30000
 #define IFRNAME     "enp0s31f6"
 
 class OamAdapter :public uv::TcpClient
@@ -36,6 +37,7 @@ public:
     void SendROamAdapterDelayInfo();
 
     void SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size);
+    void HeartSendPackMessage(uv::Packet::Head head, std::string data, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
 
     /* destination: 
@@ -52,14 +54,28 @@ public:
 
 	void GetNetworkTopology();
 
+    bool GetRSPPacket(uv::Packet& packet);
+
+    void Heart();
+    void HandleHeart(void* arg);
+
+    void SetNewConnect(uv::Packet& packet);
+    void ConnectClose(uv::Packet& packet);
+    void UpdateData(uv::Packet& packet);
+
+    void CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head);
+
+    bool RSPStatus;
 
 private:
     std::shared_ptr<uv::SocketAddr> sockAddr;
     std::shared_ptr<OamAdapter> clientptr_;
+    uv::Packet packet_;
     std::string m_source;
 	std::string m_mac;
     std::string m_hop;
     std::string m_port;
     std::string m_uport;
+    std::string m_uuport;
 };
 

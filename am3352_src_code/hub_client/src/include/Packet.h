@@ -19,25 +19,26 @@
 
 using namespace std;
 
-#define HEADLENGTH 		26
+#define HEADLENGTH 		27
 
 #define MAXINTERFACES 	11
 
 
 //PacketIR:
-//-----------------------------------------------------------------------------------------------------------------
-//  head  | source | destination |   mac   | state  | msgID  |   HOP  |  port  | uPort  | length |  data  |  end   |
-// 1 Byte | 1 Byte |    1 Byte   | 12 Byte | 1 Byte | 4 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
-//-----------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------------
+//  head  | source | destination |   mac   | state  | msgID  |   hop  |  port  | uPort  | uuPort | length |  data  |  end   |
+// 1 Byte | 1 Byte |    1 Byte   | 12 Byte | 1 Byte | 4 Byte | 1 Byte | 1 Byte | 1 Byte | 1 Byte | 4 Byte | N Byte | 1 Byte |
+//--------------------------------------------------------------------------------------------------------------------------
 // head: 数据包头校验 (0x7e)
 // source：HUB、RRU、BBU、OAM (0,1,2,3)
 // destination: 消息目标发给谁 HUB、RRU、BBU、OAM 
 // mac: 设备连接的网口 mac 地址
 // state: 请求、响应 (0,1)
 // msgID：消息编号 (1001)
-// RRUID: rruid为4 (4)   
+// hop: 层级为4 (4)   
 // port: 设备本端端口号 (0,1)
 // uPort: 设备连接对端端口号 (0-7)
+// uuPort: rru 的上联口接 hub，hub的上联口连接的端口号
 // length: 0021 (data 数据长度)
 // data: 用户数据
 // end: 数据包结尾校验 (0xe7)
@@ -62,6 +63,7 @@ public:
         std::string s_hop;
         std::string s_port;
         std::string s_uport;
+        std::string s_uuport;
     };
 
     enum Source
@@ -77,7 +79,8 @@ public:
         TO_HUB     = 0,
         TO_RRU     = 1,
         TO_BBU     = 2,
-        TO_OAM     = 3
+        TO_OAM     = 3,
+        USER_DEFINED = 4,
     };
 
     enum State
@@ -96,10 +99,14 @@ public:
         MSG_GET_LOG					= 1005,
         MSG_GET_NETWORK_TOPOLOGY	= 1006,
         MSG_RFTxStatus_SET          = 1007,
+        MSG_NEW_CONNECT             = 1008,
+        MSG_CONNECT_CLOSED          = 1009,
+        MSG_UPDATE_DATA             = 1010,
         MSG_CONNECT					= 1040,
         MSG_DELAY_MEASUREMENT 		= 1041,
         MSG_DELAY_COMPENSATION      = 1042,
         MSG_UPDATE_DELAY            = 1043,
+        MSG_HEART_BEAT              = 6666,
         MSG_END                     = 9999
     };
 
@@ -127,6 +134,7 @@ public:
 	std::string GetHop();
 	std::string GetPort();
 	std::string GetUPort();
+	std::string GetUUPort();
     int GetLength();
     std::string GetData();
 
@@ -178,6 +186,7 @@ private:
 	std::string m_hop;
 	std::string m_port;
 	std::string m_uport;
+    std::string m_uuport;
     int m_length;
     std::string m_data;
     std::string m_packet;

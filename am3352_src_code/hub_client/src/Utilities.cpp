@@ -121,7 +121,7 @@ std::vector<std::string> DataSplit(const std::string& in, const std::string& del
     return res;
 }
 
-void LogPrint(LogLevel level, const char* pFile, int iLine, const char* fmt, ...)
+void LogPrint(LogLevel level, const char* pFile, const char* pFunc, int iLine, const char* fmt, ...)
 {
     time_t t = time(0); 
     char timeStr[32] = {0};
@@ -131,8 +131,8 @@ void LogPrint(LogLevel level, const char* pFile, int iLine, const char* fmt, ...
 
     strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localtime(&t)); 
 
-    log_head = snprintf(log_buf, LOG_BUF_SIZE, "[%s][%s:%d] > ", 
-                        timeStr, pFile, iLine);
+    log_head = snprintf(log_buf, LOG_BUF_SIZE, "[%s][%s:%s:%d] > ", 
+                        timeStr, pFile, pFunc, iLine);
 
     va_start(ap, fmt);
     vsnprintf(&log_buf[log_head], LOG_BUF_SIZE - log_head, fmt, ap);

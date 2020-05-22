@@ -26,23 +26,45 @@ int main(int argc, char* argv[])
     EventLoop* loop = new EventLoop();
 
     uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer;
-    
-    if(argc != 2)
-    {
-        fprintf(stdout, "usage: %s server_ip_address\neg.%s 192.168.1.1\n", argv[0], argv[0]);
-        return 0;
-    }
-    serverIP = argv[1];
 
-	SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
+	char* pdata = NULL;
+	size_t size = 32;
+	pdata = (char*)malloc(size * sizeof(char));
+	if(pdata == NULL)
+	{		
+		LOG_PRINT(LogLevel::error, "malloc gateway memory error");
+	}
+	
+#if 1
+	GetDeviceGateWay(IFRNAME, pdata, size);
+	LOG_PRINT(LogLevel::debug, "Device GateWay: %s", pdata);
+#endif
+
+#if 0
+    GetDeviceIP(IFRNAME, pdata, size);	
+	LOG_PRINT(LogLevel::debug, "Device IP: %s", pdata);
+#endif
+
+	SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
     HUB hub(loop);
 
+#if 0
+	char data[80];
+	hub.read_file("./test.txt", data, sizeof(data));
+	std::cout << "data=" << data << std::endl;
+	hub.write_file("./test.txt", "test");
+#endif   
 
-    hub.bbu_addr = serverIP;
+    hub.bbu_addr = pdata;
 
     hub.connectToServer(addr);
 
+    hub.Heart();
+
     loop->run();
+	
+    free(pdata);
+    pdata = NULL;
 
     return 0;
 }

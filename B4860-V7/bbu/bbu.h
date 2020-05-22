@@ -57,7 +57,12 @@ void bpoamDelayT14Rsp(void *arg);
 class BBU :public uv::TcpServer
 {
 public:
-
+    enum HeadType {
+        B2A_HEAD            = 0,
+        B2H_HEAD            = 1,
+        S2D_REVERSAL_HEAD   = 2,
+        D2A_HEAD            = 3,
+    };
     
     enum DeviceType{
         ALL_HUB_DEVICE    = 1,
@@ -131,7 +136,8 @@ public:
     
     std::vector<std::string> GetFiles(std::string cate_dir);
 
-    void CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head);
+    void CreateHead(HeadType hType, uv::Packet::Head& head);
+    void CreateHead(HeadType hType, uv::Packet::Head& head, uv::Packet& packet);
 	
     void EchoSortResult(vector<PAIR>& tVector);
 
@@ -141,6 +147,11 @@ private:
     void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
     void OnConnectClose(uv::TcpConnectionPtr connection);
     std::string m_mac;
+    std::string m_source;
+    std::string m_hop;
+    std::string m_port;
+    std::string m_uport;
+    std::string m_uuport;
 };
 
 #endif // BBU_SERVER_H

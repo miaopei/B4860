@@ -20,6 +20,7 @@
 
 #define TOFFSET 3
 
+#define PORT        30000
 #define IFRNAME     "eth0"
 
 #ifdef __cplusplus
@@ -70,6 +71,7 @@ public:
     void UpdataDelay(uv::Packet& packet);
 
     void SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size);
+    void HeartSendPackMessage(uv::Packet::Head head, std::string data, ssize_t size);
     void SendMessage(const char* buf, ssize_t size);
 
     void UpgradeProcess(uv::Packet& packet);
@@ -83,6 +85,10 @@ public:
     bool FtpDownloadFile(uv::Packet& packet);
     void SendUpgradeFailure(uv::Packet& packet, const std::string errorno);
 
+    void Heart();
+    void HandleHeart(void* arg);
+
+    void CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head);
     std::string bbu_addr;
 
 private:
@@ -93,5 +99,6 @@ private:
     std::string m_hop;
     std::string m_port;
     std::string m_uport;
+    std::string m_uuport;
 };
 

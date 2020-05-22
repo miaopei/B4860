@@ -27,14 +27,15 @@ uv::Packet::~Packet()
 
 void uv::Packet::SetHead(Head& head)
 {
-	m_source = head.s_source;
-	m_destination = head.s_destination;
-	m_mac = head.s_mac;
-	m_state = head.s_state;
-	m_msgID = head.s_msgID;
-	m_hop = head.s_hop;
-	m_port = head.s_port;
-	m_uport = head.s_uport;
+	m_source        = head.s_source;
+	m_destination   = head.s_destination;
+	m_mac           = head.s_mac;
+	m_state         = head.s_state;
+	m_msgID         = head.s_msgID;
+	m_hop           = head.s_hop;
+	m_port          = head.s_port;
+	m_uport         = head.s_uport;
+    m_uuport        = head.s_uuport;
 }
 
 std::string uv::Packet::num2str(int num)
@@ -61,17 +62,18 @@ void uv::Packet::UnPackMessage()
 {
 	std::string packet = std::string(getData(), DataSize());
 	// 需要增加 packet 解析校验
-	m_packet = packet;
-	m_source = packet.substr(0, 1);
-	m_destination= packet.substr(1, 1);
-	m_mac = packet.substr(2, 12);
-	m_state = packet.substr(14, 1);
-	m_msgID = packet.substr(15, 4);
-	m_hop = packet.substr(19, 1);
-	m_port = packet.substr(20, 1);
-	m_uport = packet.substr(21, 1);
-    m_length = std::stoi(packet.substr(22, 4));
-	m_data = packet.substr(26);
+	m_packet        = packet;
+	m_source        = packet.substr(0, 1);
+	m_destination   = packet.substr(1, 1);
+	m_mac           = packet.substr(2, 12);
+	m_state         = packet.substr(14, 1);
+	m_msgID         = packet.substr(15, 4);
+	m_hop           = packet.substr(19, 1);
+	m_port          = packet.substr(20, 1);
+	m_uport         = packet.substr(21, 1);
+    m_uuport        = packet.substr(22, 1);
+    m_length        = std::stoi(packet.substr(23, 4));
+	m_data          = packet.substr(27);
 }
 
 std::string uv::Packet::GetPacket() 
@@ -81,7 +83,7 @@ std::string uv::Packet::GetPacket()
 
 std::string uv::Packet::GetHead() 
 { 
-	return std::string(m_source + m_destination + m_mac + m_state + m_msgID + m_hop + m_port + m_uport); 
+	return std::string(m_source + m_destination + m_mac + m_state + m_msgID + m_hop + m_port + m_uport + m_uuport); 
 }
 
 std::string uv::Packet::GetSource() 
@@ -124,6 +126,11 @@ std::string uv::Packet::GetUPort()
 	return m_uport;
 }
 
+std::string Packet::GetUUPort()
+{
+    return m_uuport;
+}
+
 int uv::Packet::GetLength()
 {
     return m_length;
@@ -136,7 +143,10 @@ std::string uv::Packet::GetData()
 
 void uv::Packet::EchoPackMessage()
 {
-	LOG_PRINT(LogLevel::debug, "Pack packet:\n\tPacket: %s\
+    if(m_msgID == to_string(uv::Packet::MSG_HEART_BEAT))
+        return;
+
+	LOG_PRINT(LogLevel::debug,  "\n\t###### Pack packet: ######\
 								\n\tSource: %s [HUB,RRU,BBU,OAM]\
 								\n\tDestination: %s [HUB,RRU,BBU,OAM]\
 								\n\tMac: %s\
@@ -145,18 +155,22 @@ void uv::Packet::EchoPackMessage()
 								\n\tHOP: %s\
 								\n\tPort: %s\
 								\n\tUPort: %s\
+								\n\tUUPort: %s\
 								\n\tLength: %d\
-								\n\tData: %s", 
-								m_packet.c_str(), m_source.c_str(),
+								\n\tData: %s\n", 
+								m_source.c_str(),
 								m_destination.c_str(), m_mac.c_str(),
 								m_state.c_str(), m_msgID.c_str(),
 								m_hop.c_str(), m_port.c_str(),
-								m_uport.c_str(), m_length, m_data.c_str());
+								m_uport.c_str(), m_uuport.c_str(), m_length, m_data.c_str());
 }
 
 void uv::Packet::EchoUnPackMessage()
 {
-	LOG_PRINT(LogLevel::debug, "UnPack packet:\n\tPacket: %s\
+    if(m_msgID == to_string(uv::Packet::MSG_HEART_BEAT))
+        return;
+
+	LOG_PRINT(LogLevel::debug,  "\n\t###### UnPack packet: ###### \
 								\n\tSource: %s [HUB,RRU,BBU,OAM]\
 								\n\tDestination: %s [HUB,RRU,BBU,OAM]\
 								\n\tMac: %s\
@@ -165,13 +179,14 @@ void uv::Packet::EchoUnPackMessage()
 								\n\tHOP: %s\
 								\n\tPort: %s\
 								\n\tUPort: %s\
+								\n\tUUPort: %s\
 								\n\tLength: %d\
-								\n\tData: %s", 
-								m_packet.c_str(), m_source.c_str(),
+								\n\tData: %s\n", 
+								m_source.c_str(),
 								m_destination.c_str(), m_mac.c_str(),
 								m_state.c_str(), m_msgID.c_str(),
 								m_hop.c_str(), m_port.c_str(),
-								m_uport.c_str(), m_length, m_data.c_str());
+								m_uport.c_str(), m_uuport.c_str(), m_length, m_data.c_str());
 }
 
 std::vector<std::string> uv::Packet::DataSplit(const std::string& in, const std::string& delim)
@@ -205,46 +220,6 @@ void uv::Packet::SplitData2Map(std::map<std::string, std::string>& map)
         vector<string>kv = DataSplit(ret[i].c_str(), "=");
 		map.insert(std::make_pair(kv[0].c_str(), kv[1].c_str()));
     }
-}
-
-bool uv::Packet::GetDeviceMac(const char* inet, char* mac)
-{
-    int fd, interface;
-    struct ifreq buf[MAXINTERFACES];
-    struct ifconf ifc;
-
-    if((fd = socket(AF_INET, SOCK_DGRAM, 0)) >= 0)
-    {
-        int i = 0;
-        ifc.ifc_len = sizeof(buf);
-        ifc.ifc_buf = (caddr_t)buf;
-        if (!ioctl(fd, SIOCGIFCONF, (char *)&ifc))
-        {
-            interface = ifc.ifc_len / sizeof(struct ifreq);
-            //printf("interface num is %d\n", interface);
-            while (i < interface)
-            {
-                //printf("net device %s\n", buf[i].ifr_name);
-                if(!strcmp(inet, buf[i].ifr_name))
-                {
-                    if (!(ioctl(fd, SIOCGIFHWADDR, (char *)&buf[i])))
-                    {
-                        sprintf(mac, "%02X%02X%02X%02X%02X%02X",
-                                (unsigned char)buf[i].ifr_hwaddr.sa_data[0],
-                                (unsigned char)buf[i].ifr_hwaddr.sa_data[1],
-                                (unsigned char)buf[i].ifr_hwaddr.sa_data[2],
-                                (unsigned char)buf[i].ifr_hwaddr.sa_data[3],
-                                (unsigned char)buf[i].ifr_hwaddr.sa_data[4],
-                                (unsigned char)buf[i].ifr_hwaddr.sa_data[5]);
-
-                        return true;
-                    }
-                }
-                i++;
-            }
-        }
-    }
-    return false;
 }
 
 int uv::Packet::readFromBuffer(PacketBuffer* packetbuf, Packet& out)

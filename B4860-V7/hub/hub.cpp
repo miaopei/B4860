@@ -51,7 +51,7 @@ void HUB::reConnect()
             LOG_PRINT(LogLevel::error, "malloc gateway memory error");
         }
 #if 0
-        GetDeviceGateWay(interface_name, pdata, size);
+        GetDeviceGateWay(IFRNAME, pdata, size);
         LOG_PRINT(LogLevel::debug, "ReConnect Device GateWay: %s", pdata);
 #endif
 #if 1
@@ -137,23 +137,6 @@ void HUB::SendConnectMessage()
 
 void HUB::SetRHUBInfo()
 {
-#if 0
-    int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
-    /* 获取 rhub 的 port id 信息 */
-    uint16_t rhub_port = get_rhup_port_id(mpi_fd, UP);
-
-	LOG_PRINT(LogLevel::debug, "rhub_port=%d port=%d rruid=%d uport=%d", 
-								rhub_port, ((rhub_port >> 8) & 0xf),
-								((rhub_port >> 4) & 0xf), (rhub_port & 0xf));
-
-    m_source = to_string(uv::Packet::HUB);
-    m_port = to_string(((rhub_port >> 8) & 0xf));
-    m_hop = to_string(((rhub_port >> 4) & 0xf));
-    m_uport = to_string((rhub_port & 0xf));
-
-    gpmc_mpi_close(mpi_fd);
-#endif
-
     char* pdata = NULL;
     size_t size = 32;
     pdata = (char*)malloc(size * sizeof(char));
@@ -164,13 +147,29 @@ void HUB::SetRHUBInfo()
     GetDeviceMAC(IFRNAME, pdata, size);
 	LOG_PRINT(LogLevel::debug, "Device Mac: %s", pdata);
 
-    m_mac = pdata;
-    m_source = "0";
-    m_port = "0";
-    m_hop = "1";
-    m_uport = "2";
-    m_uuport = "X";
-    
+    m_mac       = pdata;
+    m_source    = to_string(uv::Packet::HUB);
+    m_port      = "0";
+    m_hop       = "1";
+    m_uport     = "2";
+    m_uuport    = "X";
+ 
+#if 0
+    int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
+    /* 获取 rhub 的 port id 信息 */
+    uint16_t rhub_port = get_rhup_port_id(mpi_fd, UP);
+
+	LOG_PRINT(LogLevel::debug, "rhub_port=%d port=%d rruid=%d uport=%d", 
+								rhub_port, ((rhub_port >> 8) & 0xf),
+								((rhub_port >> 4) & 0xf), (rhub_port & 0xf));
+
+    m_port  = to_string(((rhub_port >> 8) & 0xf));
+    m_hop   = to_string(((rhub_port >> 4) & 0xf));
+    m_uport = to_string((rhub_port & 0xf));
+
+    gpmc_mpi_close(mpi_fd);
+#endif
+   
     free(pdata);
     pdata = NULL;
 }
@@ -182,14 +181,8 @@ void HUB::SendRHUBDelayInfo()
     RHUBDelayInfoCalculate(data);
 
     uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::RESPONSE);
+    CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_DELAY_MEASUREMENT);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 #endif
@@ -487,16 +480,6 @@ void HUB::SendUpgradeFailure(uv::Packet& packet, const std::string errorno)
     uv::Packet::Head head;
     CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = packet.GetMsgID();
-#if 0
-    head.s_source = packet.GetSource();
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = packet.GetMac();
-    head.s_state = to_string(uv::Packet::RESPONSE);
-    head.s_msgID = packet.GetMsgID();
-    head.s_hop = packet.GetHop();
-    head.s_port = packet.GetPort();
-    head.s_uport = packet.GetUPort();
-#endif
 
     std::string data = std::string("ResultID=" + errorno);
     
@@ -661,8 +644,11 @@ void HUB::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head)
             }
             break;
         default:
-            LOG_PRINT(LogLevel::error, "DeviceType error");
-            return;
+            {
+                LOG_PRINT(LogLevel::error, "DeviceType error");
+                head.s_destination = "X";
+            }
+            break;
     }
 
     head.s_source       = m_source;

@@ -20,15 +20,15 @@ BBU::BBU(EventLoop* loop)
     setConnectCloseCallback(std::bind(&BBU::OnConnectClose, this, placeholders::_1));
 #if 0
 	FUN_T_PARA *para = new FUN_T_PARA;
+
 	para->carrierIdx = 0;
-	
 	ipc_init_nxp(1, para);
-	std::cout << "main: carrierIdx[0] T14=" << para->t14 << std::endl;
+    LOG_PRINT(LogLevel::debug, "main: carrierIdx[0] T14=%s", para->t14);
 	m_carrierIdx_0_T14 = para->t14;
 	
 	para->carrierIdx = 1;
 	ipc_init_nxp(1, para);
-	std::cout << "main: carrierIdx[1] T14=" << para->t14 << std::endl;
+    LOG_PRINT(LogLevel::debug, "main: carrierIdx[1] T14=%s", para->t14);
 	m_carrierIdx_1_T14 = para->t14;
 
 	delete para;
@@ -44,7 +44,11 @@ BBU::BBU(EventLoop* loop)
     GetDeviceMAC(IFRNAME, pdata, size);
 	LOG_PRINT(LogLevel::debug, "Device Mac: %s", pdata);
 
-    m_mac = pdata;
+    m_mac       = pdata;
+    m_source    = to_string(uv::Packet::BBU);
+    m_hop       = "0";
+    m_uport     = "X";
+    m_uuport    = "X";
     
     free(pdata);
     pdata = NULL;
@@ -59,8 +63,8 @@ void BBU::OnConnectClose(shared_ptr<TcpConnection> connection)
         if(it == connection)
             continue;
 
-        uv::Packet::Head head(uv::Packet::BBU2ADAPTER_HEAD);
-        head.s_mac			= m_mac;
+        uv::Packet::Head head;
+        CreateHead(HeadType::B2A_HEAD, head);
         head.s_msgID        = to_string(uv::Packet::MSG_CONNECT_CLOSED);
 
         DeviceInfo dInfo;
@@ -148,6 +152,7 @@ void BBU::ProcessRecvMessage(uv::TcpConnectionPtr connection, uv::Packet& packet
 			break;
 		default:
 			LOG_PRINT(LogLevel::error, "[Destiantion: Error]");
+            break;
 	}
 }
 
@@ -176,6 +181,7 @@ void BBU::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
             break;
 		default:
 			LOG_PRINT(LogLevel::error, "[MessageID Error]");
+            break;
 	}
 }
 
@@ -188,6 +194,7 @@ void BBU::HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
             break;
 		default:
 			LOG_PRINT(LogLevel::error, "[MessageID Error]");
+            break;
 	}
 }
 
@@ -203,6 +210,7 @@ void BBU::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
             break;
 		default:
 			LOG_PRINT(LogLevel::error, "[MessageID Error]");
+            break;
 	}
 }
 
@@ -406,9 +414,8 @@ void BBU::UpgradeResultProcess(uv::TcpConnectionPtr& connection, uv::Packet& pac
 
 void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-    uv::Packet::Head head(uv::Packet::S2D_REVERSAL_HEAD, packet);
-	head.s_mac			= m_mac;
-    head.s_state        = to_string(uv::Packet::RESPONSE);
+    uv::Packet::Head head;
+    CreateHead(HeadType::S2D_REVERSAL_HEAD, head, packet);
 	
     std::string data = "";
 
@@ -417,14 +424,6 @@ void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Pa
 
     for(auto &it : netTopology)
     {
-#if 0
-    	LOG_PRINT(LogLevel::debug, "\n\tnetTopology: -> %s %s %s %s %s %s %s %s %s",
-									it.second.s_ip.c_str(),
-									it.second.s_connection, it.second.s_source.c_str(),
-									it.second.s_mac.c_str(), it.second.s_hop.c_str(),
-									it.second.s_port.c_str(), it.second.s_uport.c_str(),
-									it.second.s_routeIndex.c_str(), it.second.s_upgradeState.c_str());
-#endif
         if(it.second.s_source == to_string(uv::Packet::OAM))
             continue;
 
@@ -488,8 +487,8 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
                 return;
             }
             //SendConnectToOamAdapter(it, packet, dInfo);
-            uv::Packet::Head head(uv::Packet::GENERAL_HEAD, packet);
-            head.s_destination  = to_string(uv::Packet::TO_OAM);
+            uv::Packet::Head head;
+            CreateHead(HeadType::D2A_HEAD, head, packet);
             head.s_msgID        = to_string(uv::Packet::MSG_NEW_CONNECT);
 
             std::string data = "ip=" + GetCurrentName(connection);
@@ -601,9 +600,8 @@ void BBU::RruDelayProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 	/* 疑问：一个 loop */
 	//UpdataRRUDelayCompensation(connection, packet);
 
-    uv::Packet::Head head(uv::Packet::S2D_REVERSAL_HEAD, packet);
-	head.s_mac			= m_mac;
-    head.s_state        = to_string(uv::Packet::RESPONSE);
+    uv::Packet::Head head;
+    CreateHead(HeadType::S2D_REVERSAL_HEAD, head, packet);
     head.s_msgID        = to_string(uv::Packet::MSG_DELAY_COMPENSATION);
 
 	std::string data = "delayULCompensation=" + delayULCompensation + "&delayDLCompensation=" + delayDLCompensation;
@@ -658,9 +656,8 @@ void BBU::UpdataRRUDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packe
 	std::vector<TcpConnectionPtr> rrusConnection;
 	std::string send_buf;
 
-	uv::Packet::Head head(uv::Packet::S2D_REVERSAL_HEAD, packet);
-	head.s_mac			= m_mac;
-    head.s_state        = to_string(uv::Packet::RESPONSE);
+	uv::Packet::Head head;
+    CreateHead(HeadType::S2D_REVERSAL_HEAD, head, packet);
     head.s_msgID        = to_string(uv::Packet::MSG_DELAY_COMPENSATION);
 
 	GetRRUsConnection(rrusConnection);
@@ -936,18 +933,26 @@ std::vector<std::string> BBU::GetFiles(std::string cate_dir)
     return files;
 }
 
-void BBU::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head)
+void BBU::CreateHead(HeadType hType, uv::Packet::Head& head)
 {
-    switch(dType)
+    switch(hType)
     {
-        case uv::Packet::Destination::TO_OAM:
+        case HeadType::B2A_HEAD:
             {
                 head.s_destination = to_string(uv::Packet::Destination::TO_OAM);
             }
             break;
+        case HeadType::B2H_HEAD:
+            {
+                head.s_destination = to_string(uv::Packet::Destination::TO_HUB);
+            }
+            break;
         default:
-            LOG_PRINT(LogLevel::error, "DeviceType error");
-            return;
+            {
+                LOG_PRINT(LogLevel::error, "DeviceType error");
+                head.s_destination = "X";
+            }
+            break;
     }
 
     head.s_source       = m_source;
@@ -957,7 +962,40 @@ void BBU::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head)
     head.s_port         = m_port;
     head.s_uport        = m_uport;
     head.s_uuport       = m_uuport;
+}
 
+void BBU::CreateHead(HeadType hType, uv::Packet::Head& head, uv::Packet& packet)
+{
+    switch(hType)
+    {
+        case HeadType::S2D_REVERSAL_HEAD:
+            {
+                head.s_source       = packet.GetDestination();
+                head.s_destination  = packet.GetSource();
+                head.s_msgID        = packet.GetMsgID();
+            }
+            break;
+        case HeadType::D2A_HEAD:
+            {
+                head.s_source       = packet.GetSource();
+                head.s_destination  = to_string(uv::Packet::TO_OAM);
+            }
+            break;
+        default:
+            {
+                LOG_PRINT(LogLevel::error, "DeviceType error");
+                head.s_source       = "X";
+                head.s_destination  = "X";
+            }
+            break;
+    }
+
+	head.s_mac          = packet.GetMac();
+    head.s_state        = to_string(uv::Packet::RESPONSE);
+    head.s_hop          = packet.GetHop();
+    head.s_port         = packet.GetPort();
+    head.s_uport        = packet.GetUPort();
+    head.s_uuport       = packet.GetUUPort();
 }
 
 void BBU::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize_t size)
@@ -975,9 +1013,8 @@ void BBU::SendMessage(shared_ptr<TcpConnection> connection, const char* buf, ssi
 
 void BBU::SendConnectionMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-    uv::Packet::Head head(uv::Packet::S2D_REVERSAL_HEAD, packet);
-    head.s_mac      = m_mac;
-    head.s_state    = to_string(uv::Packet::RESPONSE);
+    uv::Packet::Head head;
+    CreateHead(HeadType::S2D_REVERSAL_HEAD, head, packet);
 
 	std::string data = "ConnectResult=0";
 
@@ -1035,8 +1072,8 @@ void BBU::SendUpdateHUBDelayMessage(uv::TcpConnectionPtr& connection, uv::Packet
     }
     
     /* 封装消息，指定 HUB 更新时延测量 */
-    uv::Packet::Head head(uv::Packet::S2D_REVERSAL_HEAD, packet);
-    head.s_destination  = to_string(uv::Packet::TO_HUB);
+    uv::Packet::Head head;
+    CreateHead(HeadType::B2H_HEAD, head, packet);
     head.s_state        = to_string(uv::Packet::REQUEST);
     head.s_msgID        = to_string(uv::Packet::MSG_UPDATE_DELAY);
 

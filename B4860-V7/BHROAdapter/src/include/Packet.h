@@ -54,14 +54,6 @@ namespace uv
 class Packet
 {
 public:
-    enum HeadInitFlag
-    {
-        DEFAULT_HEAD            = 0,
-        BBU2ADAPTER_HEAD        = 1,
-        ADAPTER2BBU_HEAD        = 2,
-        S2D_REVERSAL_HEAD       = 3,
-        GENERAL_HEAD            = 4,
-    };
     struct Head{
         std::string s_source;
         std::string s_destination;
@@ -72,84 +64,6 @@ public:
         std::string s_port;
         std::string s_uport;
         std::string s_uuport;
-        Head(){}
-        Head(int flag)
-        {
-            switch(flag)
-            {
-                case HeadInitFlag::DEFAULT_HEAD:
-                    {
-                        s_source        = "9";
-                        s_destination   = "9";
-                        s_mac           = "FFFFFFFFFFFF";
-                        s_state         = to_string(State::REQUEST);
-                        s_msgID         = to_string(MsgID::MSG_END);
-                        s_hop           = "9";
-                        s_port          = "9";
-                        s_uport         = "9";
-                        s_uuport        = "9";
-                    }
-                    break;
-                case HeadInitFlag::BBU2ADAPTER_HEAD:
-                    {
-                        s_source        = to_string(Source::BBU);
-                        s_destination   = to_string(Destination::TO_OAM);
-                        s_mac           = "FFFFFFFFFFFF";
-                        s_state         = to_string(State::REQUEST);
-                        s_msgID         = to_string(MsgID::MSG_END);
-                        s_hop           = "0";
-                        s_port          = "0";
-                        s_uport         = "0";
-                        s_uuport        = "0";
-                    }
-                    break;
-                case HeadInitFlag::ADAPTER2BBU_HEAD:
-                    {
-                        s_source        = to_string(Source::OAM);
-                        s_destination   = to_string(Destination::TO_BBU);
-                        s_mac           = "FFFFFFFFFFFF";
-                        s_state         = to_string(State::REQUEST);
-                        s_msgID         = to_string(MsgID::MSG_END);
-                        s_hop           = "0";
-                        s_port          = "0";
-                        s_uport         = "0";
-                        s_uuport        = "0";
-                    }
-                    break;
-            }
-        }
-        Head(int flag, uv::Packet& packet)
-        {
-            switch(flag)
-            {
-                case HeadInitFlag::S2D_REVERSAL_HEAD:
-                    {
-                        s_source        = packet.GetDestination();
-                        s_destination   = packet.GetSource();
-                        s_mac           = packet.GetMac();
-                        s_state         = packet.GetState();
-                        s_msgID         = packet.GetMsgID();
-                        s_hop           = packet.GetHop();
-                        s_port          = packet.GetPort();
-                        s_uport         = packet.GetUPort();
-                        s_uuport        = packet.GetUUPort();
-                    }
-                    break;
-                case HeadInitFlag::GENERAL_HEAD:
-                    {
-                        s_source        = packet.GetSource();
-                        s_destination   = packet.GetDestination();
-                        s_mac           = packet.GetMac();
-                        s_state         = packet.GetState();
-                        s_msgID         = packet.GetMsgID();
-                        s_hop           = packet.GetHop();
-                        s_port          = packet.GetPort();
-                        s_uport         = packet.GetUPort();
-                        s_uuport        = packet.GetUUPort();
-                    }
-                    break;
-            }
-        }
     };
 
     enum Source

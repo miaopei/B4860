@@ -43,7 +43,28 @@ void HUB::reConnect()
 {
     uv::Timer* timer = new uv::Timer(loop_, 500, 0, [this](uv::Timer* ptr)
     {
-        connect(*(sockAddr.get()));
+        char* pdata = NULL;
+        size_t size = 32;
+        pdata = (char*)malloc(size * sizeof(char));
+        if(pdata == NULL)
+        {		
+            LOG_PRINT(LogLevel::error, "malloc gateway memory error");
+        }
+#if 1
+        GetDeviceGateWay(IFRNAME, pdata, size);
+        LOG_PRINT(LogLevel::debug, "ReConnect Device GateWay: %s", pdata);
+#endif
+#if 0
+        GetDeviceIP(IFRNAME, pdata, size);	
+        LOG_PRINT(LogLevel::debug, "ReConnect Device IP: %s", pdata);
+#endif
+
+        SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
+        connect(addr);
+
+        free(pdata);
+        pdata = NULL;
+
         ptr->close([](uv::Timer* ptr)
         {
             delete ptr;    
@@ -57,44 +78,45 @@ void HUB::SendConnectMessage()
     std::string data = "ResultID=0";
     
     uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::REQUEST);
+    CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_CONNECT);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 }
 
 void HUB::SetRHUBInfo()
 {
-	uv::Packet packet;
-	char mac[32] = {0};
-	if(!packet.GetDeviceMac(IFRNAME, mac))
+	char* pdata = NULL;
+    size_t size = 32;
+    pdata = (char*)malloc(size * sizeof(char));
+    if(pdata == NULL)
     {
-        std::cout << "Error: GetMac error" << std::endl;
-        return ;
+        LOG_PRINT(LogLevel::error, "malloc memory error");
     }
-	m_mac = mac;
+    GetDeviceMAC(IFRNAME, pdata, size);
+	LOG_PRINT(LogLevel::debug, "Device Mac: %s", pdata);
+
+    m_mac = pdata;
+	m_source = to_string(uv::Packet::HUB);
+    m_uuport = "X";
 	
     int mpi_fd = gpmc_mpi_open(GPMC_MPI_DEV);
     /* 获取 rhub 的 port id 信息 */
     uint16_t rhub_port = get_rhup_port_id(mpi_fd, UP);
 
-    std::cout << "rhub_port = " << rhub_port << std::endl;
-    std::cout << "port = " << ((rhub_port >> 8) & 0xf) << std::endl;
-    std::cout << "rruid = " << ((rhub_port >> 4) & 0xf) << std::endl;
-    std::cout << "uport = " << (rhub_port & 0xf) << std::endl;
+	LOG_PRINT(LogLevel::debug, "rhub_port=%d port=%d rruid=%d uport=%d", 
+								rhub_port, ((rhub_port >> 8) & 0xf),
+								((rhub_port >> 4) & 0xf), (rhub_port & 0xf));
 
-    m_source = to_string(uv::Packet::HUB);
     m_port = to_string(((rhub_port >> 8) & 0xf));
     m_hop = to_string(((rhub_port >> 4) & 0xf));
     m_uport = to_string((rhub_port & 0xf));
 
     gpmc_mpi_close(mpi_fd);
+
+    
+    free(pdata);
+    pdata = NULL;
 }
 
 void HUB::SendRHUBDelayInfo()
@@ -103,14 +125,8 @@ void HUB::SendRHUBDelayInfo()
     RHUBDelayInfoCalculate(data);
 
     uv::Packet::Head head;
-    head.s_source = m_source;
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::RESPONSE);
+	CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_DELAY_MEASUREMENT);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 }
@@ -169,7 +185,7 @@ void HUB::RecvMessage(const char* buf, ssize_t size)
 {
     if(size < HEADLENGTH)
     {
-        std::cout << "Message Length error." << std::endl;
+		LOG_PRINT(LogLevel::error, "Message Length error.");
         return;
     }
 
@@ -181,7 +197,7 @@ void HUB::RecvMessage(const char* buf, ssize_t size)
 		uv::Packet packet;
 		while (0 == packetbuf->readPacket(packet))
 		{
-			std::cout << "[ReceiveData: " << packet.DataSize() << ":" << packet.getData() << "]" << std::endl;
+			//LOG_PRINT(LogLevel::debug, "[ReceiveData: %d:%s]", packet.DataSize(), packet.getData());
 			packet.UnPackMessage();
 
 			/* 打印解包信息 */
@@ -197,23 +213,35 @@ void HUB::ProcessRecvMessage(uv::Packet& packet)
 	switch(std::stoi(packet.GetMsgID()))
     {
         case uv::Packet::MSG_CONNECT:
-            std::cout << "[RCV:msg_connect]" << std::endl;
             ConnectResultProcess(packet);
             break;
         case uv::Packet::MSG_UPGRADE:
-            std::cout << "[RCV:msg_upgrade]" << std::endl;
             UpgradeProcess(packet);            
             break;
         case uv::Packet::MSG_UPDATE_DELAY:
-            std::cout << "[RCV:msg_updata_delay]" << std::endl;
             UpdataDelay(packet);
             break;
         default:
-            std::cout << "[Error: MessageID Error]" << std::endl;
+			LOG_PRINT(LogLevel::error, "MessageID Error");
     }
 }
 
 void HUB::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size)
+{
+    uv::Packet packet;
+    packet.SetHead(head);
+
+    packet.PackMessage(data, size);
+
+    /* 打印数据封装信息 */
+    packet.EchoPackMessage();
+    
+    std::string send_buf = packet.GetPacket();
+    
+    SendMessage(send_buf.c_str(), send_buf.length());
+}
+
+void HUB::HeartSendPackMessage(uv::Packet::Head head, std::string data, ssize_t size)
 {
     uv::Packet packet;
     packet.SetHead(head);
@@ -230,7 +258,7 @@ void HUB::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t siz
 
 void HUB::SendMessage(const char* buf, ssize_t size)
 {
-    std::cout << "[SendMessage: " << buf << "]" << std::endl;
+	//LOG_PRINT(LogLevel::debug, "[SendMessage: %s]", buf);
     if(uv::GlobalConfig::BufferModeStatus == uv::GlobalConfig::NoBuffer)
     {
         //writeInLoop(buf, (unsigned int)size, nullptr);
@@ -253,14 +281,8 @@ void HUB::UpdataDelay(uv::Packet& packet)
     RHUBDelayInfoCalculate(data);
 
     uv::Packet::Head head;
-    head.s_source = to_string(uv::Packet::HUB);
-    head.s_destination = to_string(uv::Packet::TO_BBU);
-	head.s_mac = m_mac;
-    head.s_state = to_string(uv::Packet::RESPONSE);
+    CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_UPDATE_DELAY);
-    head.s_hop = m_hop;
-    head.s_port = m_port;
-    head.s_uport = m_uport;
 
     SendPackMessage(head, data, data.length());
 }
@@ -269,26 +291,26 @@ void HUB::UpgradeProcess(uv::Packet& packet)
 {
     std::thread back(std::bind(&HUB::UpgradeThread, this, packet));
     back.detach();
-    //this_thread::sleep_for(chrono::milliseconds(200));
+    this_thread::sleep_for(chrono::milliseconds(200));
 }
 
 void HUB::UpgradeThread(uv::Packet& packet)
 {
     if(!FtpDownloadFile(packet))
     {
-        std::cout << "Error: FtpDownloadFile error" << std::endl;
+		LOG_PRINT(LogLevel::error, "FtpDownloadFile error");
         /* 给BBU 发送 ftp download 失败消息 */
         SendUpgradeFailure(packet, "4");
         return ;
     } else {
-        std::cout << "Info: FtpDownloadFile success" << std::endl;
+		LOG_PRINT(LogLevel::debug, "FtpDownloadFile success");
         /* 执行升级命令 */
         if(_system("/etc/user/user_update_sh") < 0)
         {
-            std::cout << "Error: system user_update_sh execute error" << std::endl;
+			LOG_PRINT(LogLevel::error, "system user_update_sh execute error");
             if(_system("/etc/user/user_update_error_sh") < 0)
             {
-                std::cout << "Error: system user_update_error_sh execute error" << std::endl;
+				LOG_PRINT(LogLevel::error, "system user_update_error_sh execute error");
             }
             /* 给BBU 发送 调用升级命令 失败消息 */
             SendUpgradeFailure(packet, "5");
@@ -297,7 +319,7 @@ void HUB::UpgradeThread(uv::Packet& packet)
         /* 重启设备操作 */
         if(_system("/sbin/reboot") < 0)
         {
-            std::cout << "Error: system reboot execute error" << std::endl;
+			LOG_PRINT(LogLevel::error, "system reboot execute error");
             return ;
         }
     }
@@ -306,6 +328,8 @@ void HUB::UpgradeThread(uv::Packet& packet)
 void HUB::SendUpgradeFailure(uv::Packet& packet, const std::string errorno)
 {
     uv::Packet::Head head;
+    CreateHead(uv::Packet::TO_BBU, head);
+    head.s_msgID = packet.GetMsgID();
     head.s_source = packet.GetSource();
     head.s_destination = to_string(uv::Packet::TO_BBU);
 	head.s_mac = packet.GetMac();
@@ -328,15 +352,13 @@ bool HUB::FtpDownloadFile(uv::Packet& packet)
     packet.SplitData2Map(map);
     if(!FindDataMapValue(map, "fileName", fileName))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-                  << " > Error: not find fileName" << std::endl;
+		LOG_PRINT(LogLevel::error, "not find fileName");
         return false;
     }
     
     if(!FindDataMapValue(map, "md5", md5))
     {
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ":" 
-                  << " > Error: not find md5" << std::endl;
+		LOG_PRINT(LogLevel::error, "not find md5");
         return false;
     }
 
@@ -344,26 +366,26 @@ bool HUB::FtpDownloadFile(uv::Packet& packet)
     ftplib *ftp = new ftplib();
 	if(!ftp->Connect(ftpServerAddr.c_str()))
     {
-        std::cout << "Error: ftp connect error" << std::endl;
+		LOG_PRINT(LogLevel::error, "ftp connect error");
         return false;
     }
 
 	if(!ftp->Login("anonymous", ""))
     {
-        std::cout << "Error: ftp login error" << std::endl;
+		LOG_PRINT(LogLevel::error, "ftp login error");
         return false;
     }
 
     if(!ftp->Get("/etc/user/rHUP.tar", fileName.c_str(), ftplib::image))
     {
-        std::cout << "Error: ftp get file error" << std::endl;
+		LOG_PRINT(LogLevel::error, "ftp get file error");
         return false;
     }
 
-    std::cout << "file md5=" << md5file("/etc/user/rHUP.tar") << std::endl;
+	LOG_PRINT(LogLevel::debug, "file md5=%s", md5file("/etc/user/rHUP.tar").c_str());
     if(md5 != md5file("/etc/user/rHUP.tar"))
     {
-        std::cout << "Error: md5 check error" << std::endl;
+		LOG_PRINT(LogLevel::error, "md5 check error");
         return false;
     }
 
@@ -376,7 +398,7 @@ bool HUB::FindDataMapValue(std::map<std::string, std::string>& map, std::string 
     auto rst = map.find(key);
     if(rst == map.end())
     {       
-        std::cout << "Error: not find dataMap key" << std::endl;
+		LOG_PRINT(LogLevel::error, "not find dataMap key");
         return false;
 
     }   
@@ -390,18 +412,18 @@ int HUB::_system(std::string command)
     status = system(command.c_str());
 
     if(-1 == status){
-        std::cout << "Error: system error!" << std::endl;
+		LOG_PRINT(LogLevel::error, "system error!");
         return -1;
     } else {
         if(WIFEXITED(status)){
             if(0 == WEXITSTATUS(status)){
                 return 0;
             } else {
-                std::cout << "Error: run shell script fail, script exit code: " << WEXITSTATUS(status) << std::endl;
+				LOG_PRINT(LogLevel::error, "run shell script fail, script exit code: %d", WEXITSTATUS(status));
                 return -2;
             }
         } else {
-            std::cout << "Error: exit status: " << WEXITSTATUS(status) << std::endl;
+			LOG_PRINT(LogLevel::error, "exit status: %d", WEXITSTATUS(status));
             return -3;
         }
     }
@@ -415,7 +437,7 @@ bool HUB::write_file(std::string file, const std::string& data)
 	fout.open(file);
 	if(!fout.is_open())
 	{
-		std::cout << "Error: open file error" << std::endl;
+		LOG_PRINT(LogLevel::error, "open file error");
 		return false;
 	}
 	fout << data << std::endl; 
@@ -430,10 +452,68 @@ bool HUB::read_file(std::string file, char* data, ssize_t size)
 	fin.open(file);
 	if(!fin.is_open())
 	{
-		std::cout << "Error: open file error" << std::endl;
+		LOG_PRINT(LogLevel::error, "open file error");
 		return false;
 	}
 	fin.getline(data, size);
 	fin.close();
 	return true;
+}
+
+
+void HUB::Heart()
+{
+    LOG_PRINT(LogLevel::debug, "Start Heart ...");
+    std::thread t1(std::bind(&HUB::HandleHeart, this, (void*)this));
+    t1.detach();
+}
+
+void HUB::HandleHeart(void* arg)
+{
+    EventLoop loop;
+    HUB* hub = (HUB*)arg;
+
+    std::string data = "heartbeat";
+    uv::Packet::Head head;
+    CreateHead(uv::Packet::TO_BBU, head);
+    head.s_msgID = to_string(uv::Packet::MSG_HEART_BEAT);
+
+    uv::Timer timer(&loop, 30000, 30000,                                                                  
+        [&hub, head, data](Timer*)
+    {
+        hub->HeartSendPackMessage(head, data, data.length());
+    });
+    timer.start();
+    loop.run();
+}
+
+void HUB::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head)
+{
+    switch(dType)
+    {
+        case uv::Packet::Destination::TO_BBU:
+            {
+                head.s_destination = to_string(uv::Packet::Destination::TO_BBU);
+            }
+            break;
+        case uv::Packet::Destination::TO_OAM:
+            {
+                head.s_destination = to_string(uv::Packet::Destination::TO_OAM);
+            }
+            break;
+        default:
+            {
+                LOG_PRINT(LogLevel::error, "DeviceType error");
+                head.s_destination = "X";
+            }
+            break;
+    }
+
+    head.s_source       = m_source;
+	head.s_mac          = m_mac;
+    head.s_state        = to_string(uv::Packet::RESPONSE);
+    head.s_hop          = m_hop;
+    head.s_port         = m_port;
+    head.s_uport        = m_uport;
+    head.s_uuport       = m_uuport;
 }

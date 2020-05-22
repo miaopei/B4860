@@ -119,6 +119,8 @@ void InitializeOamAdapterConnect(SocketAddr& addr, ThreadArg& threadArg)
         oamAdapter->connectToServer(addr);
 		threadArg.oam_adapter = oamAdapter;
         
+        threadArg.oam_adapter->Heart();
+
         threadArg.inited = true ;
 	}
     threadArg.condition.notify_one();
@@ -212,15 +214,20 @@ int main(int argc, char** argv)
 
 	uv::GlobalConfig::BufferModeStatus = uv::GlobalConfig::ListBuffer;
 	
-	if(argc != 2)
-    {
-        fprintf(stdout, "usage: %s server_ip_address\neg.%s 192.168.1.1\n", argv[0], argv[0]);
-        return 0;
+    char* pdata = NULL;
+    size_t size = 32;
+    pdata = (char*)malloc(size * sizeof(char));
+    if(pdata == NULL)
+    {		
+        LOG_PRINT(LogLevel::error, "malloc gateway memory error");
+        return -1;
     }
-    serverIP = argv[1];	
-    
-    SocketAddr addr(serverIP.c_str(), 30000, SocketAddr::Ipv4);
-	
+
+    GetDeviceIP(IFRNAME, pdata, size);	
+    LOG_PRINT(LogLevel::debug, "Device IP: %s", pdata);
+
+    SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
+
     struct ThreadArg threadArg;
     threadArg.inited = false;
 
@@ -229,6 +236,9 @@ int main(int argc, char** argv)
     std::thread t2(std::bind(&CliProcess, std::ref(threadArg)));
     t1.join();
     t2.join();
+
+    free(pdata);
+    pdata = NULL;
 
 	return 0;
 }

@@ -359,6 +359,10 @@ void OamAdapter::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& hea
             }
             break;
         default:
+            {
+                LOG_PRINT(LogLevel::error, "DeviceType error");
+                head.s_destination = "X";
+            }
             break;
     }
 

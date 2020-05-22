@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	}
 	
 #if 0
-	GetDeviceGateWay(interface_name, pdata, size);
+	GetDeviceGateWay(IFRNAME, pdata, size);
 	LOG_PRINT(LogLevel::debug, "Device GateWay: %s", pdata);
 #endif
 
@@ -46,7 +46,6 @@ int main(int argc, char* argv[])
 #endif
 
 	SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
-	//SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
     HUB hub(loop);
 
 #if 0
