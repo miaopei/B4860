@@ -21,6 +21,7 @@ HUB::HUB(uv::EventLoop* loop)
     setMessageCallback(std::bind(&HUB::RecvMessage, this, std::placeholders::_1, std::placeholders::_2));
 
     SetRHUBInfo();
+    m_img_filename = "";
 }
 
 void HUB::connectToServer(uv::SocketAddr& addr)
@@ -125,8 +126,29 @@ void HUB::SendConnectMessage()
     free(bhro_packet);
 #endif
 #if 1
-    std::string data = "ResultID=0";
-    
+    std::string data = "ResultID=";
+    char res[32];
+    if(read_file(UpgradeResult, res, sizeof(res)))
+    {
+        if(strcmp(res, "0") != 0)
+        {
+            data += res;
+            write_file(UpgradeResult, "0");
+        } else {
+            data += "0";
+        }
+    } else {
+        data += "0";
+    }
+#if 1
+    if(read_file(SoftwareVersion, res, sizeof(res)))
+    {
+        data += "&softwareVersion=" + std::string(res);
+    } else {
+        data += "&softwareVersion= ";
+    }
+#endif
+
     uv::Packet::Head head;
     CreateHead(uv::Packet::TO_BBU, head);
     head.s_msgID = to_string(uv::Packet::MSG_CONNECT);
@@ -466,6 +488,12 @@ void HUB::UpgradeThread(uv::Packet& packet)
             SendUpgradeFailure(packet, "5");
             return ;
         }
+        /* 写入升级版本 */
+        write_file(SoftwareVersion, m_img_filename);
+
+        /* 写入升级标志 */
+	    write_file(UpgradeResult, "1");
+
         /* 重启设备操作 */
         if(_system("/sbin/reboot") < 0)
         {
@@ -497,6 +525,8 @@ bool HUB::FtpDownloadFile(uv::Packet& packet)
 		LOG_PRINT(LogLevel::error, "not find fileName");
         return false;
     }
+
+    m_img_filename = fileName.substr(0, fileName.find('.'));
     
     if(!FindDataMapValue(map, "md5", md5))
     {

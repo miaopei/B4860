@@ -23,6 +23,9 @@
 #define PORT        30000
 #define IFRNAME     "enp0s31f6"
 
+#define SoftwareVersion     "./SoftwareVersion"
+#define UpgradeResult       "./UpgradeResult"
+
 
 #if 0
 #ifdef __cplusplus
@@ -132,5 +135,6 @@ private:
     std::string m_port;
     std::string m_uport;
     std::string m_uuport;
+    std::string m_img_filename;
 };
 

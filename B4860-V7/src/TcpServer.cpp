@@ -442,7 +442,10 @@ bool TcpServer::SetDeviceInfo(uv::TcpConnectionPtr& connection, std::string key,
     {
 	    rst->second.s_upgradeState = value;
 	    return true;
-    }else{
+    } else if(key == "softwareVersion"){
+	    rst->second.s_softwareVersion = value;
+	    return true;
+    } else{
 		LOG_PRINT(LogLevel::error, "key error");
         return false;
     }

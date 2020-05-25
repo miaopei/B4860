@@ -497,6 +497,7 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
             data += "&hop=" + packet.GetHop();
             data += "&routeIndex=" + dInfo.s_routeIndex;
             data += "&upgradeResult=" + dInfo.s_upgradeState;
+            data += "&softwareVersion=" + dInfo.s_softwareVersion;
 
             SendMessage2Adapter(head, data, data.length());
         }
@@ -509,6 +510,7 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 bool BBU::WriteUpgradeResultToDevice(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
     std::string resultID;
+    std::string softwareVersion;
     std::map<std::string, std::string> map;
 	packet.SplitData2Map(map);
 	if(!FindDataMapValue(map, "ResultID", resultID))
@@ -522,6 +524,19 @@ bool BBU::WriteUpgradeResultToDevice(uv::TcpConnectionPtr& connection, uv::Packe
 		LOG_PRINT(LogLevel::error, "Set Device upgradeState error");
         return false;
     }
+
+    if(!FindDataMapValue(map, "softwareVersion", softwareVersion))
+    {
+		LOG_PRINT(LogLevel::error, "softwareVersion not find");
+        return false;
+    }
+
+    if(!SetDeviceInfo(connection, "softwareVersion", softwareVersion))
+    {
+		LOG_PRINT(LogLevel::error, "Set Device softwareVersion error");
+        return false;
+    }
+
     return true;
 }
 
