@@ -108,6 +108,7 @@ public:
     void sortMapByValue(std::map<std::string, std::string>& map, std::vector<PAIR>& tVector);
 
 	std::string CreateRouteIndex(uv::TcpConnectionPtr& connection);
+    bool GetRouteIndex(uv::TcpConnectionPtr& connection, std::string& routeIndex);
     bool FindNextDeviceInfo(int level, DeviceInfo& next_dInfo);
 	bool DeleteRRUTotalDelay(uv::TcpConnectionPtr& connection, std::vector<PAIR>& tVector);
 

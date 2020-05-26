@@ -401,6 +401,26 @@ bool TcpServer::SetDeviceRouteIndex(uv::TcpConnectionPtr& connection)
 	return true;
 }
 
+bool TcpServer::GetRouteIndex(uv::TcpConnectionPtr& connection, std::string& routeIndex)
+{
+    std::string cName = GetCurrentName(connection);
+		
+	if(cName.empty())
+	{
+		LOG_PRINT(LogLevel::error, "not find connection name");
+		return false;
+	}
+	
+	auto rst = connectionInfo_.find(cName);
+    if(rst == connectionInfo_.end())
+    {
+		LOG_PRINT(LogLevel::error, "not find connection");
+        return false;
+    }
+	routeIndex = rst->second.s_routeIndex;
+	return true;
+}
+
 bool TcpServer::GetDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& dInfo)
 {
 	std::string cName = GetCurrentName(connection);

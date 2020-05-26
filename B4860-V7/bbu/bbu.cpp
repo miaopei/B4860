@@ -47,6 +47,7 @@ BBU::BBU(EventLoop* loop)
     m_mac       = pdata;
     m_source    = to_string(uv::Packet::BBU);
     m_hop       = "0";
+    m_port      = "X";
     m_uport     = "X";
     m_uuport    = "X";
     
@@ -405,11 +406,36 @@ void BBU::RRURFTxStatusProcess(uv::TcpConnectionPtr& connection, uv::Packet& pac
 
 void BBU::UpgradeResultProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
-    if(!WriteUpgradeResultToDevice(connection, packet))
+    std::string resultID;
+    std::string routeIndex;
+    std::map<std::string, std::string> map;
+	packet.SplitData2Map(map);
+	if(!FindDataMapValue(map, "ResultID", resultID))
     {
-		LOG_PRINT(LogLevel::error, "WriteUpgradeResultToDevice error");
-		return ;
+		LOG_PRINT(LogLevel::error, "resultID not find");
+        return ;
     }
+
+    if(!SetDeviceInfo(connection, "upgradeState", resultID))
+    {
+		LOG_PRINT(LogLevel::error, "Set Device upgradeState error");
+        return ;
+    }
+
+    NetworkTopology();
+
+    if(!GetRouteIndex(connection, routeIndex))
+    {
+        LOG_PRINT(LogLevel::error, "Get routeIndex error");
+        return ;
+    }
+    std::cout << "routeIndex=" << routeIndex << std::endl; 
+
+    uv::Packet::Head head;
+    CreateHead(HeadType::D2A_HEAD, head, packet);
+    head.s_msgID = to_string(uv::Packet::MSG_UPDATE_DATA);
+    std::string data = "routeIndex=" + routeIndex + "&upgradeState=" + resultID;
+    SendMessage2Adapter(head, data, data.length());
 }
 
 void BBU::NetworkTopologyMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
@@ -459,15 +485,15 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 	/* Version Check */
 	/* TODO*/
 
-    /* upgrade state check */
-    if(!WriteUpgradeResultToDevice(connection, packet))
-    {
-		LOG_PRINT(LogLevel::error, "WriteUpgradeResultToDevice error");
-		return;
-    }
-
     if(packet.GetSource() != to_string(uv::Packet::OAM))
     {
+        /* upgrade state check */
+        if(!WriteUpgradeResultToDevice(connection, packet))
+        {
+            LOG_PRINT(LogLevel::error, "WriteUpgradeResultToDevice error");
+            return;
+        }
+
         if(!SetDeviceRouteIndex(connection))
         {
             LOG_PRINT(LogLevel::error, "Set Device RouteIndex error");

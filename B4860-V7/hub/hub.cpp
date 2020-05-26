@@ -140,14 +140,13 @@ void HUB::SendConnectMessage()
     } else {
         data += "0";
     }
-#if 1
+
     if(read_file(SoftwareVersion, res, sizeof(res)))
     {
         data += "&softwareVersion=" + std::string(res);
     } else {
-        data += "&softwareVersion= ";
+        data += "&softwareVersion=X";
     }
-#endif
 
     uv::Packet::Head head;
     CreateHead(uv::Packet::TO_BBU, head);
