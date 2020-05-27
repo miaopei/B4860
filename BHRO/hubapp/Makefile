@@ -20,12 +20,19 @@ all:
 	@echo "[build libuv ...]"
 	@tar -zxvf $(LIBSOURCE)/$(LIBUV).tar.gz -C $(BUILD_DIR)
 	@cp -rf $(BUILD_DIR)/$(LIBUV)/* $(BUILD_DIR)
+	@echo "[build rhub ...]"
 	@tar -zxvf $(LIBSOURCE)/librhub.tar.gz -C $(BUILD_DIR)
 	@cp -d $(BUILD_DIR)/librhub/*.so* $(LIB_DIR)
 	@cp $(BUILD_DIR)/librhub/*.h $(INCLUDE_DIR)
+	@echo "[build ftplibpp ...]"
 	@make -C $(WORK_ROOT)/ftplibpp
 	@make -C $(WORK_ROOT)/ftplibpp install
+	@echo "[build src ...]"
+	@cp -rf ../src .
+	@make clean -C src
+	@cp make_src.mk ./src/Makefile
 	@make -C $(WORK_ROOT)/src
+	@echo "[build hub ...]"
 	@make -C $(WORK_ROOT)/hub
 	@./tar.sh
 
@@ -36,10 +43,10 @@ install:
 clean:
 	@echo "[Cleanning ...]"
 	@rm -rf $(BUILD_DIR)
-	@make clean -C src
 	@make clean -C hub
 	@rm -rf librhub
 	@rm -rf $(LIBUV)
 	@make -C $(WORK_ROOT)/ftplibpp clean
 	@rm -rf tarFile
+	@rm -rf src
 

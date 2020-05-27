@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "user app running......"
+
+/usr/sbin/hubapp &

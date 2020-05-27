@@ -43,6 +43,7 @@ public:
         std::string s_uport;
 		std::string s_routeIndex;
         std::string s_upgradeState;
+        std::string s_softwareVersion;
 		RRUDelayInfo_T s_rruDelayInfo;
 		#if 0
         DeviceInfo(){};
@@ -107,6 +108,7 @@ public:
     void sortMapByValue(std::map<std::string, std::string>& map, std::vector<PAIR>& tVector);
 
 	std::string CreateRouteIndex(uv::TcpConnectionPtr& connection);
+    bool GetRouteIndex(uv::TcpConnectionPtr& connection, std::string& routeIndex);
     bool FindNextDeviceInfo(int level, DeviceInfo& next_dInfo);
 	bool DeleteRRUTotalDelay(uv::TcpConnectionPtr& connection, std::vector<PAIR>& tVector);
 

@@ -7,7 +7,7 @@ INCLUDE_DIR = $(BUILD_DIR)/include
 LIB_DIR = $(BUILD_DIR)/lib
 BIN_DIR = $(BUILD_DIR)/bin
 
-TARGET = adapter
+TARGET = oam_adapter
 
 CC = g++
 CFLAGS = -Wall -std=c++11 
@@ -18,7 +18,6 @@ SOURCE = $(wildcard *.cpp)
 OBJECTS = $(SOURCE:.cpp=.o)
 
 all: $(TARGET)
-	@echo "[build bhro ...]"		
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) $(USER_LINK_INC) $^ -o $@ $(USER_LINK_LIB)
@@ -28,7 +27,7 @@ $(TARGET): $(OBJECTS)
 
 .PHONY:clean
 clean:
-	@echo "[Cleanning bhro ...]"
+	@echo "[Cleanning oam_adapter ...]"
 	@rm -f $(OBJECTS)
 	@rm -f $(TARGET)
 
