@@ -525,7 +525,7 @@ bool HUB::FtpDownloadFile(uv::Packet& packet)
         return false;
     }
 
-    m_img_filename = fileName.substr(0, fileName.find('.'));
+    m_img_filename = fileName.substr(0, fileName.rfind('.'));
     
     if(!FindDataMapValue(map, "md5", md5))
     {

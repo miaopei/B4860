@@ -7,7 +7,7 @@ INCLUDE_DIR = $(BUILD_DIR)/include
 LIB_DIR = $(BUILD_DIR)/lib
 BIN_DIR = $(BUILD_DIR)/bin
 
-TARGET = hubapp
+TARGET = hub
 
 CC = arm-linux-gnueabihf-g++
 CFLAGS = -Wall -std=c++11 
