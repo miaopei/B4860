@@ -190,6 +190,9 @@ void BBU::HUBMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 {
     switch(std::stoi(packet.GetMsgID()))
 	{
+        case uv::Packet::MSG_SET:
+            DevicesDataSetProcess(packet);
+            break;
         case uv::Packet::MSG_UPGRADE:
             HUBUpgradeProcess(connection, packet);
             break;
@@ -203,6 +206,9 @@ void BBU::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 {
 	switch(std::stoi(packet.GetMsgID()))
 	{
+        case uv::Packet::MSG_SET:
+            DevicesDataSetProcess(packet);
+            break;
         case uv::Packet::MSG_UPGRADE:
             RRUUpgradeProcess(connection, packet);
             break;
@@ -217,7 +223,16 @@ void BBU::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 
 void BBU::OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
+    std::string send_buf;
+    send_buf = packet.GetPacket();
 
+    std::vector<TcpConnectionPtr> oamsConnection;
+    GetOAMConnection(oamsConnection);
+    for(auto it : oamsConnection)
+    {
+	    LOG_PRINT(LogLevel::debug, "[SendMessage to OAM: %s]", send_buf.c_str());
+        SendMessage(it, send_buf.c_str(), send_buf.length());
+    }
 }
 
 void BBU::HUBUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
@@ -373,7 +388,7 @@ void BBU::RRURFTxStatusProcess(uv::TcpConnectionPtr& connection, uv::Packet& pac
 	packet.SplitData2Map(map);
 	if(!FindDataMapValue(map, "routeIndex", routeIndex))
     {
-		LOG_PRINT(LogLevel::error, "not find dataMapValue routeIndex");
+		LOG_PRINT(LogLevel::debug, "Set All RRU Devices!");
 
         std::vector<TcpConnectionPtr> rrusConnection;
         GetRRUsConnection(rrusConnection);
@@ -399,6 +414,59 @@ void BBU::RRURFTxStatusProcess(uv::TcpConnectionPtr& connection, uv::Packet& pac
 	}
 
     data = "RFTxStatus=" + RFTxStatus;
+    packet.PackMessage(data, data.length());
+    send_buf = packet.GetPacket();
+    SendMessage(to_connect, send_buf.c_str(), send_buf.length());
+}
+
+void BBU::DevicesDataSetProcess(uv::Packet& packet)
+{
+    std::string routeIndex;
+    std::vector<TcpConnectionPtr> DevicesConnection;
+    std::string send_buf;
+    uv::TcpConnectionPtr to_connect;
+    std::string data;
+
+    std::map<std::string, std::string> map;
+	packet.SplitData2Map(map);
+	if(!FindDataMapValue(map, "routeIndex", routeIndex))
+    {
+		LOG_PRINT(LogLevel::debug, "Set All Devices!");
+
+        if(packet.GetDestination() == to_string(uv::Packet::TO_HUB))
+        {
+            DevicesConnection.clear();
+            GetHUBsConnection(DevicesConnection);
+            for(auto it : DevicesConnection)
+            {	
+                send_buf = packet.GetPacket();
+                SendMessage(it, send_buf.c_str(), send_buf.length());
+            }
+
+        } else if(packet.GetDestination() == to_string(uv::Packet::TO_RRU))
+        {
+            DevicesConnection.clear();
+            GetRRUsConnection(DevicesConnection);
+            for(auto it : DevicesConnection)
+            {	
+                send_buf = packet.GetPacket();
+                SendMessage(it, send_buf.c_str(), send_buf.length());
+            }
+
+        } else {
+            LOG_PRINT(LogLevel::error, "Set All Devices!");
+        }
+        return ;
+    }
+
+    if(!GetConnectByRouteIndex(routeIndex, to_connect))
+    {
+		LOG_PRINT(LogLevel::error, "Get Connect by routeIndex error");
+        return ;
+    }
+   
+    data = packet.GetData();
+    data = data.substr(data.find('&') + 1);
     packet.PackMessage(data, data.length());
     send_buf = packet.GetPacket();
     SendMessage(to_connect, send_buf.c_str(), send_buf.length());

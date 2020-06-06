@@ -192,7 +192,7 @@ B4860 遗留问题：
 
 
 
-
+./configure CC=arm-linux-gnueabihf-g++ --prefix=/home/miaopei/workdir/4860-IR/dot1ag-utils/build --host=arm-linux
 
 
 

@@ -290,6 +290,28 @@ void OamAdapter::SendRFTxMessage(std::string routeIndex, std::string RFTxStatus)
     SendPackMessage(head, data, data.length());
 }
 
+void OamAdapter::SendDateSetMessage(std::string destination, std::string data)
+{
+    uv::Packet::Head head;
+    CreateHead(uv::Packet::USER_DEFINED, head);
+    head.s_destination = destination;
+    head.s_msgID = to_string(uv::Packet::MSG_SET);
+
+    SendPackMessage(head, data, data.length());
+}
+
+void OamAdapter::SendDateSetMessage(std::string destination, std::string routeIndex, std::string data)
+{
+    std::string s_data = "routeIndex=" + routeIndex + "&" + data;
+    
+    uv::Packet::Head head;
+    CreateHead(uv::Packet::USER_DEFINED, head);
+    head.s_destination = destination;
+    head.s_msgID = to_string(uv::Packet::MSG_SET);
+
+    SendPackMessage(head, s_data, data.length());
+}
+
 void OamAdapter::GetNetworkTopology()
 {
     RSPStatus = false;

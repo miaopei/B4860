@@ -20,12 +20,16 @@ int main(int argc, char** argv)
     //adapter.GetTopo();
     //adapter.DeviceUpGrade("0", "rHUP_1.tar", "123456789");
     //adapter.DeviceUpGrade("0", "0_2", "rHUP_2.tar", "123456789");
+#if 1
     int i = 20;
     while(i != 0){
         sleep(1);
         i--;
     }
-    adapter.DeviceUpGrade("0", "rHUP_1.tar", "123456789");
+    //adapter.DeviceUpGrade("0", "rHUP_1.tar", "123456789");
+    adapter.DeviceDataSet("0", "power=123&Rx=332");
+    adapter.DeviceDataSet("0", "0_2", "power=123&Rx=332");
+#endif
     while(1){sleep(1);}
 
 	return 0;

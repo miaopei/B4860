@@ -138,6 +138,8 @@ public:
 
     void CreateHead(HeadType hType, uv::Packet::Head& head);
     void CreateHead(HeadType hType, uv::Packet::Head& head, uv::Packet& packet);
+
+    void DevicesDataSetProcess(uv::Packet& packet);
 	
     void EchoSortResult(vector<PAIR>& tVector);
 

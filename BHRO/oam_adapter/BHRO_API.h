@@ -49,6 +49,9 @@ public:
     void SetRFTx(std::string RFTxStatus);
     void SetRFTx(std::string routeIndex, std::string RFTxStatus);
 
+    void DeviceDataSet(std::string destination, std::string data);
+    void DeviceDataSet(std::string destination, std::string routeIndex, std::string data);
+
 	void GetTopo();
 
 private:

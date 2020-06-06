@@ -50,6 +50,9 @@ public:
     void SendRFTxMessage(std::string RFTxStatus);
     void SendRFTxMessage(std::string routeIndex, std::string RFTxStatus);
 
+    void SendDateSetMessage(std::string destination, std::string data);
+    void SendDateSetMessage(std::string destination, std::string routeIndex, std::string data);
+
     void GetUpgradeResult();
 
 	void GetNetworkTopology();

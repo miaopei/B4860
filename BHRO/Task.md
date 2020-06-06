@@ -129,14 +129,65 @@ Data：
 - [x] 网优宝 初始化配置问题讨论，app 增加自动配置初始化服务器功能，和日志导出功能。计划1.5 版本支持。1.4 release 版本发布。计划下周五发布1.5 debug版本。
 - [x] bbu、 adapter、 hub 日志输出优化，各端收发数据包封装解封装输出格式优化。
 - [x] 网优宝 改版讨论，计划 1.6 版本对网优宝进行页面改版，目前的状况是新增的设置标签在一个页面已经放不下，需要滑动才能看到，用户操作体验不太好。改版 需要李冬雪重新设计app页面，app底部增加三个标签，分别是状态，设置，关于。状态页可以更多的显示一些状态信息，设置页可以更多的扩展不同的操作标签，关于页显示app 的版本以及app的版本信息。
-- [ ] rru 增加消息头字段，bbu状态机以及hub、adapter需要更新消息头封装和解封装。
-- [ ] hub 升级状态变迁问题，目前重启设备无法确定是否升级成功。hub 软件版本记录以及上报。 
-- [ ] rru 同级 topo 的问题，刘丙洋新增的接口进行处理，这部分改动需要在头文件中新增一个字段。改动的地方比较多。
-- [ ] 工程从bsp迁移到oam，主要需要解决的是makefile编译的问题，以及软件包安装的问题。
-- [ ] 设备connect 消息上报设备状态信息和配置信息，消息由bbu 转发给oam adapter进行设置mib
-- [ ] 设备联调
+
+
+
+本周工作内容：
+
+- [x] rru 增加消息头字段，bbu状态机以及hub、adapter需要更新消息头封装和解封装。
+- [x] hub 升级状态变迁问题，目前重启设备无法确定是否升级成功。hub 软件版本记录以及上报。 
+- [x] rru 同级 topo 的问题，刘丙洋新增的接口进行处理，这部分改动需要在头文件中新增一个字段。改动的地方比较多。
+- [x] 工程从bsp迁移到oam，主要需要解决的是makefile编译的问题，以及软件包安装的问题。
+- [x] 在 fap 工程中插入 bbuapp 自动编译，以及可执行程序和库文件的安装，使用现有的接口实现独立的bbuapp服务启动脚本。
+- [x] 设备connect 消息上报设备状态信息和配置信息，消息由bbu 转发给oam adapter进行设置mib
+- [x] 设备联调
+- [x] hub 工程迁移到fap中，嵌入到bbuapp的工程，方便维护。
+- [x] 制作 hub 1.0.4 版本，基于topo环境验证软件包连接、断连、升级消息到适配层的消息。验证的bug解决。
+- [x] bbuapp迁移到fap中关于系统启动服务启动失败问题解决，bbuapp日志输出简单实用重定向到/var/log/bbuapp.log中。
+- [x] oam适配层支持设备连接数据写object、升级验证
+- [x] BSP bbuapp 软件编译，服务启动脚本删除，这部分都在fap中处理，版本编译验证。
+- [x] 网优宝1.5 版本发布。张冬雪网优宝页面改版内容评审。
+
+netconf 支持
+
+B4860 遗留问题：
+
+- [ ] bbu 设备重启，hub 连接的问题
+- [ ] 设备比适配层早接入bbuap中，适配层获取不到设备信息的问题。需要在bbu 状态机中检测如果oam adapter接入，则给所有已连接的设备发送reconnect消息，reconnect消息携带设备的消息到适配层进行设置。
+- [ ] bbuapp、hub软狗监控功能
+- [ ] bbu创建rru routeIndex失败，是因为rru上级hub没有接入，这部分需要处理，如果rru routeIndex创建失败应该断开rru 的连接。让rru定期重连，直到bbu可以为rru 创建routeIndex。
+- [ ] 移动object规范中 设备扩展信息 实现上报问题，适配层数据配置扩展
 - [ ] 时延测量根据刘丙洋提供的新接口重新实现。（这部分代码比较繁琐，需要rru跟着一起改）
 - [ ] 项目概设文档更新
+
+
+
+
+
+- [ ] bbu设备重启，hub连接的问题解决。
+- [ ] rru比hub早接入bbu，routeIndex生成失败的问题解决。bbu状态机判断如果rru connect后上一层级hub没有找到，则bbu主动断开rru的连接，rru 断线重连机制30s后再接入。已经和rru联调完成
+- [ ] dot1ag 服务在hub和b4860工程中交叉编译，经过测试bbu ethping没有问题，ethtrace的时候获取不到有效ttl。PC编译测试是可以ethtrace的。怀疑是hub的问题。王超在定位。
+- [ ] 测试反馈bbuapp adapter问题定位，经过测试确定再GPS情况下bbuapp启动失败，手动启会adapter。问题确定是oam_adapter侧引起的，看oam_adapter进程fd文件有很多。剔除oam相关的操作测试没有这个问题。具体问题还在和海涛进一步定位。
+- [ ] GPS同步模式bbuapp启动失败的问题，付田反馈参照层1判断标志位确定是否启动。脚本已改，测试完成。
+- [ ] bbuapp启动比oam_adapter早，可能会导致设备接入后的设备信息无法上报到oam。这个问题的解决方案是bbu状态机收到oam_adapter的connect消息后，主动断开已连接所有hub和rru设备，hub和rrru有断线重连机制，可以保证已接入的设备信息上报到oam。方案进展代码基本完成。待测试。
+
+
+
+
+
+- [ ] oam_adapter实现oam侧数据set接口，需要在oam_adapter内部完成数据设置的消息头封装和data拼接发送。下周发版本需要支持。
+- [ ] b4860 版本发布支持，以及hub版本发布支持。
+- [ ] netconf 数据模型校验
+- [ ] netconf 相关操作标准review
+
+
+
+
+
+
+
+
+
 - [ ] HUB 掉线，RRU如何处理？BBU 断开HUB下所有RRU的连接？如果有级联级联设备也需要断开连接
 
 
@@ -165,7 +216,7 @@ Data：
 
 
 
-
+./configure CC=arm-linux-gnueabihf-g++ --prefix=/home/miaopei/workdir/4860-IR/dot1ag-utils/build --host=arm-linux
 
 
 

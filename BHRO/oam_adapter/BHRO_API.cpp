@@ -93,6 +93,18 @@ void BHRO_API::SetRFTx(std::string routeIndex, std::string RFTxStatus)
     threadArg_.oam_adapter->SendRFTxMessage(routeIndex, RFTxStatus);
 }
 
+void BHRO_API::DeviceDataSet(std::string destination, std::string data)
+{
+    ConditionWait();
+    threadArg_.oam_adapter->SendDateSetMessage(destination, data);
+}
+
+void BHRO_API::DeviceDataSet(std::string destination, std::string routeIndex, std::string data)
+{
+    ConditionWait();
+    threadArg_.oam_adapter->SendDateSetMessage(destination, routeIndex, data);
+}
+
 void BHRO_API::GetTopo()
 {
     ConditionWait();
