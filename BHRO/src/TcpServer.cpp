@@ -538,7 +538,7 @@ void TcpServer::closeConnection(string& name)
                 {
                     onConnectCloseCallback_(connection);
                 }
-
+				LOG_PRINT(LogLevel::debug, "close connection: %s", name.c_str());
 				/* 需要处理hub delay info dalay_map*/
 				auto rst = connectionInfo_.find(name);
 			    if(rst != connectionInfo_.end())

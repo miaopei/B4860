@@ -327,7 +327,7 @@ void BBU::RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 		LOG_PRINT(LogLevel::error, "RRU upgrade Director file num error");
         return ;
     }
-    data = "fileName=" + fileName + "/" + files[0] + "&md5=" + md5file(std::string("/tmp/ftp/" + fileName + "/" + files[0]).c_str()) + "&fileName=" + fileName + "/" + files[1] + "&md5=" + md5file(std::string("/tmp/ftp/" + fileName + "/" + files[1]).c_str()) + "&fileName=" + fileName + "/" + files[2] + "&md5=" + md5file(std::string("/mnt/ftp/" + fileName + "/" + files[2]).c_str());
+    data = "fileName=" + fileName + "/" + files[0] + "&md5=" + md5file(std::string("/tmp/ftp/" + fileName + "/" + files[0]).c_str()) + "&fileName=" + fileName + "/" + files[1] + "&md5=" + md5file(std::string("/tmp/ftp/" + fileName + "/" + files[1]).c_str()) + "&fileName=" + fileName + "/" + files[2] + "&md5=" + md5file(std::string("/tmp/ftp/" + fileName + "/" + files[2]).c_str());
 
 	if(!FindDataMapValue(map, "routeIndex", routeIndex))
     {
@@ -490,14 +490,11 @@ void BBU::UpgradeResultProcess(uv::TcpConnectionPtr& connection, uv::Packet& pac
         return ;
     }
 
-    NetworkTopology();
-
     if(!GetRouteIndex(connection, routeIndex))
     {
         LOG_PRINT(LogLevel::error, "Get routeIndex error");
         return ;
     }
-    std::cout << "routeIndex=" << routeIndex << std::endl; 
 
     uv::Packet::Head head;
     CreateHead(HeadType::D2A_HEAD, head, packet);
@@ -543,15 +540,31 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 		LOG_PRINT(LogLevel::error, "SetConnectionInfo error");
 		return;
 	}
+    
+	if(packet.GetSource() == to_string(uv::Packet::OAM))
+	{
+		std::string name;
+		std::vector<TcpConnectionPtr> DevicesConnection;
+		
+		GetHUBsConnection(DevicesConnection);
+        for(auto it : DevicesConnection)
+        {
+			LOG_PRINT(LogLevel::debug, "OAM Adapter Connect, close hub devices be reconnect system");
+			/* close the device connect */
+			name = GetCurrentName(it);
+			closeConnection(name);
+		}
 
-    /* 如果 source 是 RRU 需要更新上级 HUB 延时测量信息*/
-    if(dInfo.s_source == to_string(uv::Packet::RRU))
-    {
-        SendUpdateHUBDelayMessage(connection, packet);
-    }
-
-	/* Version Check */
-	/* TODO*/
+		DevicesConnection.clear();
+        GetRRUsConnection(DevicesConnection);
+        for(auto it : DevicesConnection)
+        {
+			LOG_PRINT(LogLevel::debug, "OAM Adapter Connect, close rru devices be reconnect system");
+			/* close the device connect */
+			name = GetCurrentName(it);
+			closeConnection(name);
+		}
+	}
 
     if(packet.GetSource() != to_string(uv::Packet::OAM))
     {
@@ -565,10 +578,13 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
         if(!SetDeviceRouteIndex(connection))
         {
             LOG_PRINT(LogLevel::error, "Set Device RouteIndex error");
+			/* close the device connect */
+			std::string name = GetCurrentName(connection);
+			closeConnection(name);
             return ;
         }
     }
-
+	
     std::vector<TcpConnectionPtr> oamsConnection;
     GetOAMConnection(oamsConnection);
     for(auto it : oamsConnection)
@@ -596,6 +612,15 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
             SendMessage2Adapter(head, data, data.length());
         }
     }
+
+	/* 如果 source 是 RRU 需要更新上级 HUB 延时测量信息*/
+    if(dInfo.s_source == to_string(uv::Packet::RRU))
+    {
+        SendUpdateHUBDelayMessage(connection, packet);
+    }
+
+	/* Version Check */
+	/* TODO*/
 
     /* 需要优化，使用同一的消息发送接口 */
     SendConnectionMessage(connection, packet);
@@ -775,11 +800,11 @@ void BBU::UpdataRRUDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packe
 	{	
 		if(it == connection)
 		{
-		    LOG_PRINT(LogLevel::debug, "conntion=%s", connection);
+		    //LOG_PRINT(LogLevel::debug, "conntion=%s", connection);
 			continue;
 		}
 		
-		LOG_PRINT(LogLevel::debug, "it=%s connection=%s", it, connection);
+		//LOG_PRINT(LogLevel::debug, "it=%s connection=%s", it, connection);
 		
 		CalculationDelayCompensation(it, delayULCompensation, delayDLCompensation);
 	    data = "delayULCompensation=" + delayULCompensation + "&delayDLCompensation=" + delayDLCompensation;

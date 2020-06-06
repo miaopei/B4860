@@ -23,6 +23,8 @@
 #define PORT        30000
 #define IFRNAME     "eth0"
 
+#define SoftwareVersion     "/etc/user//SoftwareVersion"
+#define UpgradeResult       "/etc/user/UpgradeResult"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -100,5 +102,6 @@ private:
     std::string m_port;
     std::string m_uport;
     std::string m_uuport;
+    std::string m_img_filename;
 };
 
