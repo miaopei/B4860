@@ -87,8 +87,6 @@ public:
 	void SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 	void DelayMeasurementProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 
-	void UnPackData(uv::Packet& packet, std::map<std::string, std::string>& map);
-	
     /* 时延测量需要实现的几个接口函数 */
     /* 更新HUB时延测量信息 */
     void SendUpdateHUBDelayMessage(uv::TcpConnectionPtr& connection, uv::Packet& packet);
@@ -123,8 +121,6 @@ public:
 
     void UpgradeResultProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
 
-    bool WriteUpgradeResultToDevice(uv::TcpConnectionPtr& connection, uv::Packet& packet);
-
     void HUBUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
     void RRUUpgradeProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
     void RRURFTxStatusProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet);
@@ -142,8 +138,6 @@ public:
     void DevicesDataSetProcess(uv::Packet& packet);
 	
     void EchoSortResult(vector<PAIR>& tVector);
-
-    void NetworkTopology();
 
 private:
     void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);

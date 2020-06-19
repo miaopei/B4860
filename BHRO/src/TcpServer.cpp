@@ -458,6 +458,7 @@ bool TcpServer::SetDeviceInfo(uv::TcpConnectionPtr& connection, std::string key,
         return false;
     }
 
+#if 0
     if(key == "upgradeState")
     {
 	    rst->second.s_upgradeState = value;
@@ -469,6 +470,8 @@ bool TcpServer::SetDeviceInfo(uv::TcpConnectionPtr& connection, std::string key,
 		LOG_PRINT(LogLevel::error, "key error");
         return false;
     }
+#endif
+    return true;
 }
 
 bool TcpServer::FindUpHubDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& upHubDInfo)
