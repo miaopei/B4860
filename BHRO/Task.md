@@ -184,6 +184,35 @@ B4860 遗留问题：
 
 
 
+- [ ] 实现oam_adapter set接口，bbuapp状态机实现消息发送到指定设备，或者发送消息到同类型所有设备。代码完成，测试ok。
+- [ ] centos 搭建 netopper2 环境，pyang 环境。
+- [ ] 使用 pyang 校验 O_RAN yang 文件。经校验发现有五个yang模型文件语法有问题，目前查看资料正在解决
+- [ ] bu升级eu后，eu无法接入bu问题，根据讨论，如果eu从tcp连接的状态变为断开则eu执行重启。逻辑部分代码完成，待出eu版本验证。
+- [ ] bbuapp中处理设备信息无法注册OAM的问题，经过讨论，bbuapp状态机检测到oam_adapter接入后断开所有eu ru设备连接，让其触发断线重连保证接入bu后消息能注册到oam，这个实现不太好。和oam讨论后再oam_adapter 参数cache初始化好之后创建标志文件，bbuapp读取标志文件来决定什么时候启动bbuapp。代码完成，未测试。
+- [ ] oam_adapter启动的问题解决，把oam_adapter启动放到bbuapp启动脚本中维护，修改bbuapp启动脚本各种状态的读取和判断。解决了oam_adapter启动前cpri网卡链路是正常的。
+- [ ] hubapp 断链重启包测试。hubapp目前升级软件包都是手动命令实现升级软件包打包，在代码工程中完成hubapp编译以及指定软件包版本名称自动软件包打包功能。测试hubapp软件包自动打包功能ok。预留了可定制升级操作。
+- [ ] O_RAN 语法错误的yang文件解决了四个，有一个模式匹配写的比较复杂暂时没有看懂是什么意思。
+- [ ] bbuapp 1.0.5 版本自测，hubapp 1.0.5 版本发布，版本自测。
+- [ ] 网优宝APP 1.6 debug版本发布review。
+
+
+
+- [ ] netconf 相关操作标准review
+- [ ] 5G hub netconf  研究
+- [ ] b4860、hubAPP 测试支持，版本发布问题解决
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

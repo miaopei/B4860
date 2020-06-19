@@ -9,7 +9,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#if 1
+#if 0
 TEST_CASE("test utilities interfade function") {
     //const char *interface_name = "enp0s31f6";
     char* pdata = NULL;
@@ -55,4 +55,17 @@ TEST_CASE("test BHRO lib") {
 }
 
 #endif
+
+TEST_CASE("test stoi") {
+    std::string str;
+    switch(std::stoi(str))
+    {
+    case 0:
+        LOG_PRINT(LogLevel::debug, "case 0");
+        break;
+    default:
+        LOG_PRINT(LogLevel::debug, "default");
+        break;
+    }
+}
 
