@@ -56,7 +56,7 @@ void OamAdapter::onConnect(ConnectStatus status)
 
 void OamAdapter::reConnect()
 {
-    uv::Timer* timer = new uv::Timer(loop_, 500, 0, [this](uv::Timer* ptr)
+    uv::Timer* timer = new uv::Timer(loop_, 1000, 0, [this](uv::Timer* ptr)
     {
         char* pdata = NULL;
         size_t size = 32;

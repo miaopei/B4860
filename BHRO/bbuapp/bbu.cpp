@@ -137,6 +137,12 @@ void BBU::OnMessage(shared_ptr<TcpConnection> connection, const char* buf, ssize
 
 void BBU::ProcessRecvMessage(uv::TcpConnectionPtr connection, uv::Packet& packet)
 {
+	if(packet.GetDestination().empty())
+	{
+		LOG_PRINT(LogLevel::error, "Receive packet is broke. GetDestination is empty.");
+		return ;
+	}
+
 	switch(std::stoi(packet.GetDestination()))
 	{
 		case uv::Packet::TO_BBU:
@@ -224,7 +230,9 @@ void BBU::RRUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 void BBU::OAMMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
     std::string send_buf;
-    send_buf = packet.GetPacket();
+	sned_buf = "source=" + packet.GetSource();
+	sned_buf += "&mac=" + packet.GetMac();
+    send_buf += "&" + packet.GetPacket();
 
     std::vector<TcpConnectionPtr> oamsConnection;
     GetOAMConnection(oamsConnection);

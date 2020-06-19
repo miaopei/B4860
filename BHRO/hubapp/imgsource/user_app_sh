@@ -1,5 +1,19 @@
 #!/bin/sh
-
+echo "check user app status......"
+if [ ! -f "/etc/user/update_flag" ]; then
+	echo "no need update............."
+else
+	echo "update app lib and elf file............."
+	mv /etc/user/hub.tar /tmp/
+	cd /tmp/
+	tar -xvf hub.tar
+	cp ./hub/bin/hubapp /usr/sbin/
+	chmod +x /usr/sbin/hubapp
+	cp ./hub/release_hubapp /etc/user/
+	cp -d ./hub/lib/* /usr/lib/
+	rm /etc/user/update_flag
+	echo "update app lib and elf done............."
+fi
 echo "user app running......"
+/usr/sbin/hubapp > /var/log/hubapp.log 2>&1 &
 
-/usr/sbin/hubapp &

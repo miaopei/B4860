@@ -1,6 +1,12 @@
 Release Hub APP and Version History
 ===================================
 
+1.0.5 (2020-06-11)
+~~~~~~~~~~~~~~~~~~
+- connect failed reboot hub
+- add hubapp log (/var/log/hubapp.log)
+
+
 0.1.0 (2020-04-23)
 ~~~~~~~~~~~~~~~~~~
 - Support for upgrades

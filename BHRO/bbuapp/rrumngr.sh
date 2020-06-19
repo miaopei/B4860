@@ -21,12 +21,24 @@ while true;do
     sleep 5
 done
 
+while [ ! -f /tmp/startEru.ready ];do
+	echo "startEru not ready ..." > ${BBUAPPLOG}
+	sleep 1
+done
+
 insmod /usr/driver/ceth.ko
 ifconfig ceth 10.0.0.1 netmask 255.255.255.0
 
 /etc/init.d/dnsmasq start
 
 export LD_LIBRARY_PATH=:/mnt/fap/lib/
+
+/mnt/fap/bin/bhro_oam_adapter > /var/log/bhro_oam_adapter.log 2>&1 &
+
+while [ ! -f /tmp/startBbuapp.ready ];do
+	echo "startBbuapp not ready ..." > ${BBUAPPLOG}
+    sleep 1
+done
 
 /mnt/fap/bin/bbuapp > /var/log/bbuapp.log 2>&1 &
 

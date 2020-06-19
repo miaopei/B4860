@@ -22,6 +22,7 @@ bool GetDeviceIP(const char* interface_name, char* ip, size_t size)
     strcpy(ifr.ifr_name, interface_name);
     if(ioctl(s, SIOCGIFADDR, &ifr) < 0)
     {
+        close(s);
         return false;
     }
 
@@ -47,6 +48,7 @@ bool GetDeviceMAC(const char* interface_name, char* mac, size_t size)
     strcpy(ifr.ifr_name, interface_name);
     if(ioctl(s, SIOCGIFHWADDR, &ifr) < 0)
     {
+        close(s);
         return false;
     }
 

@@ -102,6 +102,7 @@ public:
         MSG_NEW_CONNECT             = 1008,
         MSG_CONNECT_CLOSED          = 1009,
         MSG_UPDATE_DATA             = 1010,
+		MSG_SET_OAM					= 1011,
         MSG_CONNECT					= 1040,
         MSG_DELAY_MEASUREMENT 		= 1041,
         MSG_DELAY_COMPENSATION      = 1042,
