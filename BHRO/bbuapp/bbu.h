@@ -33,7 +33,7 @@
 #define TOFFSETCYCLE        8.013       
 
 #define PORT        30000
-#define IFRNAME     "enp0s31f6"
+#define IFRNAME     "enp1s0"
 
 #if 0
 #ifdef __cplusplus
@@ -62,6 +62,7 @@ public:
         B2H_HEAD            = 1,
         S2D_REVERSAL_HEAD   = 2,
         D2A_HEAD            = 3,
+        DEFAULT             = 4,
     };
     
     enum DeviceType{

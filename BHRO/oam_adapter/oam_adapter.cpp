@@ -85,7 +85,7 @@ void OamAdapter::reConnect()
 
 void OamAdapter::SendConnectMessage()
 {
-    std::string data = "ResultID=0";
+    std::string data = "XXX=0";
     
     uv::Packet::Head head;
     CreateHead(uv::Packet::TO_BBU, head);
@@ -149,8 +149,7 @@ void OamAdapter::ProcessRecvMessage(uv::Packet& packet)
     switch(std::stoi(packet.GetMsgID()))
     {
         case uv::Packet::MSG_CONNECT:
-            //std::cout << "[RCV:msg_connect]" << std::endl;
-            //ConnectResultProcess(packet);
+            ConnectResultProcess(packet);
             break;
         case uv::Packet::MSG_NEW_CONNECT:
             SetNewConnect(packet);
@@ -161,9 +160,12 @@ void OamAdapter::ProcessRecvMessage(uv::Packet& packet)
         case uv::Packet::MSG_UPDATE_DATA:
             UpdateData(packet);
             break;
-        case uv::Packet::MSG_GET_NETWORK_TOPOLOGY:
-            NetworkTopologyMessageProcess(packet);
-            break;
+		case uv::Packet::MSG_SET_OAM:
+			SetOAM(packet);
+			break;
+		case uv::Packet::MSG_ALARM:
+			AlarmEvent(packet);
+			break;
         default:
             std::cout << "[Error: MessageID Error]" << std::endl;
     }
@@ -183,6 +185,16 @@ void OamAdapter::ConnectClose(uv::Packet& packet)
 void OamAdapter::UpdateData(uv::Packet& packet)
 {
     LOG_PRINT(LogLevel::debug, "mibcli Set update data, %s", packet.GetData().c_str());
+}
+
+void OamAdapter::SetOAM(uv::Packet& packet)
+{
+	LOG_PRINT(LogLevel::debug, "mibcli Set OAM, %s", packet.GetData().c_str());
+}
+
+void OamAdapter::AlarmEvent(uv::Packet& packet)
+{
+	LOG_PRINT(LogLevel::debug, "mibcli Set AlarmEvent, %s", packet.GetData().c_str());
 }
 
 void OamAdapter::SendPackMessage(uv::Packet::Head& head, std::string& data, ssize_t size)
@@ -229,35 +241,7 @@ void OamAdapter::SendMessage(const char* buf, ssize_t size)
 
 void OamAdapter::ConnectResultProcess(uv::Packet& packet)
 {
-	std::cout << "[OamAdapter Connect BBU Success]" << std::endl;
-}
-
-void OamAdapter::NetworkTopologyMessageProcess(uv::Packet& packet)
-{
-    std::vector<std::string> topo;
-    std::vector<std::string> topos = packet.DataSplit(packet.GetData(), "#");  
-    std::vector<std::string> value;
-
-    std::cout << "\n" 
-              << " \tIP" << "\t\t\tMAC" << "\t\tSource" << "\tHOP" << "\tUpgradeState" << "\tRouteIndex" 
-              << std::endl;
-    for(auto it : topos)
-    {
-        int i = 0;
-        topo = packet.DataSplit(it, "&");
-        for(auto res : topo)
-        {
-            value = packet.DataSplit(res, "="); 
-            if(i == 5){
-                std::cout << " \t\t" << value[1];
-            }else{
-                std::cout << " \t" << value[1];
-            }
-            i++;
-        }
-        std::cout << std::endl;
-        //std::cout << "\t " << topo[0] << " \t" << topo[1] << " \t" << topo[2] << " \t" << topo[3] << std::endl;
-    }
+    LOG_PRINT(LogLevel::debug, "BHRO OAM Adapter Connect BBU Success");
 }
 
 void OamAdapter::SendUpgradeMessage(std::string destination, std::string fileName, std::string md5)
@@ -328,18 +312,6 @@ void OamAdapter::SendDateSetMessage(std::string destination, std::string routeIn
     SendPackMessage(head, s_data, data.length());
 }
 
-void OamAdapter::GetNetworkTopology()
-{
-    RSPStatus = false;
-	std::string data = "";
-    
-    uv::Packet::Head head;
-    CreateHead(uv::Packet::TO_BBU, head);
-    head.s_msgID = to_string(uv::Packet::MSG_GET_NETWORK_TOPOLOGY);
-
-    SendPackMessage(head, data, data.length());
-}
-
 bool OamAdapter::GetRSPPacket(uv::Packet& packet)
 {
     LOG_PRINT(LogLevel::debug, "GetRSPPacket ...");
@@ -398,7 +370,7 @@ void OamAdapter::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& hea
             break;
         default:
             {
-                LOG_PRINT(LogLevel::error, "DeviceType error");
+                //LOG_PRINT(LogLevel::error, "DeviceType error");
                 head.s_destination = "X";
             }
             break;

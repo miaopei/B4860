@@ -15,7 +15,7 @@
 #include "uv11.h"
 
 #define PORT        30000
-#define IFRNAME     "enp0s31f6"
+#define IFRNAME     "enp1s0"
 
 class OamAdapter :public uv::TcpClient
 {
@@ -30,8 +30,6 @@ public:
 	void ProcessRecvMessage(uv::Packet& packet);
 
     void ConnectResultProcess(uv::Packet& packet);
-
-    void NetworkTopologyMessageProcess(uv::Packet& packet);
 
     void SetROamAdapterInfo();
     void SendROamAdapterDelayInfo();
@@ -55,8 +53,6 @@ public:
 
     void GetUpgradeResult();
 
-	void GetNetworkTopology();
-
     bool GetRSPPacket(uv::Packet& packet);
 
     void Heart();
@@ -65,6 +61,8 @@ public:
     void SetNewConnect(uv::Packet& packet);
     void ConnectClose(uv::Packet& packet);
     void UpdateData(uv::Packet& packet);
+	void SetOAM(uv::Packet& packet);
+	void AlarmEvent(uv::Packet& packet);
 
     void CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head);
 

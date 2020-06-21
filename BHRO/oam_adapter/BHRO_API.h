@@ -52,8 +52,6 @@ public:
     void DeviceDataSet(std::string destination, std::string data);
     void DeviceDataSet(std::string destination, std::string routeIndex, std::string data);
 
-	void GetTopo();
-
 private:
 
 };

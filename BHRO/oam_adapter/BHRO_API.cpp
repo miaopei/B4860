@@ -105,21 +105,4 @@ void BHRO_API::DeviceDataSet(std::string destination, std::string routeIndex, st
     threadArg_.oam_adapter->SendDateSetMessage(destination, routeIndex, data);
 }
 
-void BHRO_API::GetTopo()
-{
-    ConditionWait();
-    threadArg_.oam_adapter->GetNetworkTopology();
-
-#if 0
-    std::this_thread::sleep_for(chrono::milliseconds(100)); // 延时 100ms
-    uv::Packet packet;
-    if(threadArg_.oam_adapter->GetRSPPacket(packet))
-    {
-        LOG_PRINT(LogLevel::debug, "success, packet=%s", packet.GetPacket().c_str());
-    } else {
-        LOG_PRINT(LogLevel::error, "failure");
-    }
-#endif
-}
-
 

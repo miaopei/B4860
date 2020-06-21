@@ -42,7 +42,7 @@ void HUB::onConnect(ConnectStatus status)
 
 void HUB::reConnect()
 {
-    uv::Timer* timer = new uv::Timer(loop_, 500, 0, [this](uv::Timer* ptr)
+    uv::Timer* timer = new uv::Timer(loop_, 1000, 0, [this](uv::Timer* ptr)
     {
         char* pdata = NULL;
         size_t size = 32;
@@ -126,7 +126,7 @@ void HUB::SendConnectMessage()
     free(bhro_packet);
 #endif
 #if 1
-    std::string data = "ResultID=";
+    std::string data = "Status=";
     char res[32];
     if(read_file(UpgradeResult, res, sizeof(res)))
     {
@@ -135,18 +135,22 @@ void HUB::SendConnectMessage()
             data += res;
             write_file(UpgradeResult, "0");
         } else {
-            data += "0";
+            data += "1";
         }
     } else {
-        data += "0";
+        data += "1";
     }
 
     if(read_file(SoftwareVersion, res, sizeof(res)))
     {
-        data += "&softwareVersion=" + std::string(res);
+        data += "&SoftwareVersion=" + std::string(res);
     } else {
-        data += "&softwareVersion=X";
+        data += "&SoftwareVersion=X";
     }
+
+    data += "&ModelName=NA";
+    data += "&SerialNumber=NA";
+    data += "&HardwareVersion=NA";
 
     uv::Packet::Head head;
     CreateHead(uv::Packet::TO_BBU, head);
@@ -467,6 +471,12 @@ void HUB::UpgradeProcess(uv::Packet& packet)
 
 void HUB::UpgradeThread(uv::Packet& packet)
 {
+    uv::Packet::Head head;
+    CreateHead(uv::Packet::TO_OAM, head);
+    head.s_msgID = to_string(uv::Packet::MSG_SET_OAM);
+    std::string data = "Status=4";
+    SendPackMessage(head, data, data.length());
+
     if(!FtpDownloadFile(packet))
     {
 		LOG_PRINT(LogLevel::error, "FtpDownloadFile error");
@@ -491,7 +501,7 @@ void HUB::UpgradeThread(uv::Packet& packet)
         write_file(SoftwareVersion, m_img_filename);
 
         /* 写入升级标志 */
-	    write_file(UpgradeResult, "1");
+	    write_file(UpgradeResult, "5");
 
         /* 重启设备操作 */
         if(_system("/sbin/reboot") < 0)
@@ -505,10 +515,10 @@ void HUB::UpgradeThread(uv::Packet& packet)
 void HUB::SendUpgradeFailure(uv::Packet& packet, const std::string errorno)
 {
     uv::Packet::Head head;
-    CreateHead(uv::Packet::TO_BBU, head);
-    head.s_msgID = packet.GetMsgID();
+    CreateHead(uv::Packet::TO_OAM, head);
+    head.s_msgID = to_string(uv::Packet::MSG_ALARM);
 
-    std::string data = std::string("ResultID=" + errorno);
+    std::string data = std::string("AlarmEvent=" + errorno);
     
     SendPackMessage(head, data, data.length());
 }

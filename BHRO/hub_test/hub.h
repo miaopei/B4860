@@ -21,7 +21,7 @@
 #define TOFFSET 3
 
 #define PORT        30000
-#define IFRNAME     "enp0s31f6"
+#define IFRNAME     "enp1s0"
 
 #define SoftwareVersion     "./SoftwareVersion"
 #define UpgradeResult       "./UpgradeResult"
