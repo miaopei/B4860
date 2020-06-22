@@ -508,9 +508,6 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
         SendUpdateHUBDelayMessage(connection, packet);
     }
 
-	/* Version Check */
-	/* TODO*/
-
     /* 需要优化，使用同一的消息发送接口 */
     SendConnectionMessage(connection, packet);
 }
@@ -573,8 +570,6 @@ void BBU::RruDelayProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 		LOG_PRINT(LogLevel::error, "Save RRU Delay Info error");
 		return ;
 	}
-	
-	//NetworkTopology();
 	
 	CalculationDelayCompensation(connection, delayULCompensation, delayDLCompensation);
 	
@@ -649,11 +644,8 @@ void BBU::UpdataRRUDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packe
 	{	
 		if(it == connection)
 		{
-		    //LOG_PRINT(LogLevel::debug, "conntion=%s", connection);
 			continue;
 		}
-		
-		//LOG_PRINT(LogLevel::debug, "it=%s connection=%s", it, connection);
 		
 		CalculationDelayCompensation(it, delayULCompensation, delayDLCompensation);
 	    data = "delayULCompensation=" + delayULCompensation + "&delayDLCompensation=" + delayDLCompensation;
@@ -891,15 +883,13 @@ std::vector<std::string> BBU::GetFiles(std::string cate_dir)
 
     while ((ptr = readdir(dir)) != NULL)
     {
-        if(strcmp(ptr->d_name,".") == 0 || strcmp(ptr->d_name,"..") == 0){    ///current dir OR parrent dir
+        if(strcmp(ptr->d_name,".") == 0 || strcmp(ptr->d_name,"..") == 0){
             continue;
-        } else if(ptr->d_type == 8){    ///file
-            //printf("d_name:%s/%s\n",basePath,ptr->d_name);
+        } else if(ptr->d_type == 8){
             files.push_back(ptr->d_name);
-        } else if(ptr->d_type == 10){    ///link file
-            //printf("d_name:%s/%s\n",basePath,ptr->d_name);
+        } else if(ptr->d_type == 10){
             continue;
-        } else if(ptr->d_type == 4){    ///dir
+        } else if(ptr->d_type == 4){
             files.push_back(ptr->d_name);
             /*
             memset(base,'\0',sizeof(base));

@@ -246,6 +246,9 @@ void HUB::ProcessRecvMessage(uv::Packet& packet)
         case uv::Packet::MSG_UPDATE_DELAY:
             UpdataDelay(packet);
             break;
+        case uv::Packet::MSG_SET:                                                                  
+            DataSetProcess(packet);
+            break;
         default:
 			LOG_PRINT(LogLevel::error, "MessageID Error");
     }
@@ -310,6 +313,25 @@ void HUB::UpdataDelay(uv::Packet& packet)
     head.s_msgID = to_string(uv::Packet::MSG_UPDATE_DELAY);
 
     SendPackMessage(head, data, data.length());
+}
+
+void HUB::DataSetProcess(uv::Packet& packet)
+{
+    LOG_PRINT(LogLevel::debug, "Set Data:%s", packet.GetData().c_str());
+    std::vector<std::string> key;
+    std::vector<std::string> param = packet.DataSplit(packet.GetData(), "&");
+    for(auto res : param)
+    {
+        LOG_PRINT(LogLevel::debug, "parma=%s", res.c_str());
+        key = packet.DataSplit(res, "=");
+        if(key[0].compare("Reboot"))
+        {
+            if(key[1].compare("1"))
+            {
+                LOG_PRINT(LogLevel::debug, "Reboot ...");
+            }
+        }
+    }
 }
 
 void HUB::UpgradeProcess(uv::Packet& packet)

@@ -87,6 +87,8 @@ public:
     bool FtpDownloadFile(uv::Packet& packet);
     void SendUpgradeFailure(uv::Packet& packet, const std::string errorno);
 
+    void DataSetProcess(uv::Packet& packet);
+
     void Heart();
     void HandleHeart(void* arg);
 

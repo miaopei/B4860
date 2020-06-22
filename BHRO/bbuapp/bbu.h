@@ -33,7 +33,7 @@
 #define TOFFSETCYCLE        8.013       
 
 #define PORT        30000
-#define IFRNAME     "enp1s0"
+#define IFRNAME     "enp0s31f6"
 
 #if 0
 #ifdef __cplusplus

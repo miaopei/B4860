@@ -519,6 +519,7 @@ void HUB::SendUpgradeFailure(uv::Packet& packet, const std::string errorno)
     head.s_msgID = to_string(uv::Packet::MSG_ALARM);
 
     std::string data = std::string("AlarmEvent=" + errorno);
+    data += "&Status=3"
     
     SendPackMessage(head, data, data.length());
 }
