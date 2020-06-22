@@ -625,7 +625,7 @@ bool BBU::QueryUhubConnection(uv::TcpConnectionPtr& connection, uv::TcpConnectio
 	reconnection = upHubDInfo.s_connection;
     return true;
 }
-
+#if 0
 void BBU::UpdataRRUDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 {
 	std::string delayULCompensation;
@@ -654,7 +654,7 @@ void BBU::UpdataRRUDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packe
 		SendPackMessage(it, head, data, data.length());
 	}
 }
-
+#endif
 bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::string& delayiULCompensation, std::string& delayiDLCompensation)
 {
     /* TotalDL = T12 + TBdelayDL + T12' + T2a
