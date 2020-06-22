@@ -322,13 +322,19 @@ void HUB::DataSetProcess(uv::Packet& packet)
     std::vector<std::string> param = packet.DataSplit(packet.GetData(), "&");
     for(auto res : param)
     {
-        LOG_PRINT(LogLevel::debug, "parma=%s", res.c_str());
+        LOG_PRINT(LogLevel::debug, "%s", res.c_str());
         key = packet.DataSplit(res, "=");
         if(key[0].compare("Reboot"))
         {
             if(key[1].compare("1"))
             {
                 LOG_PRINT(LogLevel::debug, "Reboot ...");
+				/* 重启设备操作 */
+		        if(_system("/sbin/reboot") < 0)
+		        {
+					LOG_PRINT(LogLevel::error, "system reboot execute error");
+		            return ;
+		        }
             }
         }
     }
@@ -391,6 +397,7 @@ void HUB::SendUpgradeFailure(uv::Packet& packet, const std::string errorno)
     head.s_msgID = to_string(uv::Packet::MSG_ALARM);
 
     std::string data = std::string("AlarmEvent=" + errorno);
+    data += "&Status=3";
     
     SendPackMessage(head, data, data.length());
 }

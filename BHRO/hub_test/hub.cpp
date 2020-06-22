@@ -392,6 +392,9 @@ void HUB::ProcessRecvMessage(uv::Packet& packet)
         case uv::Packet::MSG_UPDATE_DELAY:
             UpdataDelay(packet);
             break;
+        case uv::Packet::MSG_SET:                                                                  
+            DataSetProcess(packet);
+            break;
         default:
 			LOG_PRINT(LogLevel::error, "MessageID Error");
     }
@@ -462,6 +465,34 @@ void HUB::UpdataDelay(uv::Packet& packet)
     SendPackMessage(head, data, data.length());
 }
 
+void HUB::DataSetProcess(uv::Packet& packet)
+{
+    LOG_PRINT(LogLevel::debug, "Set Data:%s", packet.GetData().c_str());
+    std::vector<std::string> key;
+    std::vector<std::string> param = packet.DataSplit(packet.GetData(), "&");
+    for(auto res : param)
+    {
+        LOG_PRINT(LogLevel::debug, "%s", res.c_str());
+		
+        key = packet.DataSplit(res, "=");
+		switch(CALC_STRING_HASH(key[0])){
+	        case "Reboot"_HASH:{
+				if(key[1].compare("1"))
+	            {
+	                LOG_PRINT(LogLevel::debug, "Reboot ...");
+					/* 重启设备操作 */
+			        if(_system("/sbin/reboot") < 0)
+			        {
+						LOG_PRINT(LogLevel::error, "system reboot execute error");
+			            return ;
+			        }
+	            }
+	            break;
+	        }
+		}
+    }
+}
+
 void HUB::UpgradeProcess(uv::Packet& packet)
 {
     std::thread back(std::bind(&HUB::UpgradeThread, this, packet));
@@ -519,7 +550,7 @@ void HUB::SendUpgradeFailure(uv::Packet& packet, const std::string errorno)
     head.s_msgID = to_string(uv::Packet::MSG_ALARM);
 
     std::string data = std::string("AlarmEvent=" + errorno);
-    data += "&Status=3"
+    data += "&Status=3";
     
     SendPackMessage(head, data, data.length());
 }
@@ -701,6 +732,11 @@ void HUB::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head)
 }
 
 
+size_t HUB::CALC_STRING_HASH(const string& str){
+	// 获取string对象得字符串值并传递给HAHS_STRING_PIECE计算，获取得返回值为该字符串HASH值
+	return HASH_STRING_PIECE(str.c_str());
+}
+
 
 
 
@@ -770,6 +806,5 @@ void HUB::TestGetRhubT14Delay(struct rhub_t14_delay* t14_delay)
     t14_delay->delay4 = 11459;
     t14_delay->delay5 = 11457;
 }
-
 
 

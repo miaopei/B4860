@@ -21,7 +21,7 @@
 #define TOFFSET 3
 
 #define PORT        30000
-#define IFRNAME     "enp0s31f6"
+#define IFRNAME     "enp1s0"
 
 #define SoftwareVersion     "./SoftwareVersion"
 #define UpgradeResult       "./UpgradeResult"
@@ -114,10 +114,15 @@ public:
     bool FtpDownloadFile(uv::Packet& packet);
     void SendUpgradeFailure(uv::Packet& packet, const std::string errorno);
 
+    void DataSetProcess(uv::Packet& packet);
+
     void Heart();
     void HandleHeart(void* arg);
 
     void CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head);
+
+
+	size_t CALC_STRING_HASH(const string& str);
 
 
     void TestProcess(uv::Packet& packet);
@@ -137,4 +142,14 @@ private:
     std::string m_uuport;
     std::string m_img_filename;
 };
+
+
+constexpr size_t HASH_STRING_PIECE(const char *string_piece, size_t hashNum=0){
+	return *string_piece ? HASH_STRING_PIECE(string_piece+1, (hashNum*131)+*string_piece) : hashNum;
+}
+	
+constexpr size_t operator "" _HASH(const char *string_pice, size_t){
+	return HASH_STRING_PIECE(string_pice);
+}
+
 

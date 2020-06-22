@@ -15,7 +15,7 @@
 #include "uv11.h"
 
 #define PORT        30000
-#define IFRNAME     "enp0s31f6"
+#define IFRNAME     "enp1s0"
 
 class OamAdapter :public uv::TcpClient
 {
