@@ -7,12 +7,12 @@ INCLUDE_DIR = $(BUILD_DIR)/include
 LIB_DIR = $(BUILD_DIR)/lib
 BIN_DIR = $(BUILD_DIR)/bin
 
-TARGET = rru
+TARGET = rruapp
 
 CC = g++
 CFLAGS = -Wall -std=c++11 
 USER_LINK_INC = -I$(INCLUDE_DIR)
-USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -Wl,-rpath,$(LIB_DIR)
+USER_LINK_LIB = -L$(LIB_DIR) -pthread -luv -lbbu -lftp -Wl,-rpath,$(LIB_DIR)
 
 SOURCE = $(wildcard *.cpp)
 OBJECTS = $(SOURCE:.cpp=.o)

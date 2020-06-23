@@ -151,9 +151,11 @@ void BBU::BBUMessageProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet
 			SetConnectionClient(connection, packet);
             break;
 		case uv::Packet::MSG_DELAY_MEASUREMENT:
+            LOG_PRINT(LogLevel::debug, "[MSG_DELAY_MEASUREMENT]");
 			DelayMeasurementProcess(connection, packet);
 			break;
         case uv::Packet::MSG_UPDATE_DELAY:
+            LOG_PRINT(LogLevel::debug, "[MSG_UPDATE_DELAY]");
             UpdateHUBDelayInfo(packet);
             break;
         case uv::Packet::MSG_HEART_BEAT:
@@ -436,32 +438,7 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
 		LOG_PRINT(LogLevel::error, "SetConnectionInfo error");
 		return;
 	}
-#if 0   
-	if(packet.GetSource() == to_string(uv::Packet::OAM))
-	{
-		std::string name;
-		std::vector<TcpConnectionPtr> DevicesConnection;
-		
-		GetHUBsConnection(DevicesConnection);
-        for(auto it : DevicesConnection)
-        {
-			LOG_PRINT(LogLevel::debug, "OAM Adapter Connect, close hub devices be reconnect system");
-			/* close the device connect */
-			name = GetCurrentName(it);
-			closeConnection(name);
-		}
-
-		DevicesConnection.clear();
-        GetRRUsConnection(DevicesConnection);
-        for(auto it : DevicesConnection)
-        {
-			LOG_PRINT(LogLevel::debug, "OAM Adapter Connect, close rru devices be reconnect system");
-			/* close the device connect */
-			name = GetCurrentName(it);
-			closeConnection(name);
-		}
-	}
-#endif
+    
     if(packet.GetSource() != to_string(uv::Packet::OAM))
     {
         if(!SetDeviceRouteIndex(connection))
@@ -533,7 +510,7 @@ void BBU::UpdateHUBDelayInfo(uv::Packet& packet)
 {
     UpdateDelayInfo(packet.GetData(), packet.GetHop(), delay_map);
 	
-#if 0
+#if 1
     for(auto &it : delay_map)
     {
 		LOG_PRINT(LogLevel::debug, "key=%s key.key=%s key.value=%s", 
@@ -549,7 +526,7 @@ void BBU::HubDelayInfo(uv::Packet& packet)
 	std::string data = packet.GetData();
     SplitStrings2Map(data, packet.GetHop(), delay_map);
     
-#if 0
+#if 1
     for(auto &it : delay_map)
     {
         LOG_PRINT(LogLevel::debug, "key=%s key.key=%s key.value=%s", 
@@ -573,15 +550,11 @@ void BBU::RruDelayProcess(uv::TcpConnectionPtr& connection, uv::Packet& packet)
 	
 	CalculationDelayCompensation(connection, delayULCompensation, delayDLCompensation);
 	
-	/* TODO：RRU 接入后其他的 RRU 时延补偿需要更新，有可能新接入的 RRU 时延是最大的 */
-	/* 疑问：一个 loop */
-	//UpdataRRUDelayCompensation(connection, packet);
-
     uv::Packet::Head head;
     CreateHead(HeadType::S2D_REVERSAL_HEAD, head, packet);
     head.s_msgID        = to_string(uv::Packet::MSG_DELAY_COMPENSATION);
 
-	std::string data = "delayULCompensation=" + delayULCompensation + "&delayDLCompensation=" + delayDLCompensation;
+	std::string data = "DelayULCompensation=" + delayULCompensation + "&DelayDLCompensation=" + delayDLCompensation;
 
     LOG_PRINT(LogLevel::debug, "[SendPackMessage: %s]", data.c_str());
     SendPackMessage(connection, head, data, data.length());
@@ -625,36 +598,7 @@ bool BBU::QueryUhubConnection(uv::TcpConnectionPtr& connection, uv::TcpConnectio
 	reconnection = upHubDInfo.s_connection;
     return true;
 }
-#if 0
-void BBU::UpdataRRUDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packet& packet)
-{
-	std::string delayULCompensation;
-    std::string delayDLCompensation;
-	std::string data;
-	std::vector<TcpConnectionPtr> rrusConnection;
-	std::string send_buf;
 
-	uv::Packet::Head head;
-    CreateHead(HeadType::S2D_REVERSAL_HEAD, head, packet);
-    head.s_msgID        = to_string(uv::Packet::MSG_DELAY_COMPENSATION);
-
-	GetRRUsConnection(rrusConnection);
-
-	for(auto it : rrusConnection)
-	{	
-		if(it == connection)
-		{
-			continue;
-		}
-		
-		CalculationDelayCompensation(it, delayULCompensation, delayDLCompensation);
-	    data = "delayULCompensation=" + delayULCompensation + "&delayDLCompensation=" + delayDLCompensation;
-	    
-        LOG_PRINT(LogLevel::debug, "[SendPackMessage: %s]", data.c_str());
-		SendPackMessage(it, head, data, data.length());
-	}
-}
-#endif
 bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::string& delayiULCompensation, std::string& delayiDLCompensation)
 {
     /* TotalDL = T12 + TBdelayDL + T12' + T2a
@@ -689,7 +633,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 		LOG_PRINT(LogLevel::error, "Get Device Info error");
 		return false;
 	}
-	LOG_PRINT(LogLevel::debug, "RouteIndex=%s", dInfo.s_routeIndex.c_str());
+	//LOG_PRINT(LogLevel::debug, "RouteIndex=%s", dInfo.s_routeIndex.c_str());
 
 	level = std::stoi(dInfo.s_hop) - 1;
 	if(level <= 0)
@@ -757,16 +701,16 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 		        LOG_PRINT(LogLevel::error, "FindDelayMapValue t14 error");
 				return false;
 			}
-			totalDLHUBDelay += ((stoi(t14.c_str()) - (RRUToffset)) / 2);
-			totalULHUBDelay += ((stoi(t14.c_str()) - (RRUToffset)) / 2);
+			totalDLHUBDelay += stoi(tbdelayDL.c_str()) + ((stoi(t14.c_str()) - (HUBCascadeEToffset)) / 2);
+			totalULHUBDelay += stoi(tbdelayUL.c_str()) + ((stoi(t14.c_str()) - (HUBCascadeEToffset)) / 2);
 		}
 	}
 
-	t12 = ((BBUT14 - (HUBCascadeEToffset * TOFFSETCYCLE)) / 2) / TOFFSETCYCLE;
+	t12 = ((BBUT14 - (HUBToffset * TOFFSETCYCLE)) / 2) / TOFFSETCYCLE;
 	totalDL = t12 + totalDLHUBDelay + stoi(dInfo.s_rruDelayInfo.T2a.c_str());
 	totalUL = t12 + totalULHUBDelay + stoi(dInfo.s_rruDelayInfo.Ta3.c_str());
-	LOG_PRINT(LogLevel::debug, "totalDL=%d", totalDL);
-	LOG_PRINT(LogLevel::debug, "totalUL=%d", totalUL);
+	//LOG_PRINT(LogLevel::debug, "totalDL=%d", totalDL);
+	//LOG_PRINT(LogLevel::debug, "totalUL=%d", totalUL);
 
 	DeleteRRUTotalDelay(connection, tVectorDL);
 	DeleteRRUTotalDelay(connection, tVectorDL);
@@ -785,7 +729,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 
 	int maxDLDelay = stoi(tVectorDL.begin()->second.c_str());
 	int maxULDelay = stoi(tVectorUL.begin()->second.c_str());
-	LOG_PRINT(LogLevel::debug, "maxDLDelay=%d maxULDelay=%d", maxDLDelay, maxULDelay);
+	LOG_PRINT(LogLevel::debug, "MaxDLDelay=%d MaxULDelay=%d", maxDLDelay, maxULDelay);
 
     delayiDLCompensation = to_string(stoi(tVectorDL.begin()->second.c_str()) - totalDL);
     delayiULCompensation = to_string(stoi(tVectorUL.begin()->second.c_str()) - totalUL);
@@ -1079,7 +1023,7 @@ void BBU::EchoSortResult(vector<PAIR>& tVector)
 {
     for(int i = 0; i < static_cast<int>(tVector.size()); i++)
     {
-	    LOG_PRINT(LogLevel::debug, "%s:%s", tVector[i].first.c_str(), tVector[i].second.c_str());
+	    LOG_PRINT(LogLevel::debug, "%s: %s", tVector[i].first.c_str(), tVector[i].second.c_str());
     }
 
 	LOG_PRINT(LogLevel::debug, "Max Delay: %s", tVector.begin()->second.c_str());

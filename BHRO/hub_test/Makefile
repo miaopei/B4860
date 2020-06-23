@@ -7,7 +7,7 @@ INCLUDE_DIR = $(BUILD_DIR)/include
 LIB_DIR = $(BUILD_DIR)/lib
 BIN_DIR = $(BUILD_DIR)/bin
 
-TARGET = hub
+TARGET = hubapp
 
 CC = g++
 CFLAGS = -Wall -std=c++11 

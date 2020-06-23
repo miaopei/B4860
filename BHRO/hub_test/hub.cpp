@@ -444,6 +444,14 @@ void HUB::SendMessage(const char* buf, ssize_t size)
     }
 }
 
+void HUB::SendMessage2OAM(uv::Packet::MsgID msgID, std::string data)
+{
+    uv::Packet::Head head;
+    CreateHead(uv::Packet::TO_OAM, head);
+    head.s_msgID = to_string(msgID);
+    SendPackMessage(head, data, data.length());
+}
+
 void HUB::ConnectResultProcess(uv::Packet& packet)
 {
     //SendRHUBDelayInfo();
@@ -479,13 +487,16 @@ void HUB::DataSetProcess(uv::Packet& packet)
 	        case "Reboot"_HASH:{
 				if(key[1].compare("1"))
 	            {
-	                LOG_PRINT(LogLevel::debug, "Reboot ...");
-					/* 重启设备操作 */
+                    SendMessage2OAM(uv::Packet::MSG_SET_OAM, "Status=6");
+#if 0
+                    /* 重启设备操作 */
+                    std::this_thread::sleep_for(chrono::milliseconds(1000)); // 延时 1s
 			        if(_system("/sbin/reboot") < 0)
 			        {
 						LOG_PRINT(LogLevel::error, "system reboot execute error");
 			            return ;
 			        }
+#endif
 	            }
 	            break;
 	        }
@@ -502,11 +513,7 @@ void HUB::UpgradeProcess(uv::Packet& packet)
 
 void HUB::UpgradeThread(uv::Packet& packet)
 {
-    uv::Packet::Head head;
-    CreateHead(uv::Packet::TO_OAM, head);
-    head.s_msgID = to_string(uv::Packet::MSG_SET_OAM);
-    std::string data = "Status=4";
-    SendPackMessage(head, data, data.length());
+    SendMessage2OAM(uv::Packet::MSG_SET_OAM, "Status=4");
 
     if(!FtpDownloadFile(packet))
     {
@@ -535,6 +542,7 @@ void HUB::UpgradeThread(uv::Packet& packet)
 	    write_file(UpgradeResult, "5");
 
         /* 重启设备操作 */
+        std::this_thread::sleep_for(chrono::milliseconds(1000)); // 延时 1s
         if(_system("/sbin/reboot") < 0)
         {
 			LOG_PRINT(LogLevel::error, "system reboot execute error");
@@ -730,7 +738,6 @@ void HUB::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head)
     head.s_uport        = m_uport;
     head.s_uuport       = m_uuport;
 }
-
 
 size_t HUB::CALC_STRING_HASH(const string& str){
 	// 获取string对象得字符串值并传递给HAHS_STRING_PIECE计算，获取得返回值为该字符串HASH值
