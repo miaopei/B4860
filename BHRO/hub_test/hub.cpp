@@ -488,6 +488,13 @@ void HUB::DataSetProcess(uv::Packet& packet)
 				if(key[1].compare("1"))
 	            {
                     SendMessage2OAM(uv::Packet::MSG_SET_OAM, "Status=6");
+                    
+                    //if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: OAM Reboot HUB.'\" >> /etc/user/Snapshoot") < 0)
+                    if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S`: OAM Reboot HUB.'\" >> ./Snapshoot") < 0)
+			        {
+						LOG_PRINT(LogLevel::error, "system reboot execute error");
+			            return ;
+			        }
 #if 0
                     /* 重启设备操作 */
                     std::this_thread::sleep_for(chrono::milliseconds(1000)); // 延时 1s
@@ -541,6 +548,12 @@ void HUB::UpgradeThread(uv::Packet& packet)
         /* 写入升级标志 */
 	    write_file(UpgradeResult, "5");
 
+        if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: Upgrade Reboot HUB.'\" >> /etc/user/Snapshoot") < 0)
+        {
+            LOG_PRINT(LogLevel::error, "system reboot execute error");
+            return ;
+        }
+#if 0
         /* 重启设备操作 */
         std::this_thread::sleep_for(chrono::milliseconds(1000)); // 延时 1s
         if(_system("/sbin/reboot") < 0)
@@ -548,6 +561,7 @@ void HUB::UpgradeThread(uv::Packet& packet)
 			LOG_PRINT(LogLevel::error, "system reboot execute error");
             return ;
         }
+#endif
     }
 }
 

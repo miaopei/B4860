@@ -189,7 +189,7 @@ void OamAdapter::UpdateData(uv::Packet& packet)
 
 void OamAdapter::SetOAM(uv::Packet& packet)
 {
-	LOG_PRINT(LogLevel::debug, "mibcli Set OAM, %s", packet.GetData().c_str());
+	LOG_PRINT(LogLevel::debug, "mibcli Set Data To OAM, %s", packet.GetData().c_str());
 }
 
 void OamAdapter::AlarmEvent(uv::Packet& packet)

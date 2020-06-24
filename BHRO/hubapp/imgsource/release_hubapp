@@ -1,10 +1,18 @@
 Release Hub APP and Version History
 ===================================
 
+1.0.6 (2020-06-24)
+~~~~~~~~~~~~~~~~~~
+- Add eeprom tools
+- Add reboot log (/etc/user/Snapshoot)
+- Fixed ping failure unable to access terminal console
+- Implement data escalation according to mobile standards
+
+
 1.0.5 (2020-06-11)
 ~~~~~~~~~~~~~~~~~~
-- connect failed reboot hub
-- add hubapp log (/var/log/hubapp.log)
+- Connect failed reboot hub
+- Add hubapp log (/var/log/hubapp.log)
 
 
 0.1.0 (2020-04-23)

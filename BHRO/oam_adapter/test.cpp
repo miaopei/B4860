@@ -26,7 +26,7 @@ int main(int argc, char** argv)
         sleep(1);
         i--;
     }
-    //adapter.DeviceUpGrade("0", "rHUP_1.tar", "123456789");
+    adapter.DeviceUpGrade("0", "rHUP_1.tar", "123456789");
     //adapter.DeviceDataSet("0", "power=123&Rx=332");
     //adapter.DeviceDataSet("0", "0_2", "power=123&Rx=332");
     adapter.DeviceDataSet("0", "Reboot=0&Reboot=1&Test=1");
