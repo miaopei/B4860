@@ -44,6 +44,19 @@ void HUB::reConnect()
 {
     uv::Timer* timer = new uv::Timer(loop_, 1000, 0, [this](uv::Timer* ptr)
     {
+		if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: LinkDown Reboot HUB.\" >> /etc/user/Snapshoot") < 0)
+        {
+            LOG_PRINT(LogLevel::error, "system echo execute error");
+            return ;
+        }
+
+		if(_system("/sbin/reboot") < 0)
+        {
+			LOG_PRINT(LogLevel::error, "system reboot execute error");
+            return ;
+        }
+
+#if 0
         char* pdata = NULL;
         size_t size = 32;
         pdata = (char*)malloc(size * sizeof(char));
@@ -65,6 +78,7 @@ void HUB::reConnect()
 
         free(pdata);
         pdata = NULL;
+#endif
 
         ptr->close([](uv::Timer* ptr)
         {
@@ -188,7 +202,7 @@ void HUB::RHUBDelayInfoCalculate(std::string& data)
     /* 获取 rhub T14 测量时延信息 */
     struct rhup_t14_delay* t14_delay = (struct rhup_t14_delay*)malloc(sizeof(struct rhup_t14_delay));
     get_rhup_t14_delay(mpi_fd, t14_delay);
-	data += std::string("&t14_delay1=" + to_string(t14_delay->delay1) + 
+	data += std::string("&t14_delay1=" + to_string(t14_delay->delay9) + 
 						"&t14_delay2=" + to_string(t14_delay->delay2) +
 						"&t14_delay3=" + to_string(t14_delay->delay3) +
 						"&t14_delay4=" + to_string(t14_delay->delay4) +
@@ -196,7 +210,7 @@ void HUB::RHUBDelayInfoCalculate(std::string& data)
 						"&t14_delay6=" + to_string(t14_delay->delay6) +
 						"&t14_delay7=" + to_string(t14_delay->delay7) +
 						"&t14_delay8=" + to_string(t14_delay->delay8) +
-						"&t14_delay9=" + to_string(t14_delay->delay9));
+						"&t14_delay9=" + to_string(t14_delay->delay1));
 
     //data += std::string("&toffset=" + to_string(TOFFSET));
     
@@ -298,6 +312,14 @@ void HUB::SendMessage(const char* buf, ssize_t size)
     }
 }
 
+void HUB::SendMessage2OAM(uv::Packet::MsgID msgID, std::string data)
+{
+    uv::Packet::Head head;
+    CreateHead(uv::Packet::TO_OAM, head);
+    head.s_msgID = to_string(msgID);
+    SendPackMessage(head, data, data.length());
+}
+
 void HUB::ConnectResultProcess(uv::Packet& packet)
 {
     SendRHUBDelayInfo();
@@ -323,20 +345,31 @@ void HUB::DataSetProcess(uv::Packet& packet)
     for(auto res : param)
     {
         LOG_PRINT(LogLevel::debug, "%s", res.c_str());
+		
         key = packet.DataSplit(res, "=");
-        if(key[0].compare("Reboot"))
-        {
-            if(key[1].compare("1"))
-            {
-                LOG_PRINT(LogLevel::debug, "Reboot ...");
-				/* 重启设备操作 */
-		        if(_system("/sbin/reboot") < 0)
-		        {
-					LOG_PRINT(LogLevel::error, "system reboot execute error");
-		            return ;
-		        }
-            }
-        }
+		switch(CALC_STRING_HASH(key[0])){
+	        case "Reboot"_HASH:{
+				if(key[1].compare("1") == 0)
+	            {
+                    SendMessage2OAM(uv::Packet::MSG_SET_OAM, "Status=6");
+                    
+                    if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: OAM Reboot HUB.\" >> /etc/user/Snapshoot") < 0)
+			        {
+						LOG_PRINT(LogLevel::error, "system echo execute error");
+			            return ;
+			        }
+
+                    /* 重启设备操作 */
+                    std::this_thread::sleep_for(chrono::milliseconds(1000)); // 延时 1s
+			        if(_system("/sbin/reboot") < 0)
+			        {
+						LOG_PRINT(LogLevel::error, "system reboot execute error");
+			            return ;
+			        }
+	            }
+	            break;
+	        }
+		}
     }
 }
 
@@ -349,11 +382,7 @@ void HUB::UpgradeProcess(uv::Packet& packet)
 
 void HUB::UpgradeThread(uv::Packet& packet)
 {
-    uv::Packet::Head head;
-    CreateHead(uv::Packet::TO_OAM, head);
-    head.s_msgID = to_string(uv::Packet::MSG_SET_OAM);
-    std::string data = "Status=4";
-    SendPackMessage(head, data, data.length());
+    SendMessage2OAM(uv::Packet::MSG_SET_OAM, "Status=4");
 
     if(!FtpDownloadFile(packet))
     {
@@ -381,7 +410,14 @@ void HUB::UpgradeThread(uv::Packet& packet)
         /* 写入升级标志 */
 	    write_file(UpgradeResult, "5");
 
+        if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: Upgrade Reboot HUB.\" >> /etc/user/Snapshoot") < 0)
+        {
+            LOG_PRINT(LogLevel::error, "system echo execute error");
+            return ;
+        }
+
         /* 重启设备操作 */
+        std::this_thread::sleep_for(chrono::milliseconds(1000)); // 延时 1s
         if(_system("/sbin/reboot") < 0)
         {
 			LOG_PRINT(LogLevel::error, "system reboot execute error");
@@ -576,4 +612,9 @@ void HUB::CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head)
     head.s_port         = m_port;
     head.s_uport        = m_uport;
     head.s_uuport       = m_uuport;
+}
+
+size_t HUB::CALC_STRING_HASH(const string& str){
+	// 获取string对象得字符串值并传递给HAHS_STRING_PIECE计算，获取得返回值为该字符串HASH值
+	return HASH_STRING_PIECE(str.c_str());
 }

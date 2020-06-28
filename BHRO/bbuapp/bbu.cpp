@@ -53,10 +53,17 @@ BBU::BBU(EventLoop* loop)
     
     free(pdata);
     pdata = NULL;
+	CloseDeviceConnectFlag = false;
 }
 
 void BBU::OnConnectClose(shared_ptr<TcpConnection> connection)
 {
+	if(CloseDeviceConnectFlag)
+	{
+		CloseDeviceConnectFlag = false;
+		return;
+	}
+
     std::vector<TcpConnectionPtr> oamsConnection;
     GetOAMConnection(oamsConnection);
     for(auto it : oamsConnection)
@@ -446,6 +453,7 @@ void BBU::SetConnectionClient(uv::TcpConnectionPtr& connection, uv::Packet& pack
             LOG_PRINT(LogLevel::error, "Set Device RouteIndex error");
 			/* close the device connect */
 			std::string name = GetCurrentName(connection);
+			CloseDeviceConnectFlag = true;
 			closeConnection(name);
             return ;
         }
@@ -677,7 +685,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 		for(level = level; level > 0; level--)
 		{
 			/* TBdelay DL */
-			key = std::string(to_string(level) + "1" + to_string(m_base));  // 最后一位为级联口
+			key = std::string(to_string(level) + "1" + to_string(m_base - 1));  // 最后一位为级联口
 			if(!FindDelayMapValue(key, tbdelayDL))
 			{
 		        LOG_PRINT(LogLevel::error, "FindDelayMapValue tbdelayDL error");
@@ -686,7 +694,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 			totalDLHUBDelay += stoi(tbdelayDL.c_str());
 
 			/* TBdelay UL */
-			key = std::string(to_string(level) + "2" + to_string(m_base));
+			key = std::string(to_string(level) + "2" + to_string(m_base - 1));
 			if(!FindDelayMapValue(key, tbdelayUL))
 			{
 		        LOG_PRINT(LogLevel::error, "FindDelayMapValue tbdelayUL error");
@@ -695,7 +703,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 			totalULHUBDelay += stoi(tbdelayUL.c_str());
 
 			/* T14 */
-			key = std::string(to_string(level) + "3" + to_string(m_base));
+			key = std::string(to_string(level) + "3" + to_string(m_base - 1));
 			if(!FindDelayMapValue(key, t14))
 			{
 		        LOG_PRINT(LogLevel::error, "FindDelayMapValue t14 error");

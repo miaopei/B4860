@@ -44,6 +44,19 @@ void HUB::reConnect()
 {
     uv::Timer* timer = new uv::Timer(loop_, 1000, 0, [this](uv::Timer* ptr)
     {
+		if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: LinkDown Reboot HUB.\" >> /etc/user/Snapshoot") < 0)
+        {
+            LOG_PRINT(LogLevel::error, "system echo execute error");
+            return ;
+        }
+
+		if(_system("/sbin/reboot") < 0)
+        {
+			LOG_PRINT(LogLevel::error, "system reboot execute error");
+            return ;
+        }
+
+#if 0
         char* pdata = NULL;
         size_t size = 32;
         pdata = (char*)malloc(size * sizeof(char));
@@ -51,11 +64,11 @@ void HUB::reConnect()
         {		
             LOG_PRINT(LogLevel::error, "malloc gateway memory error");
         }
-#if 0
+#if 1
         GetDeviceGateWay(IFRNAME, pdata, size);
         LOG_PRINT(LogLevel::debug, "ReConnect Device GateWay: %s", pdata);
 #endif
-#if 1
+#if 0
         GetDeviceIP(IFRNAME, pdata, size);	
         LOG_PRINT(LogLevel::debug, "ReConnect Device IP: %s", pdata);
 #endif
@@ -65,6 +78,7 @@ void HUB::reConnect()
 
         free(pdata);
         pdata = NULL;
+#endif
 
         ptr->close([](uv::Timer* ptr)
         {
@@ -76,56 +90,6 @@ void HUB::reConnect()
 
 void HUB::SendConnectMessage()
 {
-#if 0
-    int packet_len = sizeof(BHRO_T_PACKET) + sizeof(BHRO_T_CONNECT_REQ);
-    BHRO_T_PACKET *bhro_packet = (BHRO_T_PACKET*)malloc(packet_len);
-    memset(bhro_packet, 0, packet_len);
-    bhro_packet->packet_head.source = 1;
-    bhro_packet->packet_head.destination = 2;
-
-    bhro_packet->packet_head.len = sizeof(BHRO_T_CONNECT_REQ);
-    //BHRO_T_CONNECT_REQ *connect_req = (BHRO_T_CONNECT_REQ*)malloc(sizeof(BHRO_T_CONNECT_REQ));
-    BHRO_T_CONNECT_REQ connect_req;
-    connect_req.resultID = 3;
-    memcpy((BHRO_T_CONNECT_REQ*)bhro_packet->tlv_data, &connect_req, sizeof(BHRO_T_CONNECT_REQ));
-
-
-    SendMessage((char*)bhro_packet, packet_len);
-    LOG_PRINT(LogLevel::debug, "free memory");
-
-    //free(connect_req);
-    //connect_req = NULL;
-
-    free(bhro_packet);
-    bhro_packet = NULL;
-#endif
-
-#if 0
-    int packet_len = sizeof(BHRO_T_PACKET) + sizeof(BHRO_T_CONNECT_REQ) + 1;
-    BHRO_T_PACKET *bhro_packet = (BHRO_T_PACKET*)malloc(sizeof(BHRO_T_PACKET));
-    if(NULL == bhro_packet)
-    {
-        LOG_PRINT(LogLevel::error, "memory malloc failure");
-        return ;
-    }
-    memset(bhro_packet, 0, sizeof(BHRO_T_PACKET))
-    bhro_packet->packet_head.source = 1;
-    bhro_packet->packet_head.destination = 2;
-    bhro_packet->packet_head.len = sizeof(BHRO_T_CONNECT_REQ);
-
-    bhro_packet->data = (BHRO_T_CONNECT_REQ*)malloc(sizeof(BHRO_T_CONNECT_REQ) + 1);
-    memset(bhro_packet->data, 0, sizeof(BHRO_T_CONNECT_REQ) + 1)
-    BHRO_T_CONNECT_REQ *connect_req;
-    connect_req->resultID = 3;
-    memcpy((BHRO_T_CONNECT_REQ*)bhro_packet->data, connect_req, sizeof(BHRO_T_CONNECT_REQ) + 1);
-
-    LOG_PRINT(LogLevel::debug, "packet_len=%c", &bhro_packet->data);
-    SendMessage((char*)bhro_packet, packet_len);
-    LOG_PRINT(LogLevel::debug, "free memory");
-    free(bhro_packet->data);
-    free(bhro_packet);
-#endif
-#if 1
     std::string data = "Status=";
     char res[32];
     if(read_file(UpgradeResult, res, sizeof(res)))
@@ -157,12 +121,11 @@ void HUB::SendConnectMessage()
     head.s_msgID = to_string(uv::Packet::MSG_CONNECT);
 
     SendPackMessage(head, data, data.length());
-#endif
 }
 
 void HUB::SetRHUBInfo()
 {
-    char* pdata = NULL;
+	char* pdata = NULL;
     size_t size = 32;
     pdata = (char*)malloc(size * sizeof(char));
     if(pdata == NULL)
@@ -483,22 +446,18 @@ void HUB::DataSetProcess(uv::Packet& packet)
         LOG_PRINT(LogLevel::debug, "%s", res.c_str());
 		
         key = packet.DataSplit(res, "=");
-        LOG_PRINT(LogLevel::debug, "key[0]=%s key[1]=%s", key[0].c_str(), key[1].c_str());
 		switch(CALC_STRING_HASH(key[0])){
 	        case "Reboot"_HASH:{
-                LOG_PRINT(LogLevel::debug, "case reboot.");
 				if(key[1].compare("1") == 0)
 	            {
-                    LOG_PRINT(LogLevel::debug, "key[1] compare success.");
                     SendMessage2OAM(uv::Packet::MSG_SET_OAM, "Status=6");
                     
-                    //if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: OAM Reboot HUB.'\" >> /etc/user/Snapshoot") < 0)
-                    if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: OAM Reboot HUB.\" >> ./Snapshoot") < 0)
+                    if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: OAM Reboot HUB.\" >> /etc/user/Snapshoot") < 0)
 			        {
-						LOG_PRINT(LogLevel::error, "system reboot execute error");
+						LOG_PRINT(LogLevel::error, "system echo execute error");
 			            return ;
 			        }
-#if 0
+
                     /* 重启设备操作 */
                     std::this_thread::sleep_for(chrono::milliseconds(1000)); // 延时 1s
 			        if(_system("/sbin/reboot") < 0)
@@ -506,7 +465,6 @@ void HUB::DataSetProcess(uv::Packet& packet)
 						LOG_PRINT(LogLevel::error, "system reboot execute error");
 			            return ;
 			        }
-#endif
 	            }
 	            break;
 	        }
@@ -551,12 +509,12 @@ void HUB::UpgradeThread(uv::Packet& packet)
         /* 写入升级标志 */
 	    write_file(UpgradeResult, "5");
 
-        if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: Upgrade Reboot HUB.'\" >> /etc/user/Snapshoot") < 0)
+        if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: Upgrade Reboot HUB.\" >> /etc/user/Snapshoot") < 0)
         {
-            LOG_PRINT(LogLevel::error, "system reboot execute error");
+            LOG_PRINT(LogLevel::error, "system echo execute error");
             return ;
         }
-#if 0
+
         /* 重启设备操作 */
         std::this_thread::sleep_for(chrono::milliseconds(1000)); // 延时 1s
         if(_system("/sbin/reboot") < 0)
@@ -564,7 +522,6 @@ void HUB::UpgradeThread(uv::Packet& packet)
 			LOG_PRINT(LogLevel::error, "system reboot execute error");
             return ;
         }
-#endif
     }
 }
 

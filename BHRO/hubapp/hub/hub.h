@@ -53,6 +53,14 @@ struct delay_measurement_info {
     struct rhup_t14_delay* t14_delay;
 };
 
+constexpr size_t HASH_STRING_PIECE(const char *string_piece, size_t hashNum=0){
+	return *string_piece ? HASH_STRING_PIECE(string_piece+1, (hashNum*131)+*string_piece) : hashNum;
+}
+	
+constexpr size_t operator "" _HASH(const char *string_pice, size_t){
+	return HASH_STRING_PIECE(string_pice);
+}
+
 class HUB :public uv::TcpClient
 {
 public:
@@ -93,6 +101,8 @@ public:
     void HandleHeart(void* arg);
 
     void CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head);
+	size_t CALC_STRING_HASH(const string& str);
+    void SendMessage2OAM(uv::Packet::MsgID msgID, std::string data);
     std::string bbu_addr;
 
 private:

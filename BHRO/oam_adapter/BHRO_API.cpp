@@ -80,7 +80,7 @@ void BHRO_API::DeviceUpGrade(std::string destination, std::string routeIndex, st
     ConditionWait();
     threadArg_.oam_adapter->SendUpgradeMessage(destination, routeIndex, fileName, md5);
 }
-
+#if 0
 void BHRO_API::SetRFTx(std::string RFTxStatus)
 {
     ConditionWait();
@@ -92,7 +92,7 @@ void BHRO_API::SetRFTx(std::string routeIndex, std::string RFTxStatus)
     ConditionWait();
     threadArg_.oam_adapter->SendRFTxMessage(routeIndex, RFTxStatus);
 }
-
+#endif
 void BHRO_API::DeviceDataSet(std::string destination, std::string data)
 {
     ConditionWait();

@@ -143,6 +143,9 @@ public:
 private:
     void OnMessage(uv::TcpConnectionPtr connection, const char* buf, ssize_t size);
     void OnConnectClose(uv::TcpConnectionPtr connection);
+	uint32_t m_carrierIdx_0_T14;
+	uint32_t m_carrierIdx_1_T14;
+	bool CloseDeviceConnectFlag;
     std::string m_mac;
     std::string m_source;
     std::string m_hop;

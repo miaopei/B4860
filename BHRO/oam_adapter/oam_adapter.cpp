@@ -85,7 +85,7 @@ void OamAdapter::reConnect()
 
 void OamAdapter::SendConnectMessage()
 {
-    std::string data = "XXX=0";
+    std::string data = "AdapterConnected=0";
     
     uv::Packet::Head head;
     CreateHead(uv::Packet::TO_BBU, head);
@@ -161,7 +161,7 @@ void OamAdapter::ProcessRecvMessage(uv::Packet& packet)
             UpdateData(packet);
             break;
 		case uv::Packet::MSG_SET_OAM:
-			SetOAM(packet);
+			SetData2OAM(packet);
 			break;
 		case uv::Packet::MSG_ALARM:
 			AlarmEvent(packet);
@@ -267,7 +267,7 @@ void OamAdapter::SendUpgradeMessage(std::string destination, std::string routeIn
 
     SendPackMessage(head, data, data.length());
 }
-
+#if 0
 void OamAdapter::SendRFTxMessage(std::string RFTxStatus)
 {
     std::string data = "RFTxStatus=" + RFTxStatus;
@@ -289,7 +289,7 @@ void OamAdapter::SendRFTxMessage(std::string routeIndex, std::string RFTxStatus)
 
     SendPackMessage(head, data, data.length());
 }
-
+#endif
 void OamAdapter::SendDateSetMessage(std::string destination, std::string data)
 {
     uv::Packet::Head head;

@@ -107,7 +107,7 @@ public:
 
 	std::string CreateRouteIndex(uv::TcpConnectionPtr& connection);
     bool GetRouteIndex(uv::TcpConnectionPtr& connection, std::string& routeIndex);
-    bool FindNextDeviceInfo(int level, DeviceInfo& next_dInfo);
+    //bool FindNextDeviceInfo(int level, DeviceInfo& next_dInfo);
 	bool DeleteRRUTotalDelay(uv::TcpConnectionPtr& connection, std::vector<PAIR>& tVector);
 
 	bool SetDeviceRouteIndex(uv::TcpConnectionPtr& connection);
@@ -121,6 +121,7 @@ public:
     bool FindUpHubDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& upHubDInfo);
 
     void setTimeout(unsigned int);
+
 	int m_base = 0;
 private:
     void onAccept(EventLoop* loop, UVTcpPtr client);

@@ -45,8 +45,8 @@ public:
     void SendUpgradeMessage(std::string destination, std::string fileName, std::string md5);
 	void SendUpgradeMessage(std::string destination, std::string routeIndex, std::string fileName, std::string md5);
 
-    void SendRFTxMessage(std::string RFTxStatus);
-    void SendRFTxMessage(std::string routeIndex, std::string RFTxStatus);
+    //void SendRFTxMessage(std::string RFTxStatus);
+    //void SendRFTxMessage(std::string routeIndex, std::string RFTxStatus);
 
     void SendDateSetMessage(std::string destination, std::string data);
     void SendDateSetMessage(std::string destination, std::string routeIndex, std::string data);
@@ -61,7 +61,7 @@ public:
     void SetNewConnect(uv::Packet& packet);
     void ConnectClose(uv::Packet& packet);
     void UpdateData(uv::Packet& packet);
-	void SetOAM(uv::Packet& packet);
+	void SetData2OAM(uv::Packet& packet);
 	void AlarmEvent(uv::Packet& packet);
 
     void CreateHead(uv::Packet::Destination dType, uv::Packet::Head& head);

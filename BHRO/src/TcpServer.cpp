@@ -225,8 +225,7 @@ void TcpServer::SplitStrings2Map(const std::string &input, std::string rruid, st
          * type: rhub_delay_up(1) rhub_delay_down(2) t14_delay(3) 
          * delay num: 1-9
          */
-        cout = (i % m_base);
-        //cout = i % m_base;
+        cout = i % m_base;
         if(i < m_base)
         {
             key = std::string(rruid + "1" + to_string(cout));
@@ -318,25 +317,26 @@ std::string TcpServer::CreateRouteIndex(uv::TcpConnectionPtr& connection)
 	}
     
     if(level >= 1)
-    {
-        for(auto &it : connectionInfo_)
-        {
-            if(it.second.s_hop == to_string(level))
-            {
-                if(it.second.s_source == to_string(uv::Packet::HUB))
-                {
-                    if(it.second.s_routeIndex.empty())
-                    {
-                        return "";
-                    }
-                    RouteIndex += "_" + it.second.s_routeIndex;
-                    return RouteIndex;
-                }
-            }
-        }
-    }
-    return "";
+	{
+		for(auto &it : connectionInfo_)
+		{
+			if(it.second.s_hop == to_string(level))
+			{
+				if(it.second.s_source == to_string(uv::Packet::HUB))
+				{
+					if(it.second.s_routeIndex.empty())
+					{
+						return "";
+					}
+					RouteIndex += "_" + it.second.s_routeIndex;
+					return RouteIndex;
+				}
+			}
+		}
+	}
+	return "";
 }
+
 #if 0
 bool TcpServer::FindNextDeviceInfo(int level, DeviceInfo& next_dInfo)
 {
