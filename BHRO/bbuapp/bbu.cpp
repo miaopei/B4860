@@ -677,7 +677,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 		for(level = level; level > 0; level--)
 		{
 			/* TBdelay DL */
-			key = std::string(to_string(level) + "1" + "1");  // 最后一位为级联口
+			key = std::string(to_string(level) + "1" + to_string(m_base));  // 最后一位为级联口
 			if(!FindDelayMapValue(key, tbdelayDL))
 			{
 		        LOG_PRINT(LogLevel::error, "FindDelayMapValue tbdelayDL error");
@@ -686,7 +686,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 			totalDLHUBDelay += stoi(tbdelayDL.c_str());
 
 			/* TBdelay UL */
-			key = std::string(to_string(level) + "2" + "1");
+			key = std::string(to_string(level) + "2" + to_string(m_base));
 			if(!FindDelayMapValue(key, tbdelayUL))
 			{
 		        LOG_PRINT(LogLevel::error, "FindDelayMapValue tbdelayUL error");
@@ -695,7 +695,7 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 			totalULHUBDelay += stoi(tbdelayUL.c_str());
 
 			/* T14 */
-			key = std::string(to_string(level) + "3" + "1");
+			key = std::string(to_string(level) + "3" + to_string(m_base));
 			if(!FindDelayMapValue(key, t14))
 			{
 		        LOG_PRINT(LogLevel::error, "FindDelayMapValue t14 error");

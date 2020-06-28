@@ -483,14 +483,17 @@ void HUB::DataSetProcess(uv::Packet& packet)
         LOG_PRINT(LogLevel::debug, "%s", res.c_str());
 		
         key = packet.DataSplit(res, "=");
+        LOG_PRINT(LogLevel::debug, "key[0]=%s key[1]=%s", key[0].c_str(), key[1].c_str());
 		switch(CALC_STRING_HASH(key[0])){
 	        case "Reboot"_HASH:{
-				if(key[1].compare("1"))
+                LOG_PRINT(LogLevel::debug, "case reboot.");
+				if(key[1].compare("1") == 0)
 	            {
+                    LOG_PRINT(LogLevel::debug, "key[1] compare success.");
                     SendMessage2OAM(uv::Packet::MSG_SET_OAM, "Status=6");
                     
                     //if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: OAM Reboot HUB.'\" >> /etc/user/Snapshoot") < 0)
-                    if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S`: OAM Reboot HUB.'\" >> ./Snapshoot") < 0)
+                    if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: OAM Reboot HUB.\" >> ./Snapshoot") < 0)
 			        {
 						LOG_PRINT(LogLevel::error, "system reboot execute error");
 			            return ;

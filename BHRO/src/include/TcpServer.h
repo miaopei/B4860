@@ -121,6 +121,7 @@ public:
     bool FindUpHubDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& upHubDInfo);
 
     void setTimeout(unsigned int);
+	int m_base = 0;
 private:
     void onAccept(EventLoop* loop, UVTcpPtr client);
 protected:
@@ -139,7 +140,6 @@ private:
     OnConnectCloseCallback onConnectCloseCallback_;
     TimerWheel timerWheel_;
 
-	int m_base = 0;
 };
 
 
