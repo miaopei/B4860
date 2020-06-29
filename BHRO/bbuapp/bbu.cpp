@@ -717,8 +717,17 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 	t12 = ((BBUT14 - (HUBToffset * TOFFSETCYCLE)) / 2) / TOFFSETCYCLE;
 	totalDL = t12 + totalDLHUBDelay + stoi(dInfo.s_rruDelayInfo.T2a.c_str());
 	totalUL = t12 + totalULHUBDelay + stoi(dInfo.s_rruDelayInfo.Ta3.c_str());
-	//LOG_PRINT(LogLevel::debug, "totalDL=%d", totalDL);
-	//LOG_PRINT(LogLevel::debug, "totalUL=%d", totalUL);
+	LOG_PRINT(LogLevel::debug, "totalDL=%d", totalDL);
+	LOG_PRINT(LogLevel::debug, "totalUL=%d", totalUL);
+
+    /* store delay offset value */
+    RRUDelayOffset_T rruDelayOffset;
+    rruDelayOffset.offsetDL = to_string(totalDL);
+    rruDelayOffset.offsetUL = to_string(totalUL);
+    if(!SetRRUDeviceDelayOffset(connection, rruDelayOffset))
+    {
+		LOG_PRINT(LogLevel::error, "Set RRU Device Delay Offset value error");
+    }
 
 	DeleteRRUTotalDelay(connection, tVectorDL);
 	DeleteRRUTotalDelay(connection, tVectorDL);
@@ -739,10 +748,48 @@ bool BBU::CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::st
 	int maxULDelay = stoi(tVectorUL.begin()->second.c_str());
 	LOG_PRINT(LogLevel::debug, "MaxDLDelay=%d MaxULDelay=%d", maxDLDelay, maxULDelay);
 
-    delayiDLCompensation = to_string(stoi(tVectorDL.begin()->second.c_str()) - totalDL);
-    delayiULCompensation = to_string(stoi(tVectorUL.begin()->second.c_str()) - totalUL);
+    /* if totalDL == maxDLDelay, update other connect RU Offset value */
+    if(totalDL == maxDLDelay)
+    {
+        UpdataRRUDelayOffsetValue(connection, maxDLDelay, maxULDelay);
+    }
+
+    //delayiDLCompensation = to_string(stoi(tVectorDL.begin()->second.c_str()) - totalDL);
+    //delayiULCompensation = to_string(stoi(tVectorUL.begin()->second.c_str()) - totalUL);
+    delayiDLCompensation = to_string(maxDLDelay - totalDL);
+    delayiULCompensation = to_string(maxULDelay - totalUL);
 
 	return true;
+}
+
+void BBU::UpdataRRUDelayOffsetValue(uv::TcpConnectionPtr& connection, int maxDLDelay, int maxULDelay)
+{
+    DeviceInfo dInfo;
+    uv::Packet::Head head;
+    std::string delayULCompensation;
+    std::string delayDLCompensation;
+    std::vector<TcpConnectionPtr> rrusConnection;
+    GetRRUsConnection(rrusConnection);
+    for(auto it : rrusConnection)
+    {	
+        if(it == connection) continue;
+        
+        if(!GetDeviceInfo(it, dInfo))
+        {
+            LOG_PRINT(LogLevel::error, "Get Device Info error");
+            return;
+        }
+
+        CreateHead(HeadType::B2R_HEAD, head);
+        head.s_msgID        = to_string(uv::Packet::MSG_DELAY_COMPENSATION);
+        
+        delayULCompensation = to_string(maxULDelay - stoi(dInfo.s_rruDelayOffset.offsetUL));
+        delayDLCompensation = to_string(maxDLDelay - stoi(dInfo.s_rruDelayOffset.offsetDL));
+        std::string data = "DelayULCompensation=" + delayULCompensation + "&DelayDLCompensation=" + delayDLCompensation;
+
+        LOG_PRINT(LogLevel::debug, "[SendPackMessage: %s]", data.c_str());
+        SendPackMessage(it, head, data, data.length());
+    }
 }
 
 bool BBU::FindDelayMapValue(std::string key, std::string& value)
@@ -873,6 +920,11 @@ void BBU::CreateHead(HeadType hType, uv::Packet::Head& head)
                 head.s_destination = to_string(uv::Packet::Destination::TO_HUB);
             }
             break;
+        case HeadType::B2R_HEAD:
+            {
+                head.s_destination = to_string(uv::Packet::Destination::TO_RRU);
+            }
+            break;
         default:
             {
                 LOG_PRINT(LogLevel::error, "DeviceType error");
@@ -905,6 +957,12 @@ void BBU::CreateHead(HeadType hType, uv::Packet::Head& head, uv::Packet& packet)
             {
                 head.s_source       = packet.GetSource();
                 head.s_destination  = to_string(uv::Packet::TO_OAM);
+            }
+            break;
+        case HeadType::B2H_HEAD:
+            {
+                head.s_source       = packet.GetSource();
+                head.s_destination  = to_string(uv::Packet::TO_HUB);
             }
             break;
         case HeadType::DEFAULT:

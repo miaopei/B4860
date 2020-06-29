@@ -31,6 +31,12 @@ public:
 		std::string T2a;
 		std::string Ta3;
 	}RRUDelayInfo_T;
+
+    typedef struct RRUDelayOffset_S
+    {
+        std::string offsetDL;
+        std::string offsetUL;
+    }RRUDelayOffset_T;
 	
 	struct DeviceInfo
     {
@@ -41,22 +47,11 @@ public:
         std::string s_hop;
         std::string s_port;
         std::string s_uport;
-		std::string s_routeIndex;
-		RRUDelayInfo_T s_rruDelayInfo;
-		#if 0
-        DeviceInfo(){};
-        DeviceInfo(std::string ip, TcpConnectionPtr connect, std::string source, std::string rruid, std::string port, std::string uport)
-        {
-        	s_ip = ip;
-			s_connection = connect;
-            s_source = source;
-            s_RRUID = rruid;
-            s_port = port;
-            s_uport = uport;
-        };
-		#endif
+        std::string s_routeIndex;
+        RRUDelayInfo_T s_rruDelayInfo;
+        RRUDelayOffset_T s_rruDelayOffset;
     };	
-	
+
     TcpServer(EventLoop* loop, bool tcpNoDelay = true);
     virtual ~TcpServer();
     int bindAndListen(SocketAddr& addr);
@@ -117,6 +112,7 @@ public:
     bool GetConnectByRouteIndex(std::string& routeIndex, uv::TcpConnectionPtr& connection);
 
 	bool SetRRUDeviceDelayInfo(uv::TcpConnectionPtr& connection, RRUDelayInfo_T& rruDelayInfo);
+	bool SetRRUDeviceDelayOffset(uv::TcpConnectionPtr& connection, RRUDelayOffset_T& rruDelayOffset);
 
     bool FindUpHubDeviceInfo(uv::TcpConnectionPtr& connection, DeviceInfo& upHubDInfo);
 

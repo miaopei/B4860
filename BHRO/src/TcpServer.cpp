@@ -303,7 +303,8 @@ std::string TcpServer::CreateRouteIndex(uv::TcpConnectionPtr& connection)
 	}
 
 	level = std::stoi(dInfo.s_hop);
-	RouteIndex = dInfo.s_port + "_" + dInfo.s_uport;
+	//RouteIndex = dInfo.s_port + "_" + dInfo.s_uport;
+	RouteIndex = dInfo.s_uport + "_" + dInfo.s_port;
 
     level = level - 1;
     if(level < 0)
@@ -328,7 +329,7 @@ std::string TcpServer::CreateRouteIndex(uv::TcpConnectionPtr& connection)
 					{
 						return "";
 					}
-					RouteIndex += "_" + it.second.s_routeIndex;
+					RouteIndex = it.second.s_routeIndex + "_" + RouteIndex;
 					return RouteIndex;
 				}
 			}
@@ -530,6 +531,26 @@ bool TcpServer::SetRRUDeviceDelayInfo(uv::TcpConnectionPtr& connection, RRUDelay
         return false;
     }
 	rst->second.s_rruDelayInfo = rruDelayInfo;
+	return true;
+}
+
+bool TcpServer::SetRRUDeviceDelayOffset(uv::TcpConnectionPtr& connection, RRUDelayOffset_T& rruDelayOffset)
+{
+    std::string cName = GetCurrentName(connection);
+	
+	if(cName.empty())
+	{
+		LOG_PRINT(LogLevel::error, "not find connection name");
+		return false;
+	}
+	
+	auto rst = connectionInfo_.find(cName);
+    if(rst == connectionInfo_.end())
+    {
+		LOG_PRINT(LogLevel::error, "not find connection");
+        return false;
+    }
+	rst->second.s_rruDelayOffset = rruDelayOffset;
 	return true;
 }
 

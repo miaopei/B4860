@@ -44,6 +44,7 @@ void HUB::reConnect()
 {
     uv::Timer* timer = new uv::Timer(loop_, 1000, 0, [this](uv::Timer* ptr)
     {
+#if 0
 		if(_system("echo \"`date '+%Y-%m-%d %H:%M:%S'`: LinkDown Reboot HUB.\" >> /etc/user/Snapshoot") < 0)
         {
             LOG_PRINT(LogLevel::error, "system echo execute error");
@@ -55,8 +56,8 @@ void HUB::reConnect()
 			LOG_PRINT(LogLevel::error, "system reboot execute error");
             return ;
         }
-
-#if 0
+#endif
+#if 1
         char* pdata = NULL;
         size_t size = 32;
         pdata = (char*)malloc(size * sizeof(char));
@@ -64,11 +65,11 @@ void HUB::reConnect()
         {		
             LOG_PRINT(LogLevel::error, "malloc gateway memory error");
         }
-#if 1
+#if 0
         GetDeviceGateWay(IFRNAME, pdata, size);
         LOG_PRINT(LogLevel::debug, "ReConnect Device GateWay: %s", pdata);
 #endif
-#if 0
+#if 1
         GetDeviceIP(IFRNAME, pdata, size);	
         LOG_PRINT(LogLevel::debug, "ReConnect Device IP: %s", pdata);
 #endif
@@ -139,7 +140,7 @@ void HUB::SetRHUBInfo()
     m_source    = to_string(uv::Packet::HUB);
     m_port      = "0";
     m_hop       = "1";
-    m_uport     = "2";
+    m_uport     = "1";
     m_uuport    = "X";
  
 #if 0
@@ -500,7 +501,7 @@ void HUB::UpgradeThread(uv::Packet& packet)
 				LOG_PRINT(LogLevel::error, "system user_update_error_sh execute error");
             }
             /* 给BBU 发送 调用升级命令 失败消息 */
-            SendUpgradeFailure(packet, "5");
+            SendUpgradeFailure(packet, "3");
             return ;
         }
         /* 写入升级版本 */

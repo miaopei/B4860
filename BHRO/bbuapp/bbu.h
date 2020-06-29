@@ -60,9 +60,10 @@ public:
     enum HeadType {
         B2A_HEAD            = 0,
         B2H_HEAD            = 1,
-        S2D_REVERSAL_HEAD   = 2,
-        D2A_HEAD            = 3,
-        DEFAULT             = 4,
+        B2R_HEAD            = 2,
+        S2D_REVERSAL_HEAD   = 3,
+        D2A_HEAD            = 4,
+        DEFAULT             = 5,
     };
     
     enum DeviceType{
@@ -94,10 +95,10 @@ public:
     void UpdateHUBDelayInfo(uv::Packet& packet);
     bool QueryUhubConnection(uv::TcpConnectionPtr& connection, uv::TcpConnectionPtr& reconnection);
     /* 时延补偿计算，整个链路如何实现自动计算？补偿计算值排序，最大时延支持可配置 */
-    bool CalculationDelayCompensation(uv::TcpConnectionPtr& connection,     std::string& delayiULCompensation, std::string& delayiDLCompensation);
+    bool CalculationDelayCompensation(uv::TcpConnectionPtr& connection, std::string& delayiULCompensation, std::string& delayiDLCompensation);
 
 	/* RRU 接入后其他的 RRU 时延补偿需要更新，有可能新接入的 RRU 时延是最大的 */
-	void UpdataRRUDelayCompensation(uv::TcpConnectionPtr& connection, uv::Packet& packet);
+	void UpdataRRUDelayOffsetValue(uv::TcpConnectionPtr& connection, int maxDLDelay, int maxULDelay);
 	
 	bool FindDelayMapValue(std::string key, std::string& value);
 
