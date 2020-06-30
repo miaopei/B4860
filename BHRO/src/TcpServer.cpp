@@ -367,7 +367,11 @@ bool TcpServer::GetConnectByRouteIndex(std::string& routeIndex, uv::TcpConnectio
 
 bool TcpServer::DeleteRRUTotalDelay(uv::TcpConnectionPtr& connection, vector<PAIR>& tVector)
 {
-    std::string routeIndex = CreateRouteIndex(connection);
+    std::string routeIndex;
+    if(!GetRouteIndex(connection, routeIndex))
+    {
+        LOG_PRINT(LogLevel::error, "Get routeIndex error.")
+    }
 
 	vector<PAIR>::iterator itor;
 	for(itor = tVector.begin(); itor != tVector.end(); itor++)
