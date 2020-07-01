@@ -26,9 +26,7 @@ int main()
     default:
         std::cout << "default" << std::endl;
         break;
-
     }
 
     return 0;
 }
-
