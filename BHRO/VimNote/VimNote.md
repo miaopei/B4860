@@ -60,7 +60,8 @@ gtags 原生支持 6 种语言（C，C++，Java，PHP4，Yacc，汇编）， 通
 
 ```shell
 $ pip install pygments
-$ sudo apt install global	# 安装gtags
+# $ sudo apt install global	# 安装gtags
+
 ```
 
 保证 `.vimrc` 里要设置过两个环境变量才能正常工作：
@@ -228,19 +229,6 @@ Plug 'skywind3000/vim-preview'
 | `<leader><leader>u` | 更新插件                                  |
 | `<leader><leader>c` | 删除插件                                  |
 
-### 插入模式
-
-| 快捷键  | 说明                           |
-| ------- | ------------------------------ |
-| `i`     | 在光标处进入插入模式           |
-| `I`     | 在行首进入插入模式             |
-| `a`     | 在光标后进入插入模式           |
-| `A`     | 在行尾进入插入模式             |
-| `o`     | 在下一行插入新行并进入插入模式 |
-| `O`     | 在上一行插入新行并进入插入模式 |
-| `gi`    | 进入到上一次插入模式的位置     |
-| `<esc>` | 退出插入模式                   |
-
 ### 缓存操作
 
 | 快捷键          | 说明               |
@@ -268,10 +256,6 @@ Plug 'skywind3000/vim-preview'
 
 | 快捷键  | 说明                                     |
 | ------- | ---------------------------------------- |
-| `h`     | 上下左右移动                             |
-| `j`     | 上下左右移动                             |
-| `k`     | 上下左右移动                             |
-| `l`     | 上下左右移动                             |
 | `0`     | 光标移动到行首                           |
 | `^`     | 跳到从行首开始第一个非空白字符           |
 | `$`     | 光标移动到行尾                           |
@@ -411,16 +395,12 @@ Plug 'skywind3000/vim-preview'
 
 | 快捷键               | 说明                                   |
 | -------------------- | -------------------------------------- |
-| `:w`                 | 保存文件                               |
 | `:w <filename>`      | 按名称保存文件                         |
 | `ZZ`                 | 保存文件（如果有改动的话），并关闭窗口 |
 | `:e <filename>`      | 打开文件并编辑                         |
 | `:saveas <filename>` | 另存为文件                             |
 | `:r <filename>`      | 读取文件并将内容插入到光标后           |
 | `:r !dir`            | 将dir命令的输出捕获并插入到光标后      |
-| `:close`             | 关闭文件                               |
-| `:q`                 | 退出                                   |
-| `:q!`                | 强制退出                               |
 | `:wa`                | 保存所有文件                           |
 | `:cd <path>`         | 切换Vim当前路径                        |
 | `:new`               | 打开一个新的窗口编辑新文件             |
@@ -428,24 +408,6 @@ Plug 'skywind3000/vim-preview'
 | `:vnew`              | 在左右切分的新窗口中编辑新文件         |
 | `:tabnew`            | 在新的标签页中编辑新文件               |
 
-### 使用外部程序
-
-| 快捷键           | 说明                            |
-| ---------------- | ------------------------------- |
-| `!`              | 告诉vim正在执行一个过滤操作     |
-| `!5Gsort<Enter>` | 使用外部sort命令对1-5行文本排序 |
-| `!!`             | 对当前行执行过滤命令            |
-| `!!date<Enter>`  | 用"date"的输出代替当前行        |
-
-### 宏录制
-
-| 快捷键      | 说明                        |
-| ----------- | --------------------------- |
-| `qa`        | 开始录制名字为a的宏         |
-| `q`         | 结束录制宏                  |
-| `@a`        | 播放名字为a的宏             |
-| `100@a`     | 播放名字为a的宏100次        |
-| `:normal@a` | 播放名字为a的宏直到自动结束 |
 
 ### 实用命令
 
@@ -493,6 +455,12 @@ Plug 'skywind3000/vim-preview'
 > [Vim 8 中 C/C++ 符号索引：GTags 篇](https://zhuanlan.zhihu.com/p/36279445)
 >
 > [Vim自动生成tags插件vim-gutentags安装和自动跳转方法-Vim插件(10)](https://vimjc.com/vim-gutentags.html)
+>
+> [在Vim中使用gtags](https://www.cnblogs.com/kuang17/p/9449258.html)
+>
+> [源码阅读工具之Global]([http://laoma.tech/2018/05/22/%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E5%B7%A5%E5%85%B7%E4%B9%8BGlobal/](http://laoma.tech/2018/05/22/源码阅读工具之Global/))
+>
+> [ubuntu14.04编译gnu global 6.6.3](https://cloud.tencent.com/developer/article/1560566)
 
 > [vimplus -- Github](https://github.com/chxuan/vimplus)
 >
