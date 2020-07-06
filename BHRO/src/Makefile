@@ -13,7 +13,7 @@ SOLINK.cc = $(CC) -shared -o
 
 CFLAGS = -Wall -std=c++11 -fPIC
 USER_LINK_LIB = -lpthread -L$(LIB_DIR) -luv
-USER_LINK_INC = -I./include
+USER_LINK_INC = -I./include -I$(INCLUDE_DIR)
 CC_ARG = $(CFLAGS) $(USER_LINK_INC) $(USER_LINK_LIB)
 LINK_ARG = $(CFLAGS) $(USER_LINK_INC) $(USER_LINK_LIB)
 
