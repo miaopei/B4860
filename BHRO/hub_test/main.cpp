@@ -48,6 +48,8 @@ int main(int argc, char* argv[])
 	SocketAddr addr(pdata, PORT, SocketAddr::Ipv4);
     HUB hub(loop);
 
+    hub.EepromInfoRead();
+
     hub.bbu_addr = pdata;
 
     hub.connectToServer(addr);

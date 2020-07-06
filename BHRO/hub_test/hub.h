@@ -25,6 +25,7 @@
 
 #define SoftwareVersion     "./SoftwareVersion"
 #define UpgradeResult       "./UpgradeResult"
+#define EepromInfo          "./eeprom_info"
 
 
 #if 0
@@ -93,6 +94,18 @@ class HUB :public uv::TcpClient
 public:
     HUB(uv::EventLoop* loop);
 
+    typedef struct EepromInfo_S
+    {
+        std::string sn;
+        std::string mac;
+        std::string aging;
+        std::string aging_mask;
+        std::string aging_count;
+        std::string aging_flag;
+        std::string board_ver;
+        std::string module_type;
+    }EepromInfo_T;
+
     void onConnect(ConnectStatus status);
     void reConnect();
     void SendConnectMessage();
@@ -133,6 +146,8 @@ public:
 
     void SendMessage2OAM(uv::Packet::MsgID msgID, std::string data);
 
+    void EepromInfoRead();
+
 
     void TestProcess(uv::Packet& packet);
     void TestGetRhubDelay(uint8_t dir, struct rhub_data_delay* rhub_delay);
@@ -150,6 +165,7 @@ private:
     std::string m_uport;
     std::string m_uuport;
     std::string m_img_filename;
+    EepromInfo_T eeprom_info;
 };
 
 

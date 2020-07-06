@@ -113,9 +113,26 @@ void HUB::SendConnectMessage()
         data += "&SoftwareVersion=X";
     }
 
-    data += "&ModelName=NA";
-    data += "&SerialNumber=NA";
-    data += "&HardwareVersion=NA";
+    if(eeprom_info.module_type.empty())
+    {
+        data += "&ModelName=NA";
+    } else {
+        data += "&ModelName=" + eeprom_info.module_type;
+    }
+
+    if(eeprom_info.sn.empty())
+    {
+        data += "&SerialNumber=NA";
+    } else {
+        data += "&SerialNumber=" + eeprom_info.sn;
+    }
+
+    if(eeprom_info.board_ver.empty())
+    {
+        data += "&HardwareVersion=NA";
+    } else {
+        data += "&HardwareVersion=" + eeprom_info.board_ver;
+    }
 
     uv::Packet::Head head;
     CreateHead(uv::Packet::TO_BBU, head);
@@ -718,6 +735,82 @@ size_t HUB::CALC_STRING_HASH(const string& str){
 	// 获取string对象得字符串值并传递给HAHS_STRING_PIECE计算，获取得返回值为该字符串HASH值
 	return HASH_STRING_PIECE(str.c_str());
 }
+
+void HUB::EepromInfoRead()
+{
+    ifstream fin(EepromInfo);
+    if(!fin)
+    {
+        LOG_PRINT(LogLevel::error, "Parameter file misseed.");
+        return;
+    }
+
+    while(!fin.eof())
+    {
+        std::string str;
+        getline(fin, str);
+        int pos = str.find("=");
+        if(pos == -1)
+            continue;
+
+        std::string key = str.substr(0, pos);
+        std::string value = str.substr(pos+1, str.length());
+
+        switch(CALC_STRING_HASH(key)){
+        case "SN"_HASH:
+            {
+                eeprom_info.sn = value;
+                LOG_PRINT(LogLevel::debug, "SN=%s", value.c_str());
+                break;
+            }
+        case "MAC"_HASH:
+            {
+                eeprom_info.mac = value;
+                LOG_PRINT(LogLevel::debug, "MAC=%s", value.c_str());
+                break;
+            }
+        case "AGING"_HASH:
+            {
+                eeprom_info.aging = value;
+                LOG_PRINT(LogLevel::debug, "AGING=%s", value.c_str());
+                break;
+            }
+        case "AGING_MASK"_HASH:
+            {
+                eeprom_info.aging_mask = value;
+                LOG_PRINT(LogLevel::debug, "AGING_MASK=%s", value.c_str());
+                break;
+            }
+        case "AGING_COUNT"_HASH:
+            {
+                eeprom_info.aging_count = value;
+                LOG_PRINT(LogLevel::debug, "AGING_COUNT=%s", value.c_str());
+                break;
+            }
+        case "AGING_FLAG"_HASH:
+            {
+                eeprom_info.aging_flag = value;
+                LOG_PRINT(LogLevel::debug, "AGING_FLAG=%s", value.c_str());
+                break;
+            }
+        case "BOARD_VER"_HASH:
+            {
+                eeprom_info.board_ver = value;
+                LOG_PRINT(LogLevel::debug, "BOARD_VER=%s", value.c_str());
+                break;
+            }
+        case "MODULE_TYPE"_HASH:
+            {
+                eeprom_info.module_type = value;
+                LOG_PRINT(LogLevel::debug, "MODULE_TYPE=%s", value.c_str());
+                break;
+            }
+        }
+    }
+}
+
+
+
 
 
 
