@@ -43,7 +43,7 @@ void BHRO_API::ConnectBBU(ThreadArg& threadArg)
         threadArg.oam_adapter = oamAdapter;
         threadArg.inited = true;
 
-        oamAdapter->Heart();
+        //oamAdapter->Heart();
 
         free(pdata);
         pdata = NULL;

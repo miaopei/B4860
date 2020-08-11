@@ -116,30 +116,47 @@ void get_rhup_t14_delay(int mpi_fd, struct rhup_t14_delay* t14_delay){
 	tmp1 = gpmc_mpi_read_device(mpi_fd,0x02,0x1040);
 	tmp2 = gpmc_mpi_read_device(mpi_fd,0x02,0x1042);
 	t14_delay->delay1 = (tmp1 << 16) | tmp2;
+    printf("t14_delay->delay1=%d\n", t14_delay->delay1);
+
 	tmp1 = gpmc_mpi_read_device(mpi_fd,0x02,0x8040);
 	tmp2 = gpmc_mpi_read_device(mpi_fd,0x02,0x8042);
 	t14_delay->delay2 = (tmp1 << 16) | tmp2;
+    printf("t14_delay->delay2=%d\n", t14_delay->delay2);
+
 	tmp1 = gpmc_mpi_read_device(mpi_fd,0x02,0x9040);
 	tmp2 = gpmc_mpi_read_device(mpi_fd,0x02,0x9042);
 	t14_delay->delay3 = (tmp1 << 16) | tmp2;
+    printf("t14_delay->delay3=%d\n", t14_delay->delay3);
+
 	tmp1 = gpmc_mpi_read_device(mpi_fd,0x02,0xa040);
 	tmp2 = gpmc_mpi_read_device(mpi_fd,0x02,0xa042);
 	t14_delay->delay4 = (tmp1 << 16) | tmp2;
+    printf("t14_delay->delay4=%d\n", t14_delay->delay4);
+
 	tmp1 = gpmc_mpi_read_device(mpi_fd,0x02,0xb040);
 	tmp2 = gpmc_mpi_read_device(mpi_fd,0x02,0xb042);
 	t14_delay->delay5 = (tmp1 << 16) | tmp2;
+    printf("t14_delay->delay5=%d\n", t14_delay->delay5);
+
 	tmp1 = gpmc_mpi_read_device(mpi_fd,0x02,0xc040);
 	tmp2 = gpmc_mpi_read_device(mpi_fd,0x02,0xc042);
 	t14_delay->delay6 = (tmp1 << 16) | tmp2;
+    printf("t14_delay->delay6=%d\n", t14_delay->delay6);
+
 	tmp1 = gpmc_mpi_read_device(mpi_fd,0x02,0xd040);
 	tmp2 = gpmc_mpi_read_device(mpi_fd,0x02,0xd042);
 	t14_delay->delay7 = (tmp1 << 16) | tmp2;
+    printf("t14_delay->delay7=%d\n", t14_delay->delay7);
+
 	tmp1 = gpmc_mpi_read_device(mpi_fd,0x02,0xe040);
 	tmp2 = gpmc_mpi_read_device(mpi_fd,0x02,0xe042);
 	t14_delay->delay8 = (tmp1 << 16) | tmp2;
+    printf("t14_delay->delay8=%d\n", t14_delay->delay8);
+
 	tmp1 = gpmc_mpi_read_device(mpi_fd,0x02,0xf040);
 	tmp2 = gpmc_mpi_read_device(mpi_fd,0x02,0xf042);
 	t14_delay->delay9 = (tmp1 << 16) | tmp2;
+    printf("t14_delay->delay9=%d\n", t14_delay->delay9);
 }
 
 
